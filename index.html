@@ -26,9 +26,26 @@
             .sprite {
                 display: none;
             }
-            .debug-panel {
-                position: fixed;
+            header {
+                position: absolute;
+                width: 960px;
                 top: 0;
+                clear: both;
+            }
+            h1 {
+                color: white;
+                float: left;
+                margin: 0;
+            }
+            .instructions {
+                color: white;
+                float: right;
+                margin-right: 10px;
+                color: #999;
+            }
+            .debug-panel {
+                position: absolute;
+                top: 50px;
                 color: yellow;
                 width: 960px;
             }
@@ -45,6 +62,10 @@
         <canvas width="960" height="608">
             Your browser does not support canvas element.
         </canvas>
+        <header>
+            <h1>Backbone Game Engine</h1>
+            <p class="instructions">Keyboard arrows, Z &amp; X</p>
+        </header>
         <div id="debug" class="debug-panel"></div>
         <a href="https://github.com/martindrapeau/backbone-game-engine"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 
