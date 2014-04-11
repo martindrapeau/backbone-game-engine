@@ -26,7 +26,8 @@ Philosophy
 
 `Backbone.Engine` is a collection of ordered Models (typically `Backbone.Sprite`).
 
-Models you add to the `Backbone.Engine` collection must implement the `update` and `draw` functions. Those are the only two requirements.
+Models you add to the `Backbone.Engine` collection must implement the `update` and `draw` functions. Those are the only two requirements (inspired by looking at [MelonJS](https://github.com/melonjs/melonjs)
+).
 
 `Backbone.Engine` uses HTML5's [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame) to provide a 60 frames per second game loop. Every frame, the engine performs these things:
 - Clear the canvas.
@@ -36,7 +37,7 @@ Models you add to the `Backbone.Engine` collection must implement the `update` a
 
 The `update` function is used to update the Model position, animation, detect collisions, or whatever you like. If it requests a redraw, the engine will then call its `draw` function. The Engine ensures that Models are updated and drawn in the order they are sorted in the Collection. Consult Backbone docs to find out how to change the sort order.
 
-`Backbone.Sprite` is a sub-classed Model. Its attributes contain information on how to break an image spritesheet into tiles, and define the animation frames. In the [demonstration](http://martindrapeau.github.io/backbone-game-engine), `Mario` is a sub-classed Sprite which implements velocity and acceleration. Mario is controled by the user either by using the keyboard, or the touchpad (for touch devices). User input is captured with the `Backbone.Input` class.
+`Backbone.Sprite` is a sub-classed Model which implements the `draw` and `update` functions to animate a sprite. Its attributes contain information on how to break an image spritesheet into tiles, and define the animation frames. In the [demonstration](http://martindrapeau.github.io/backbone-game-engine), `Mario` is a sub-classed Sprite which implements velocity and acceleration. Mario is controled by the user either by using the keyboard, or the touchpad (for touch devices). User input is captured with the `Backbone.Input` class.
 
 
 Classes
@@ -48,8 +49,6 @@ Classes
 - **Backbone.DebugPanel**: Backbone View to display debug information on screen. Wraps a Backbone Model.
 
 * * *
-
-Inspired by looking at [MelonJS](https://github.com/melonjs/melonjs).
 
 Copyright (c) 2014 Martin Drapeau<br/>
 Licensed under the MIT @license
