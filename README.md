@@ -1,7 +1,7 @@
 backbone-game-engine
 ====================
 
-An elemntary HTML5 Game Engine using Backbone. Demonstration with Super Mario is here:
+An elementary HTML5 Game Engine using Backbone. Demonstration with Super Mario is here:
 
 
 Why Backbone?
@@ -10,7 +10,7 @@ Why Backbone?
 Backbone implements Events, Models and Collections. Models and Collections have an `extend` function to easily do inheritance. Game engines implement OO and events in their own way. Backbone is now widely used and provides these features in a standard fashion. I hope this project can make game programming accessible to non-game programmers out there that already use Backbone.
 
 
-Phylosophy
+Philosophy
 ----------
 
 A Sprite is a Model. Use the getter and setter to define is attributes. Other objects can listen to changes on those attribues.
