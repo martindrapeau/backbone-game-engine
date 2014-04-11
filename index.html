@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Backbone Game Engine - Demonstration with Super Mario</title>
+        <meta author="Martin Drapeau">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+        <meta name="viewport" content="width=960, user-scalable=no"/>
+        
+        <script src="3rd/jquery.min.js"></script>
+        <script src="3rd/underscore-min.js"></script>
+        <script src="3rd/backbone-min.js"></script>
+
+        <script src="src/core.js"></script>
+        <script src="src/input.js"></script>
+
+        <script src="demo/mario.js"></script>
+        <script src="demo/main.js"></script>
+        
+        <style>
+            body {
+                margin: 0;
+                background-color: #121212;
+            }
+            .sprite {
+                display: none;
+            }
+            .debug-panel {
+                position: fixed;
+                top: 0;
+                color: yellow;
+                width: 960px;
+            }
+            .debug-panel .section {
+                vertical-align: top;
+                display:inline-block;
+            }
+        </style>
+
+    </head>
+
+    <body>
+        <img class="sprite" src="img/super-mario.png" />
+        <canvas width="960" height="608">
+            Your browser does not support canvas element.
+        </canvas>
+        <div id="debug" class="debug-panel"></div>
+        <a href="https://github.com/martindrapeau/backbone-game-engine"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+
+    </body>
+
+</html>
