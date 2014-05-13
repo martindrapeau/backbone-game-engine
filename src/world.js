@@ -79,7 +79,7 @@
       this.input = options.input;
       this.camera = options.camera;
       this.debugPanel = options.debugPanel;
-
+      
       _.bindAll(this,
         "save", "getWorldIndex", "getWorldCol", "getWorldRow", "addOrReplace",
         "findAt", "filterAt", "spawnSprites", "height", "width", "add", "remove"

@@ -10,6 +10,7 @@ CACHE MANIFEST
 ../src/shapes.js
 ../src/core.js
 ../src/world.js
+../src/local-storage.js
 ../src/camera.js
 ../src/editor.js
 ../src/hero.js

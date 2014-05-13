@@ -138,13 +138,13 @@ $(document).ready(function() {
         context.clearRect(0, 0, canvas.width, canvas.height);
         this.engine.remove(this.input);
         this.engine.add(this.editor);
-        if (window._saveable) this.engine.add(this.saveButton);
+        this.engine.add(this.saveButton);
         this.toggleButton.set({imgX: 32});
       } else {
         // Play
         context.clearRect(0, 0, canvas.width, canvas.height);
         this.engine.remove(this.editor);
-        if (this.saveButton.engine) this.engine.remove(this.saveButton);
+        this.engine.remove(this.saveButton);
         this.engine.add(this.input);
         this.toggleButton.set({imgX: 0});
       }
