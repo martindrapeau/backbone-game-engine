@@ -1,0 +1,23 @@
+CACHE MANIFEST
+# Version 0.1 (c) 2014 Martin Drapeau
+
+../3rd/hammer.js
+../3rd/underscore.js
+../3rd/backbone.native.js
+../3rd/backbone.js
+
+../src/input.js
+../src/shapes.js
+../src/core.js
+../src/world.js
+../src/camera.js
+../src/editor.js
+../src/hero.js
+
+mario.js
+tiles.js
+artifacts.js
+enemies.js
+display.js
+level_1-1.js
+main.js

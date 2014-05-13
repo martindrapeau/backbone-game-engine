@@ -24,7 +24,7 @@
   var left = 0,
       right = 900,
       top = 0,
-      bottom = 580;
+      bottom = 660;
 
   Backbone.Input = Backbone.Model.extend({
     defaults: {
@@ -50,6 +50,7 @@
       x: left, y: bottom-100,
       width: 120,  height: 150,
       draw: function(context, pressed) {
+        context.clearRect(left+40, bottom-90, 60, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
@@ -58,14 +59,14 @@
         context.lineTo(left+100, bottom-10);
         context.fillStyle = ("rgba(0, 255, 0, {0})").replace("{0}", opacity);
         context.fill();
-        //drawButtonLabel(context, "L", 140, 500);
         context.restore();
       }
     }, {
       button: "right",
-      x: 120, y: 450,
+      x: 120, y: bottom-100,
       width: 120,  height: 100,
       draw: function(context, pressed) {
+        context.clearRect(left+140, bottom-90, 60, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
@@ -74,7 +75,6 @@
         context.lineTo(left+140, bottom-10);
         context.fillStyle = ("rgba(0, 255, 0, {0})").replace("{0}", opacity);
         context.fill();
-        //drawButtonLabel(context, "R", 220, 500);
         context.restore();
       }
     }, {
@@ -82,6 +82,7 @@
       x: right-240, y: bottom-100,
       width: 150,  height: 150,
       draw: function(context, pressed) {
+        context.clearRect(right-180, bottom-90, 80, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
@@ -96,6 +97,7 @@
       x: right-90, y: bottom-100,
       width: 150,  height: 150,
       draw: function(context, pressed) {
+        context.clearRect(right-80, bottom-90, 80, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
@@ -105,19 +107,17 @@
         drawButtonLabel(context, "A", right-40, bottom-50);
         context.restore();
       }
-    }, {
+    }/*, {
       button: "pause",
       x: (right-left)/2 - 90, y: bottom-80,
       width: 180, height: 80,
       draw: function(context, pressed) {
-        var opacity = pressed ? 1 : 0.5;
-        context.save();
-        context.fillStyle = ("rgba(128, 128, 128, {0})").replace("{0}", opacity);
-        drawRoundRect(context, (right-left)/2 - 90, bottom-80, 180, 60, 5, true);
+        var opacity = pressed ? 1 : 0.5,
+            fillStyle = ("rgba(128, 128, 128, {0})").replace("{0}", opacity);
+        drawRoundRect(context, (right-left)/2 - 90, bottom-80, 180, 60, 5, fillStyle);
         drawButtonLabel(context, "PAUSE", (right-left)/2, bottom-50);
-        context.restore();
       }
-    }],
+    }*/],
     initialize: function(attributes, options) {
       options || (options = {});
       var input = this;
@@ -128,12 +128,8 @@
         "detectTouched", "onTouchStart", "onTouchMove", "onTouchEnd"
         );
 
-      // Handle keyboard input
-      $(document).on("keydown.Input", this.onKeydown);
-      $(document).on("keyup.Input", this.onKeyup);
-
       // Handle touch events
-      var touchEnabled = "onorientationchange" in window;
+      var touchEnabled = "onorientationchange" in window || window.navigator.isCocoonJS;
       this.set({touchEnabled: touchEnabled});
 
       // Debug panel
@@ -150,20 +146,9 @@
         });
       }
 
-      // Touch pad
-      this.on("change:touchpad", this.toggleTouchpad);
-      this.toggleTouchpad();
-    },
-
-    // Touch pad
-    toggleTouchpad: function() {
-      $(document).off(".InputTouchpad");
-
-      if (!this.hasTouchpad()) return;
-
-      if (this.get("touchEnabled")) {
+      if (touchEnabled) {
         // Prevent touch scroll
-        $(document).bind("touchmove.InputTouchpad", function(e) {
+        $(document).bind("touchmove.InputTouchScroll", function(e) {
           e.preventDefault();
           e.stopPropagation();
           return false;
@@ -171,7 +156,45 @@
 
         // Prevent links from opening popup after a while
         document.documentElement.style.webkitTouchCallout = "none";
+      }
 
+      this.on("change:touchpad", this.toggleTouchpad);
+      this.on("attach", this.onAttach);
+      this.on("detach", this.onDetach);
+    },
+    onAttach: function() {
+      this.onDetach();
+      // Handle keyboard input
+      $(document).on("keydown.Input", this.onKeydown);
+      $(document).on("keyup.Input", this.onKeyup);
+
+      // Touch pad
+      this.toggleTouchpad();
+    },
+    onDetach: function() {
+      $(document).off(".Input");
+      $(document).off(".InputTouchpad");
+      this.set({
+        left: false,
+        right: false,
+        buttonA: false,
+        buttonB: false,
+        pause: false,
+        pressed: [],
+        touched: [],
+        clicked: false
+      });
+    },
+
+    // Touch pad
+    toggleTouchpad: function() {
+      $(document).off(".InputTouchpad");
+      console.log("toggleTouchpad");
+
+      if (!this.hasTouchpad()) return;
+      
+      if (this.get("touchEnabled")) {
+        console.log("Input: attaching touch events");
         $(document).on("touchstart.InputTouchpad", this.onTouchStart);
         $(document).on("touchmove.InputTouchpad", this.onTouchMove);
         $(document).on("touchend.InputTouchpad", this.onTouchEnd);
@@ -179,6 +202,7 @@
         $(document).on("touchcancel.InputTouchpad", this.onTouchEnd);
       } else {
         // Fallback to handling mouse events
+        console.log("Input: attaching mouse events");
         $(document).on("mousedown.InputTouchpad", this.onMouseDown);
         $(document).on("mousemove.InputTouchpad", this.onMouseDown);
         $(document).on("mouseup.InputTouchpad", this.onMouseUp);
@@ -233,7 +257,7 @@
 
     // Touch events
     detectTouched: function() {
-      var canvas = this.collection.canvas,
+      var canvas = this.engine.canvas,
           touchButtons = this.touchButtons,
           touched = _.clone(this.get("touched")) || [],
           attrs = {touched: []};
@@ -263,7 +287,7 @@
     },
     onTouchStart: function(e) {
       e.preventDefault();
-      var touches = e.originalEvent.changedTouches;
+      var touches = e.changedTouches;
 
       for (var i = 0; i < touches.length; i++)
         ongoingTouches.push(copyTouch(touches[i]));
@@ -271,7 +295,7 @@
     },
     onTouchMove: function(e) {
       e.preventDefault();
-      var touches = e.originalEvent.changedTouches;
+      var touches = e.changedTouches;
 
       for (var i = 0; i < touches.length; i++) {
         var idx = ongoingTouchIndexById(touches[i].identifier);
@@ -282,7 +306,7 @@
     },
     onTouchEnd: function(e) {
       e.preventDefault();
-      var touches = e.originalEvent.changedTouches;
+      var touches = e.changedTouches;
 
       for (var i=0; i < touches.length; i++) {
         var idx = ongoingTouchIndexById(touches[i].identifier);
@@ -296,7 +320,7 @@
     onMouseDown: function(e) {
       if (!e.which) return;
 
-      var canvas = this.collection.canvas,
+      var canvas = this.engine.canvas,
           x = e.pageX - canvas.offsetLeft,
           y = e.pageY - canvas.offsetTop,
           clicked = this.get("clicked"),
@@ -378,38 +402,6 @@
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(text, x, y);
-  }
-
-  /**
-  * Draws a rounded rectangle using the current state of the canvas. 
-  * If you omit the last three params, it will draw a rectangle 
-  * outline with a 5 pixel border radius 
-  * @param {CanvasRenderingContext2D} ctx
-  * @param {Number} x The top left x coordinate
-  * @param {Number} y The top left y coordinate 
-  * @param {Number} width The width of the rectangle 
-  * @param {Number} height The height of the rectangle
-  * @param {Number} radius The corner radius. Defaults to 5;
-  * @param {Boolean} fill Whether to fill the rectangle. Defaults to false.
-  * @param {Boolean} stroke Whether to stroke the rectangle. Defaults to true.
-  * Source: http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
-  */
-  function drawRoundRect(ctx, x, y, width, height, radius, fill, stroke) {
-    if (typeof stroke == "undefined" ) stroke = true;
-    if (typeof radius === "undefined") radius = 5;
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-    if (stroke) ctx.stroke();
-    if (fill) ctx.fill();
   }
 
 }).call(this);

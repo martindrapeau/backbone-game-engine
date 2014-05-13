@@ -1,74 +1,269 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Backbone Game Engine - Demonstration with Super Mario</title>
-        <meta author="Martin Drapeau">
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Backbone Game Engine</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="apple_touch_icon.png" rel="apple-touch-icon" />
+    
+    <script src="docs-3rd/jquery.min.js" type="text/javascript"></script>
+    <script src="docs-3rd/bootstrap.min.js" type="text/javascript"></script>
+    <link href="docs-3rd/bootstrap.min.css" rel="stylesheet" type="text/css" charset="utf-8">
+    
+    <style>
+      header.navbar-inverse {border-radius: 0;}
+      footer.navbar-default {border-radius: 0; margin-bottom: 0;}
+    </style>
+  </head>
+  <body>
+    <header class="navbar navbar-inverse">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Backbone Game Engine</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="#introduction">Introduction</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="#documentation-Backbone">Backbone</a></li>
+              <li><a href="#documentation-Engine">Engine</a></li>
+              <li><a href="#documentation-Sprite">Sprite</a></li>
+              <li class="divider"></li>
+              <li><a href="#documentation-Hero">Hero</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </header>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 id="introduction">Introduction</h1>
+          <p>
+            An elementary HTML5 Game Engine built on Backbone. Demonstration with level 1-1 of Super Mario Bros is here:
+            <br/>
+            <a href="super-mario-bros/index.html">http://martindrapeau.github.io/backbone-game-engine/super-mario-bros</a>
+          <p>
 
-        <meta name="viewport" content="width=960, user-scalable=no"/>
-        
-        <script src="3rd/jquery.min.js"></script>
-        <script src="3rd/underscore-min.js"></script>
-        <script src="3rd/backbone-min.js"></script>
+          <h3>Features:</h3>
+          <ul>
+            <li><strong>Built on Backbone</strong>. Events, models, collections, inheritance and RESTful persistence. Why reinvent the wheel?</li>
+            <li><strong>HTML5 canvas only</strong>. No jQuery, as little DOM manipulations as possible.</li>
+            <li><strong>No compilation</strong>. You don't need to install node, grunt or whatever else. Just code and press F5 to run.</li>
+            <li><strong>No server required</strong>. Fork this repo and your Github site is up and going. Create your own game and point your friends to it. Rebase to pull in latest engine updates.</li>
+            <li><strong>Built for mobile</strong>. Conceived to run on tablets. Share your URL with Mom so she can add it to the home screen of her iPad.</li>
+            <li><strong>Take if offline</strong>. With HTML5 Application Cache, your game runs offline. Perfect for taking it on the road or a fishing trip.</li>
+            <li><strong>Save state</strong>. With HTML5 Local Storage, save where you are.</li>
+            <li><strong>Level editor</strong>. Conceived for tile-based games, comes with a level editor. Place your tiles and characters, then hit play to try it out. Hit save to save your level.</li>
+          </ul>
 
-        <script src="src/core.js"></script>
-        <script src="src/input.js"></script>
+          <h3>Dependencies</h3>
+          <ul>
+            <li><a href="http://underscorejs.org/" target="_blank">Underscore</a> </li>
+            <li><a href="http://backbonejs.org/" target="_blank">Backbone</a> </li>
+            <li><a href="https://github.com/inkling/backbone.native/" target="_blank">backbone.native</a>. To drop jQuery.</li>
+            <li><a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a>. To handle touch events.</li>
+          </ul>
+          <p>All included in the <a href="https://github.com/martindrapeau/backbone-game-engine/tree/gh-pages/3rd">3rd folder</a>.  That and nothing else.</p>
 
-        <script src="demo/mario.js"></script>
-        <script src="demo/main.js"></script>
-        
-        <style>
-            body {
-                margin: 0;
-                background-color: #121212;
-            }
-            .sprite {
-                display: none;
-            }
-            header {
-                position: absolute;
-                width: 960px;
-                top: 0;
-                clear: both;
-            }
-            h1 {
-                color: white;
-                float: left;
-                margin: 0;
-            }
-            .instructions {
-                color: white;
-                float: right;
-                margin-right: 10px;
-                color: #999;
-            }
-            .debug-panel {
-                position: absolute;
-                top: 50px;
-                color: yellow;
-                width: 960px;
-            }
-            .debug-panel .section {
-                vertical-align: top;
-                display:inline-block;
-            }
-        </style>
+          <h3>Why Backbone?</h3>
+          <p>
+            Backbone implements <a href="http://backbonejs.org/#Events" target="_blank">events</a>, <a href="http://backbonejs.org/#Model" target="_blank">models</a>, <a href="http://backbonejs.org/#Collection" target="_blank">collections</a>, <a href="http://backbonejs.org/#Model-extend" target="_blank">inheritance</a> and <a href="http://backbonejs.org/#Sync" target="_blank">persistence</a>. Models implement getters and setters for object attributes. Models and Collections have an <code>extend</code> function to easily do inheritance. They implement methods for persistence (RESTful JSON by default). They can also trigger events and bind to them. Everything you need to build a great extensible game engine. Plus, Backbone is now widely used and provides these features in a standard fashion with a huge community to support them. I hope this project can make game programming accessible to developers already familiar with Backbone.
+          </p>
 
-    </head>
+          <h3 id="getting-started">Getting Started</h3>
+          <p>
+            Backbone Game Engine was built to get you going fast. <a href="https://github.com/martindrapeau/backbone-game-engine">Fork this repository</a>, and your own Github page will be ready in minutes. You can then create your own games by simply creating a new directory, and putting files in it. Here is the recommended file structure:
+          </p>
+          <pre>
+3rd/
+src/
+...
+super-mario-bros/
+my-game/
+        index.html
+        main.js
+        sprites.js
+        sprite-sheet.png
+</pre>
+          <p>
+            <code>index.html</code> is the HTML document which loads your assets, and defines your canvas. <code>sprite.js</code> contains your sprite class definitions, and <code>sprite-sheet.png</code> your graphics. Finally, <code>main.js</code> is where you instantiate the game engine and sprites. It must get loaded last.
+          </p>
+        </div>
+      </div>
 
-    <body>
-        <img class="sprite" src="img/super-mario.png" />
-        <canvas width="960" height="608">
-            Your browser does not support canvas element.
-        </canvas>
-        <header>
-            <h1>Backbone Game Engine</h1>
-            <p class="instructions">Keyboard arrows, Z &amp; X</p>
-        </header>
-        <div id="debug" class="debug-panel"></div>
-        <a href="https://github.com/martindrapeau/backbone-game-engine"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+      <!-- Documentation -->
+      <div class="row">
+        <div class="col-md-12">
+          <h1 id="documentation">Documentation</h1>
 
-    </body>
+          <h3 id="documentation-Backbone">Backbone</h3>
+          <p>
+            The engine is based on Backbone so it is essential to understand its core structure: a <a hred="http://backbonejs.org/#Model" target="_blank">Backbone.Model</a>. A model has hash of <code>attributes</code> that are changed via getter and setter methods <code>get</code> and <code>set</code>. These attributes should only contain state information as it is those attributes which get saved and restored. A model is a Javascript object. Hence behaviour can be stored as properties and methods directly on the object. For example, a sprite points to a sprite sheet. The sprite sheet id is stored as an attribute, but the pointer to the sprite sheet model is stored in a property.
+          </p>
+          <p>
+            In fact, a model stores its attributes in the object property <code>attributes</code>. Just remember that state date like sprite coordinates, current velocity, current animation, etc go in there. However pointers to other objects do not.
+            <div class="alert alert-info">
+              Note on nomenclature: I use the word <strong>attribute</strong> to define state data (get and set stored in obejct property attributes) while we use the word <strong>property</strong> to define behavioural data stored directly on the object.
+            </div>
+          </p>
 
+          <h3 id="documentation-Engine">Backbone.Engine</h3>
+          <pre>new Backbone.Collection([models], [options])</pre>
+          <h4>Options</h4>
+          <ul>
+            <li><code>canvas</code>: The canvas to draw upon. Drawing is on its 2d context.</li>
+            <li><code>width, height</code>: Optional. Size of the canvas. Defaults to 800 x 800 pixels.</li>
+            <li><code>input</code>: Optional. The user control input instance. If passed and the pause button is enabled, will stop/start then engine when pressed.</li>
+            <li><code>debugPanel</code>: Optional. If passed <code>fps</code> and <code>cycleTime</code> are output.</li>
+          </ul>
+          <p>
+            The core object to run everything is called the <strong>engine</strong>. The <code>Backbone.Engine</code> class is a <a href="http://backbonejs.org/#Collection" target="_blank">Backbone.Collection</a> that uses HTML5's <a href="https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame" target="_blank">requestAnimationFrame</a> to provide a 60 frames per second game loop. Every frame, the engine performs these things:
+          </p>
+          <ul>
+            <li>Loop through models (in order), and calls their <code>update</code> method. Passing <code>dt</code>, the time in milliseconds since the last call to update. The update method must return <code>true</code> to ask for a redraw, or <code>false</code> not to.</li>
+            <li>Loop through all models that requested a redraw, and call their <code>draw</code> method. Passing <code>context</code>, the canvas 2d context. Perform whatever magic you like in the draw method.</li>
+            <li>Call itself again upon the next animation frame.</li>
+          </ul>
+          <div class="alert alert-info">Note: The engine does not clear the canvas before redraw. That is left up to you. See class <a href="#documentation-World">World</a> for an example.</div>
+          <p>
+            The <code>update</code> method is used to update the model position, animation, detect collisions, or whatever you like. If it requests a redraw, the engine will then call its <code>draw</code> method. The engine ensures that models are updated and drawn in the order they are sorted in the collection. You can define the sort order by defining a <a href="http://backbonejs.org/#Collection-comparator" target="_blank">comparator</a>.
+          </p>
+          <p>
+            Models added to the collection receive an <code>attach</code> event and have an extra property set <code>engine</code> as backreference. When removed, they receive a <code>detach</code> event.
+          </p>
+          <p>
+            To measure performance, two properties are set: <code>fps</code> and <code>cycleTime</code>. If you passed option <code>debugPanel</code>, they will be drawn on screen.
+          </p>
+          <p>
+            The engine can be started and stopped. When running, will perform an update/draw sequence 60 times per second. Use methods <code>start</code>, <code>stop</code> or <code>toggle</code>. Use method <code>isRunning</code> to determine if the engine is running. If you passed option <code>input</code>, the engine will bind to the <strong>pause</strong> button to toggle start/stop.
+          </p>
+
+          <h3 id="documentation-Sprite">Backbone.Sprite</h3>
+          <pre>new Backbone.Sprite([attributes], [options]);</pre>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>x, y</code>: The coordinates in pixels.</li>
+            <li><code>width, height</code>: Size of the sprite in pixels.</li>
+            <li><code>state</code>: The current animation.</li>
+            <li><code>sequenceIndex</code>: The current animation sequence frame. Automatically set.</li>
+            <li><code>spriteSheet</code>: Sprite sheet id.</li>
+            <li><code>collision</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
+            <li><code>static</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
+          </ul>
+          <p>
+            <code>Backbone.Sprite</code> is a <a href="http://backbonejs.org/#Model" target="_blank">Backbone Model</a> which implements the required <code>update</code> and <code>draw</code> methods to animate a sprite, frame by frame.
+          </p>
+          <p>
+            Graphics are obtained from a <a href="#documentation-SpriteSheet">Backbone.SpriteSheet</a> model. Property <code>spriteSheet</code> must point to the sprite sheet model. If you define a sprite sheet collection, you can simply set attribute <code>spriteSheet</code> to an existing sprite sheet model id. The collection will automatically attach it to the sprite. Otherwise, you will need to set property <code>spriteSheet</code> to a sprite sheet model yourself.
+          </p>
+          <p>
+            Instantiating a sprite model is not very useful by itself. You must first extend the <code>Backbone.Sprite</code> class to provide your own animations and a pointer to the sprite sheet. For example this creates a sprite with 3 animations <code>idle</code>, <code>walk-left</code> and <code>walk-right</code>. It points to the sprite sheet id <code>mario</code>.
+          </p>
+          <pre>
+Backbone.MySprite = Backbone.Sprite.extend({
+  defaults: {
+    x: 400,
+    y: 400,
+    spriteSheet: "mario",
+    state: "idle",
+    sequenceIndex: 0,
+    static: false,
+    collision: true
+  },
+  animations: {
+    idle: {
+      sequences: [0]
+    },
+    "walk-right": {
+      sequences: [1, 2, 3, 2],
+      delay: 200
+    },
+    "walk-left": {
+      sequences: [1, 2, 3, 2],
+      scaleX: -1,
+      delay: 200
+    }
+  }
+});
+</pre>
+          <h4>Animations</h4>
+          <p>
+            Sprite property <code>animations</code> contains a hash of animations. Each animation contains a sequence of frames and a delay between frames for animation. For example:
+          </p>
+          <pre>
+animations: {
+  idle: {
+    sequences: [0, 1],
+    delay: 200
+  }
+}
+</pre>
+          <p>
+            This defines an animation of two frames, alternating at an interval of 200ms. Values 0 and 1 in array <code>sequences</code> are frame indices defined in the sprite sheet. Sprite attributes <code>state</code> and <code>sequenceIndex</code> control which animation and sequence are currently used. The <code>sequenceIndex</code> is automatically incremented (and reset to 0) by the sprite's draw function. Attribute <code>state</code> determines the current animation. It must be set to <code>idle</code> in the above example (as there is only one).
+          </p>
+          <p>
+            Extra animation options are available. Here is a complete list:
+          </p>
+          <ul>
+            <li><code>sequences</code>: Array of frame indices, or squence objects. A sequence object looks like this: <code>{frame: 52, x: 0, y: -32, scaleX: 1.00, scaleY: 1}</code>. It allows you to specify an offset to apply when the sprite is drawn, and a scaling factor.</li>
+            <li><code>scaleX, scaleY</code>: Optional. Scaling factors. Set <code>scaleX</code> to -1 to flip horizontally. Defaults to 1 if omitted.</li>
+            <li><code>delay</code>: Optional. The time to change to the next sequence. No need to specify if there is only one frame (as there is no animation). You can also define a sprite method <code>sequenceDelay</code> to programmatically return the delay. It will be passed the current animation.</li>
+          </ul>
+
+          <h3 id="documentation-Hero">Backbone.Hero</h3>
+          <p>
+            The <code>Backbone.Hero</code> model implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
+          </p>
+          <p>
+            Attach a <code>Backbone.Input</code> model to capture user input either with the keyboard (left and right arrows, z and x) or via touch events on the on-screen drawn gamepad. When added to a <code>Backbone.World</code> model, it interacts with tiles and characters.
+          </p>
+          <p>
+            Attribute <code>state</code> determines the current animation. A state is a pair of move and direction. For example <code>idle-right</code>, <code>walk-left</code> and <code>jump-right</code>. Method <code>getStateInfo</code> will decompose the state for you into those components.
+          </p>
+          <p>
+            With attribute <code>nextState</code>, we are able to implement tweens, or in-between animations. For example, holding the right arrow button puts the hero in a <code>walk-right</code> state (and <code>slide-right</code> next state). Releasing the right arrow button transitions to the <code>slide-right</code> state (and <code>idle-right</code> next state) for quick decelration until velocity reaches 0 to fall to the <code>idle-right</code> state. If instead the left arrow button is pressed, we transition to the <code>skid-left</code> state (and <code>walk-left</code> next state) for quicker decelartion until velocity reaches 0 to then accelerate in the opposite direction to fall in the <code>walk-left</code> state (and <code>slide-left</code> next state).
+          </p>
+          <p>
+            Holding an arrow button and the A button (z on keyboard) allows the character to run. Its state becomes <code>run-right</code> (or <ocde>run-left</ocde>). Pressing the B button allows the character to jump (<ocde>jump-left</ocde> or <code>jump-right</code>). Hold the B button to jump higher. You can control the direction and distance jumped with the arrow buttons. And like in the real game, a jump while running will go higher to cover more distance.
+          </p>
+          <p>
+            Physics are implemented with attributes <code>velocity</code>, <code>acceleration</code>, <code>yVelocity</code> and <code>yAcceleration</code> measured in pixels per seconds. The two first control horizontal translations over time where a positive <code>velocity</code> indicates a move to the right, and negative to the left. The latter two control vertical translations where a positive <code>yVelocity</code> indicates a move downwards, and negative upwards.
+          </p>
+            Each animation have targets of these properties when required. They are omitted when not (i.e. <code>walk-right</code> has not <code>yVelocity</code> or <code>yAcceleration</code>). The <code>update</code> method updates the model attributes according to the targets configured on the current animation. When <code>state</code> changes to another animation, so do the targets, and so follow the actual velocities over time to reach their targets. This gives the character momentum.
+          </p>
+          <p>
+            Gravity is implemented with a positive <code>yAcceleration</code>. Unless atop a tile, our character will fall. However it is constrained by the extent of the canvas. And will therefore stop falling when the bottom is reaches.
+          </p>
+          <p>
+            If our character is part of a <code>Backbone.World</code> model, it is constrained by the world extent. In addition, it can interact with other models in the world like tiles and characters. It can jump and land on tiles.
+          </p>
+          <p>
+            In a <code>Backbone.World</code>, the character detects collisions either from tiles or other characters to constrain its movements.
+          </p>
+
+        </div>
+      </div>
+      <br/>
+
+    <br/>
+
+    <footer class="navbar navbar-default">
+        <p class="navbar-text navbar-left">
+          &copy; 2014 <a href="http://www.amilia.com/en">Martin Drapeau.</a>
+          <a href="https://github.com/martindrapeau/backbone-game-engine/blob/gh-pages/LICENSE">Licensed under MIT.</a>
+        </p>
+        <p class="navbar-text navbar-right">Written in Montréal, Canada.</a></p>
+        <p class="navbar-text navbar-right">&nbsp;</p>
+    </footer>
+    <a href="https://github.com/martindrapeau/backbone-game-engine"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
 </html>
