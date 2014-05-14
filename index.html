@@ -250,6 +250,69 @@ animations: {
             In a <code>Backbone.World</code>, the character detects collisions either from tiles or other characters to constrain its movements.
           </p>
 
+          <h3 id="documentation-World">Backbone.World</h3>
+          <p>
+            <code>Backbone.World</code> is model which contains a collection of sprites. Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a heef="#documentation-Engine" target="blank">Backbone.Engine</a> the world is attached to. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
+          </p>
+          <p>
+            A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the dimensions in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned hence changing the viewport.
+          </p>
+          <p>
+            Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
+          </p>
+          <p>
+            Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
+          </p>
+          <ul>
+            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to true will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a point coordinates. In addition, these sprites are only drawn when required (i.e. world is panned). Use method <code>findCollidingAt</code> for quick lookup.</li>
+            <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to false to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup of order N. Keep the number of sprites here to a minimum. Use methods <code>findAt</code> and <code>filterAt</code> to find collisions with other sprites.</li>
+          </ul>
+          <p>
+            If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
+          </p>
+          <p>
+            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
+          </p>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>x, y</code>: Origin of top-left corner in pixels.</li>
+            <li><code>width, height</code>: Size of world in tiles.</li>
+            <li><code>tileWidth, tileHeight</code>: Size of a tile in pixels.</li>
+            <li><code>hero</code>: Name of sprite character controlled by the user. Will be passed the input as option when instantiated.</li>
+            <li><code>sprites</code>: Array of sprite models for persistence.</li>
+            <li><code>backgroundColor</code>: Background color of the world.</li>
+            <li><code>state</code>: Persisted state either play or edit.</li>
+          </ul>
+          <h4>Options</h4>
+          <ul>
+            <li><code>backgroundImage</code>: Optional. Pass to use a background image instead of a background color. Anchored to the origin.</li>
+            <li><code>input</code>: Input instance to control the hero.</li>
+            <li><code>camera</code>: Camera instance to keep the hero in the viewport.</li>
+            <li><code>debugPanel</code>: Optional.</li>
+          </ul>
+          <h4>Persistence</h4>
+          <p>
+            The world model attributes contain all that is necessary to persist the state of the world to disk, or in the cloud. Calling the <code>save</code> method first serializes the sprite collection into the <code>sprites</code> attribute by calling the <code>toSave</code> method on each sprite to save their position and state. It then delegates to the backbone model's <code>save</code> method to save to a server or local storage in JSON format. See the Backbone documentation for details.
+          </p>
+          <p>
+            The world can be restored by calling <code>restore</code> passing a saved worl in JSON format.
+          </p>
+          <h4>Collisions</h4>
+          <p>
+            Sprites inside the <code>Backbone.World</code> model can detect collisions with 3 helper methods:
+          </p>
+          <ul>
+            <li><code>findAt(x, y, type, exclude, collision)</code></li>
+            <li><code>filterAt(x, y, type, exclude, collision)</code></li>
+            <li><code>findCollidingAt(x, y)</code></li>
+          </ul>
+          <p>
+            The first two find the first or a list of sprites overlapping a specified point, and are meant mainly for finding moving character sprites. They have filtering options to lookup only sprites of certain types, to exclude a sprite (provided its id) and to include only sprites with attribute <code>collision</code> set to true.
+          </p>
+          <p>
+            Method <code>findCollidingAt</code> is meant for tile lookup. It is fast since lookup is on the indexed model <code>id</code>. It returns the first sprite overlapping the passed point. It is useful for preventing characters from walking through walls or falling through tiles.
+          </p>
+
         </div>
       </div>
       <br/>
