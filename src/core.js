@@ -319,7 +319,6 @@
   //
   // Options:
   //   - canvas: The canvas to draw upon.
-  //   - width, height: Optional. Size of the canvas. Defaults to 800 x 800 pixels.
   //   - input: Optional. The user control input instance.
   //   - debugPanel: Optional. If passed fps and cycleTime are output.
   // 
@@ -347,8 +346,6 @@
   Backbone.Engine = Backbone.Collection.extend({
     defaults: {
       canvas: undefined,
-      width: 800,
-      height: 600,
       debugPanel: null,
       input: null
     },

@@ -51,7 +51,7 @@ $(document).ready(function() {
 
       // User input (turn off touchpad to start)
       this.input = new Backbone.Input({
-        touchpad: true
+        drawTouchpad: true
       });
 
       // Camera

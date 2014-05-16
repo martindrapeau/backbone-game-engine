@@ -34,23 +34,30 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="#documentation-Backbone">Backbone</a></li>
-              <li><a href="#documentation-Engine">Engine</a></li>
-              <li><a href="#documentation-Sprite">Sprite</a></li>
+              <li><a href="#documentation-Structure">Structure</a></li>
+              <li><a href="#documentation-Engine">Backbone.Engine</a></li>
+              <li><a href="#documentation-SpriteSheet">Backbone.SpriteSheet</a></li>
+              <li><a href="#documentation-Sprite">Backbone.Sprite</a></li>
+              <li><a href="#documentation-Input">Backbone.Input</a></li>
               <li class="divider"></li>
-              <li><a href="#documentation-Hero">Hero</a></li>
+              <li><a href="#documentation-World">Backbone.World</a></li>
+              <li><a href="#documentation-WorldEditor">Backbone.WorldEditor</a></li>
+              <li><a href="#documentation-Hero">Backbone.Hero</a></li>
+              <li><a href="#documentation-Camera">Backbone.Camera</a></li>
             </ul>
           </li>
         </ul>
       </div>
     </header>
     <div class="container">
+
       <div class="row">
         <div class="col-md-12">
           <h1 id="introduction">Introduction</h1>
           <p>
             An elementary HTML5 Game Engine built on Backbone. Demonstration with level 1-1 of Super Mario Bros is here:
             <br/>
-            <a href="super-mario-bros/">http://martindrapeau.github.io/backbone-game-engine/super-mario-bros</a>
+            <a href="super-mario-bros/index.html" target="_blank">http://martindrapeau.github.io/backbone-game-engine/super-mario-bros</a>
           <p>
 
           <h3>Features:</h3>
@@ -72,7 +79,7 @@
             <li><a href="https://github.com/inkling/backbone.native/" target="_blank">backbone.native</a>. To drop jQuery.</li>
             <li><a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a>. To handle touch events.</li>
           </ul>
-          <p>All included in the <a href="https://github.com/martindrapeau/backbone-game-engine/tree/gh-pages/3rd">3rd folder</a>.  That and nothing else.</p>
+          <p>All included in the <a href="/backbone-game-engine/tree/gh-pages/3rd">3rd folder</a>.  That and nothing else.</p>
 
           <h3>Why Backbone?</h3>
           <p>
@@ -97,6 +104,7 @@ my-game/
           <p>
             <code>index.html</code> is the HTML document which loads your assets, and defines your canvas. <code>sprite.js</code> contains your sprite class definitions, and <code>sprite-sheet.png</code> your graphics. Finally, <code>main.js</code> is where you instantiate the game engine and sprites. It must get loaded last.
           </p>
+          <br/>
         </div>
       </div>
 
@@ -105,23 +113,179 @@ my-game/
         <div class="col-md-12">
           <h1 id="documentation">Documentation</h1>
 
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
           <h3 id="documentation-Backbone">Backbone</h3>
           <p>
             The engine is based on Backbone so it is essential to understand its core structure: a <a hred="http://backbonejs.org/#Model" target="_blank">Backbone.Model</a>. A model has hash of <code>attributes</code> that are changed via getter and setter methods <code>get</code> and <code>set</code>. These attributes should only contain state information as it is those attributes which get saved and restored. A model is a Javascript object. Hence behaviour can be stored as properties and methods directly on the object. For example, a sprite points to a sprite sheet. The sprite sheet id is stored as an attribute, but the pointer to the sprite sheet model is stored in a property.
           </p>
           <p>
-            In fact, a model stores its attributes in the object property <code>attributes</code>. Just remember that state date like sprite coordinates, current velocity, current animation, etc go in there. However pointers to other objects do not.
+            In fact, a model stores its attributes in the object property <code>attributes</code>. Methods <code>get</code>, <code>set</code> and <code>toJSON</code> operate on that property. Just remember that state date like sprite coordinates, velocity, etc go in there. However references to other objects do not.
             <div class="alert alert-info">
               Note on nomenclature: I use the word <strong>attribute</strong> to define state data (get and set stored in obejct property attributes) while we use the word <strong>property</strong> to define behavioural data stored directly on the object.
             </div>
           </p>
+        </div>
+      </div>
 
+      <div class="row">
+        <div class="col-md-12">
+          <h3 id="documentation-Structure">Structure</h3>
+          <p>
+            Games and examples are located in their own directory with at least two files <code>index.html</code> and <code>main.js</code>. The HTML file can reference Javascript files, and images using relative paths.
+          </p>
+
+          <h4 id="documentation-HTML">index.html</h4>
+          <p>
+            The HTML document (usually named <code>index.html</code> in its own folder) declares the assets to be loaded and the <code>canvas</code> element. Javascript assets are declared in the <code>HEAD</code> element. Images are loaded via <code>IMG</code> elements. They must be hidden with inline CSS. Everything is bootstrap-loaded as declared in the HTML file. There is no asynchronous loading.
+          </p>
+          <p>
+            Here is an example HTML file taken from the example <a href="mario/index.html" target="_blank">Mario</a>.
+          </p>
+          <pre>
+&lt;!doctype html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Mario - Backbone Game Engine&lt;/title&gt;
+        &lt;meta charset="utf-8"&gt;
+        &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
+        &lt;link href="../favicon.ico" rel="shortcut icon" type="image/x-icon" /&gt;
+        &lt;link href="../apple_touch_icon.png" rel="apple-touch-icon" /&gt;
+
+        &lt;meta name="viewport" content="width=960, user-scalable=no"/&gt;
+        &lt;meta name="apple-mobile-web-app-capable" content="yes" /&gt;
+
+        &lt;script src="../3rd/underscore.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="../3rd/backbone.native.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="../3rd/backbone.js" type="text/javascript"&gt;&lt;/script&gt;
+
+        &lt;script src="../src/shapes.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="../src/core.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="../src/input.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="../src/hero.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="../src/world.js" type="text/javascript"&gt;&lt;/script&gt;
+
+        &lt;script src="main.js" type="text/javascript"&gt;&lt;/script&gt;
+
+        &lt;style&gt;
+            body {
+                margin: 0;
+                background-color: #000;
+            }
+            canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+            }
+        &lt;/style&gt;
+
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        &lt;img id="mario" src="../super-mario-bros/super-mario-2x.png" style="display:none;" /&gt;
+        &lt;canvas id="foreground" width="960" height="700"&gt;
+            Your browser does not support canvas element.
+        &lt;/canvas&gt;
+        &lt;canvas id="background" width="960" height="544" style="display:none;"&gt;
+            Your browser does not support canvas element.
+        &lt;/canvas&gt;
+    &lt;/body&gt;
+
+&lt;/html&gt;
+</pre>
+          <p>
+            Some important notes:
+          </p>
+          <ul>
+            <li>HTML meta tags <code>viewport</code> and <code>apple-mobile-web-app-capable</code> ensure the canvas is properly sized on iPads and other mobile devices.  The width of specified there should be the same as the canvas elements.</li>
+            <li>Elements must all have ids since we use the native <code>getElementById</code> Javascript function to retrieve the <code>Canvas</code> and <code>Image</code> objects from their respective DOM elements.</li>
+            <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden. Its height is less than that of the <code>foreground</code> canvas since the bottom real-estate is taken by either a <a href="#documentation-Input">Backbone.Input</a> or <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> model.</li>
+          </ul>
+
+          <h4 id="documentation-main">main.js</h4>
+          <p>
+            File <code>main.js</code> is where you declare and initialize your objects. It is recommended that you wrap that code in a function which gets executed once the document is loaded (document ready event). For convenience, <a href="https://github.com/inkling/backbone.native/" target="_blank">Backbone.native</a> was extended with that event with the jQuery syntax you are familiar with: <code>$(document).ready(function() {});</code>. 
+          </p>
+          <p>
+            Other files use a simple closure instead since they contain class definitions mainly. However in <code>main.js</code> is where <code>Canvas</code> and <code>Image</code> objects are retrieved from the DOM elements. Remember that assets are loaded synchronously.
+          </p>
+          <p>
+            Here is a sample <code>main.js</code> file, taken from the <a href="mario/index.html" target="_blank">Mario</a> example.
+          </p>
+          <pre>
+$(document).ready(function() {
+
+  // Mario alone in an empty world. Control him with the touchpad.
+
+  Backbone.Mario = Backbone.Hero.extend({
+    defaults: _.extend({}, Backbone.Hero.prototype.defaults, {
+      name: "mario",
+      spriteSheet: "mario"
+    })
+  });
+
+  var canvas = document.getElementById("foreground");
+
+  var spriteSheets = new Backbone.SpriteSheetCollection([{
+    id: "mario",
+    img: "#mario",
+    tileWidth: 32,
+    tileHeight: 64,
+    tileColumns: 21,
+    tileRows: 6
+  }]).attachToSpriteClasses();
+
+  var debugPanel = new Backbone.DebugPanel();
+
+  var input = new Backbone.Input({
+    drawTouchpad: true,
+    drawPause: true
+  });
+
+  var mario = new Backbone.Mario({
+    x: 400, y: 400
+  }, {
+    input: input
+  });
+
+  var world = new Backbone.World({
+    width: 30, height: 18,
+    tileWidth: 32, tileHeight: 32,
+    backgroundColor: "rgba(66, 66, 255, 1)"
+  });
+  world.add(mario);
+
+  var engine = new Backbone.Engine([
+    world,
+    input,
+    debugPanel
+  ], {
+    canvas: canvas,
+    debugPanel: this.debugPanel,
+    input: input
+  });
+
+  // Expose things as globals - easier to debug
+  _.extend(window, {
+    canvas: canvas,
+    engine: engine
+  });
+
+});
+</pre>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
           <h3 id="documentation-Engine">Backbone.Engine</h3>
-          <pre>new Backbone.Collection([models], [options])</pre>
+          <pre>new Backbone.Engine([models], [options])</pre>
           <h4>Options</h4>
           <ul>
             <li><code>canvas</code>: The canvas to draw upon. Drawing is on its 2d context.</li>
-            <li><code>width, height</code>: Optional. Size of the canvas. Defaults to 800 x 800 pixels.</li>
             <li><code>input</code>: Optional. The user control input instance. If passed and the pause button is enabled, will stop/start then engine when pressed.</li>
             <li><code>debugPanel</code>: Optional. If passed <code>fps</code> and <code>cycleTime</code> are output.</li>
           </ul>
@@ -146,7 +310,60 @@ my-game/
           <p>
             The engine can be started and stopped. When running, will perform an update/draw sequence 60 times per second. Use methods <code>start</code>, <code>stop</code> or <code>toggle</code>. Use method <code>isRunning</code> to determine if the engine is running. If you passed option <code>input</code>, the engine will bind to the <strong>pause</strong> button to toggle start/stop.
           </p>
+        </div>
+      </div>
 
+      <div class="row">
+        <div class="col-md-12">
+          <h3 id="documentation-SpriteSheet">Backbone.SpriteSheet</h3>
+          <pre>
+new Backbone.SpriteSheet([attributes], [options]);
+new Backbone.SpriteSheetCollection([models], [options]);
+</pre>
+          <p>
+            <code>Backbone.SpriteSheet</code> is a Backbone model which breaks an image into frames used for animation. <code>Backbone.SpriteSheetCollection</code> is a Backbone collection of sprite sheets.
+          </p>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>img</code>: The element id of the image to find in the DOM. A pointer to the Image object is then stored in property <code>img</code>.</li>
+            <li><code>tileWidth, tileHeight</code>: Size of tiles in pixels.</li>
+            <li><code>tileColumns, tileRows</code>: Number of tiles in the image.</li>
+          </ul>
+          <p>
+            When the sprite sheet is instantiated, an array of frames is built. A frame object contains the coordinates of the frame. It consists of <code>{x, y, width, height}</code> representing the pixel position and size of the frame. In the sprite <code>draw</code> method, these will be passed to the <a href="https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D#drawImage()" target="_blank">HTML5 canvas drawImage</a> function as arguments <code>sx, sy, sw, sh</code>.
+          </p>
+          <h4>Usage</h4>
+          <p>
+            Define your sprite sheets by creating a collection as such:
+          </p>
+          <pre>
+this.spriteSheets = new Backbone.SpriteSheetCollection([{
+  id: "mario",
+  img: "#mario",
+  tileWidth: 32,
+  tileHeight: 64,
+  tileColumns: 21,
+  tileRows: 6
+}, {
+  id: "tiles",
+  img: "#tiles",
+  tileWidth: 32,
+  tileHeight: 32,
+  tileColumns: 29,
+  tileRows: 28
+}]).attachToSpriteClasses();
+</pre>
+          <p>
+            Here two sprite sheets are created <code>mario</code> and <code>tiles</code>. Their graphics are in <code>Image</code> objects found in the DOM. The attribute <code>img</code> is the selector to retrieve them. Note that only id selector is supported.
+          </p>
+          <p>
+            Calling method <code>attachToSpriteClasses</code> will attach the sprite sheets to each sprite class found in the <code>Backbone</code> namespace.
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
           <h3 id="documentation-Sprite">Backbone.Sprite</h3>
           <pre>new Backbone.Sprite([attributes], [options]);</pre>
           <h4>Attributes</h4>
@@ -218,8 +435,171 @@ animations: {
             <li><code>scaleX, scaleY</code>: Optional. Scaling factors. Set <code>scaleX</code> to -1 to flip horizontally. Defaults to 1 if omitted.</li>
             <li><code>delay</code>: Optional. The time to change to the next sequence. No need to specify if there is only one frame (as there is no animation). You can also define a sprite method <code>sequenceDelay</code> to programmatically return the delay. It will be passed the current animation.</li>
           </ul>
+        </div>
+      </div>
 
+      <div class="row">
+        <div class="col-md-12">
+          <h3 id="documentation-Input">Backbone.Input</h3>
+          <pre>new Backbone.Input([attributes], [options]);</pre>
+          <p>
+            <code>Backbone.Input</code> class is a model which captures user input events and stores them as model attributes. For example pressing the left arrow, sets the <code>left</code> attribute to <code>true</code>. Depressing sets it to <code>false</code>. Bind to on the attribute change event to be notified.
+          </p>
+          <p>
+            <code>Backbone.Input</code> supports keyboard, mouse and touch events. It can draw a touchpad on screen with left and right arrow keys, an A button and a B button. Optionally, a pause button can be drawn in the middle, or the area can be used to place a banner ad.
+          </p>
+          <div class="alert alert-info">
+            Note: The Backbone.Input model only captures input when attached to a Backbone.Engine.
+          </div>
+          <h4>Attributes</h4>
+          <p>These attributes can be passed when creating the model, to configure the input.</p>
+          <ul>
+            <li><code>drawTouchpad</code>: Optional. Boolean to indicate whether to draw the touchpad. Defaults to true.</li>
+            <li><code>drawPause</code>: Optional. Boolean to indicate whether to draw the pause button on the touchpad. Defaults to false.</li>
+          </ul>
+          <p>The following model attributes are set by the model. They should not be set externally.</p>
+          <ul>
+            <li><code>touchEnabled</code>: Boolean set to true if the device is touch enabled.</li>
+            <li><code>left</code>: Boolean set to true when the left touchpad arrow or left keyboard arrow key is pressed.</li>
+            <li><code>right</code>: Boolean set to true when the right touchpad arrow or right keyboard arrow key is pressed.</li>
+            <li><code>buttonA</code>: Boolean set to true when the A touchpad button is pressed, or when the z keyboard key is pressed.</li>
+            <li><code>buttonB</code>: Boolean set to true when the B touchpad button is pressed, or when the x keyboard key is pressed.</li>
+            <li><code>pause</code>: Boolean set to true when the pause touchpad button is pressed, or when the p keyboard key is pressed.</li>
+            <li><code>pressed</code>: Array of keys pressed on the keyboard.</li>
+            <li><code>touched</code>: Array of buttons touched on touch screen.</li>
+            <li><code>clicked</code>: Boolean set to true when a mouse button is pressed.</li>
+          </ul>
+          <h4>Helper methods</h4>
+          <p>
+            The following helper methods can be called ro find out what buttons are pressed.
+          </p>
+          <ul>
+            <li><code>leftPressed</code></li>
+            <li><code>rightPressed</code></li>
+            <li><code>buttonAPressed</code></li>
+            <li><code>buttonBPressed</code></li>
+            <li><code>pausePressed</code></li>
+          </ul>
+          <h4>Usage</h4>
+          <pre>
+var input = new Backbone.Input();
+var engine = new Backbone.Engine([input]);
+input.bind("change:left", function(input) {
+  if (input.leftPressed())
+    console.log("left pressed:)");
+  else
+    console.log("left depressed:(");
+});
+</pre>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <h3 id="documentation-World">Backbone.World</h3>
+          <pre>new Backbone.World([attributes], [options])</pre>
+          <p>
+            <code>Backbone.World</code> is model which contains a collection of sprites.
+          </p>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>x, y</code>: Origin of top-left corner in pixels.</li>
+            <li><code>width, height</code>: Size of world in tiles.</li>
+            <li><code>tileWidth, tileHeight</code>: Size of a tile in pixels.</li>
+            <li><code>hero</code>: Name of sprite character controlled by the user. Will be passed the input as option when instantiated.</li>
+            <li><code>sprites</code>: Array of sprite models for persistence.</li>
+            <li><code>backgroundColor</code>: Background color of the world.</li>
+            <li><code>state</code>: Persisted state either play or edit.</li>
+          </ul>
+          <h4>Options</h4>
+          <ul>
+            <li><code>backgroundImage</code>: Optional. Pass to use a background image instead of a background color. Anchored to the origin.</li>
+            <li><code>input</code>: Input instance to control the hero.</li>
+            <li><code>camera</code>: Camera instance to keep the hero in the viewport.</li>
+            <li><code>debugPanel</code>: Optional.</li>
+          </ul>
+          <p>
+            Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a heef="#documentation-Engine" target="_blank">Backbone.Engine</a> the world is attached to. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
+          </p>
+          <p>
+            A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the dimensions in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned hence changing the viewport.
+          </p>
+          <p>
+            Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
+          </p>
+          <p>
+            Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
+          </p>
+          <ul>
+            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to true will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a point coordinates. In addition, these sprites are only drawn when required (i.e. world is panned). Use method <code>findCollidingAt</code> for quick lookup.</li>
+            <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to false to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup of order N. Keep the number of sprites here to a minimum. Use methods <code>findAt</code> and <code>filterAt</code> to find collisions with other sprites.</li>
+          </ul>
+          <p>
+            If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
+          </p>
+          <p>
+            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
+          </p>
+          <h4>Persistence</h4>
+          <p>
+            The world model attributes contain all that is necessary to persist the state of the world to disk, or in the cloud. Calling the <code>save</code> method first serializes the sprite collection into the <code>sprites</code> attribute by calling the <code>toSave</code> method on each sprite to save their position and state. It then delegates to the backbone model's <code>save</code> method to save to a server or local storage in JSON format. See the Backbone documentation for details.
+          </p>
+          <p>
+            The world can be restored by calling <code>restore</code> passing a saved worl in JSON format.
+          </p>
+          <h4>Collisions</h4>
+          <p>
+            Sprites inside the <code>Backbone.World</code> model can detect collisions with 3 helper methods:
+          </p>
+          <ul>
+            <li><code>findAt(x, y, [type], [exclude], [collision])</code></li>
+            <li><code>filterAt(x, y, [type], [exclude], [collision])</code></li>
+            <li><code>findCollidingAt(x, y)</code></li>
+          </ul>
+          <p>
+            The first two find the first or a list of sprites overlapping a specified point, and are meant mainly for finding moving character sprites. They have filtering options to lookup only sprites of certain types, to exclude a sprite (provided its id) and to include only sprites with attribute <code>collision</code> set to true.
+          </p>
+          <p>
+            Method <code>findCollidingAt</code> is meant for tile lookup. It is fast since lookup is on the indexed model <code>id</code>. It returns the first sprite overlapping the passed point. It is useful for preventing characters from walking through walls or falling through tiles.
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <h3 id="documentation-WorldEditor">Backbone.WorldEditor</h3>
+          <pre>new Backbone.WorldEditor([attributes], [options])</pre>
+          <p>
+            <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. An editor is usually drawn at the bottom of the world. It must be attached to a <code>Backbone.Engine</code> model.
+          </p>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>x, y</code>: Placement position in pixels of the editor on the canvas.</li>
+            <li><code>width, height</code>: Size of editor in pixels.</li>
+            <li><code>tileWidth, tileHeight</code>: Size of sprites in the palette.</li>
+            <li><code>padding</code>: Padding in pixels around sprites.</li>
+            <li><code>backgroundColor</code>: Background color of the editor.</li>
+            <li><code>selectColor</code>: Background and outline color of a selected sprite.</li>
+            <li><code>selected</code>: The name of the cuurrently selected sprite.</li>
+            <li><code>spriteNames</code>: Ordered array of sprite names in the palette.</li>
+          </ul>
+          <h4>Options</h4>
+          <ul>
+            <li><code>world</code>: The Backbone.World to edit.</li>
+          </ul>
+          <p>
+            The palette is drawn as a series of tiles left to right, top to bottom. Each tile is a sprite. The sprite may be bigger than the specified tile size, in which case it will overlap over tiles to the right or to the bottom. Therefore keep offsize sprites last, and keep an empty row below.
+          </p>
+          <div class="alert alert-info">
+            Note: Backbone.WorldEditor depends on <a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a> for touch events (also handles mouse events). It allows panning of the world, and selection of sprites.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
           <h3 id="documentation-Hero">Backbone.Hero</h3>
+          <pre>new Backbone.Hero([attributes], [options])</pre>
           <p>
             The <code>Backbone.Hero</code> model implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
           </p>
@@ -249,79 +629,53 @@ animations: {
           <p>
             In a <code>Backbone.World</code>, the character detects collisions either from tiles or other characters to constrain its movements.
           </p>
+        </div>
+      </div>
 
-          <h3 id="documentation-World">Backbone.World</h3>
+      <div class="row">
+        <div class="col-md-12">
+          <h3 id="documentation-Camera">Backbone.Camera</h3>
+          <pre>new Backbone.Camera([attributes], [options])</pre>
           <p>
-            <code>Backbone.World</code> is model which contains a collection of sprites. Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a heef="#documentation-Engine" target="blank">Backbone.Engine</a> the world is attached to. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
-          </p>
-          <p>
-            A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the dimensions in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned hence changing the viewport.
-          </p>
-          <p>
-            Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
-          </p>
-          <p>
-            Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
-          </p>
-          <ul>
-            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to true will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a point coordinates. In addition, these sprites are only drawn when required (i.e. world is panned). Use method <code>findCollidingAt</code> for quick lookup.</li>
-            <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to false to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup of order N. Keep the number of sprites here to a minimum. Use methods <code>findAt</code> and <code>filterAt</code> to find collisions with other sprites.</li>
-          </ul>
-          <p>
-            If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
-          </p>
-          <p>
-            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
+            Backbone.Camera is a model which ensures a sprite, the subject, is always in the viewport (the canvas). It pans the Backbone.World when the character steps out of a window in the viewport. Backbone.Camera must be added to the engine.
           </p>
           <h4>Attributes</h4>
           <ul>
-            <li><code>x, y</code>: Origin of top-left corner in pixels.</li>
-            <li><code>width, height</code>: Size of world in tiles.</li>
-            <li><code>tileWidth, tileHeight</code>: Size of a tile in pixels.</li>
-            <li><code>hero</code>: Name of sprite character controlled by the user. Will be passed the input as option when instantiated.</li>
-            <li><code>sprites</code>: Array of sprite models for persistence.</li>
-            <li><code>backgroundColor</code>: Background color of the world.</li>
-            <li><code>state</code>: Persisted state either play or edit.</li>
+            <li><code>left, right, top, bottom</code>: Coordinates of the window with respect to the drawn canvas.</li>
           </ul>
           <h4>Options</h4>
           <ul>
-            <li><code>backgroundImage</code>: Optional. Pass to use a background image instead of a background color. Anchored to the origin.</li>
-            <li><code>input</code>: Input instance to control the hero.</li>
-            <li><code>camera</code>: Camera instance to keep the hero in the viewport.</li>
-            <li><code>debugPanel</code>: Optional.</li>
+            <li><code>subject</code>: The sprite to keep in the viewport.</li>
+            <li><code>world</code>: The Backbone.World.</li>
           </ul>
-          <h4>Persistence</h4>
-          <p>
-            The world model attributes contain all that is necessary to persist the state of the world to disk, or in the cloud. Calling the <code>save</code> method first serializes the sprite collection into the <code>sprites</code> attribute by calling the <code>toSave</code> method on each sprite to save their position and state. It then delegates to the backbone model's <code>save</code> method to save to a server or local storage in JSON format. See the Backbone documentation for details.
-          </p>
-          <p>
-            The world can be restored by calling <code>restore</code> passing a saved worl in JSON format.
-          </p>
-          <h4>Collisions</h4>
-          <p>
-            Sprites inside the <code>Backbone.World</code> model can detect collisions with 3 helper methods:
-          </p>
-          <ul>
-            <li><code>findAt(x, y, type, exclude, collision)</code></li>
-            <li><code>filterAt(x, y, type, exclude, collision)</code></li>
-            <li><code>findCollidingAt(x, y)</code></li>
-          </ul>
-          <p>
-            The first two find the first or a list of sprites overlapping a specified point, and are meant mainly for finding moving character sprites. They have filtering options to lookup only sprites of certain types, to exclude a sprite (provided its id) and to include only sprites with attribute <code>collision</code> set to true.
-          </p>
-          <p>
-            Method <code>findCollidingAt</code> is meant for tile lookup. It is fast since lookup is on the indexed model <code>id</code>. It returns the first sprite overlapping the passed point. It is useful for preventing characters from walking through walls or falling through tiles.
-          </p>
-
+          <h4>Usage</h4>
+          <pre>
+var spriteSheets = new Backbone.SpriteSheetCollection({
+  id: "mario",
+  img: "#mario",
+  tileWidth: 32,
+  tileHeight: 64,
+  tileColumns: 21,
+  tileRows: 6
+});
+var mario = new Backbone.Mario();
+var world = new Backbone.World();
+var camera = new Backbone.Camera(
+  {left: 200, right: 600, top: 0, bottom: 800},
+  {subject: mario, world: world}
+);
+world.add(mario);
+var engine = new Backbone.Engine([world, camera]);
+</pre>
         </div>
       </div>
-      <br/>
 
+    </div>
     <br/>
 
     <footer class="navbar navbar-default">
         <p class="navbar-text navbar-left">
-          &copy; 2014 <a href="http://www.amilia.com/en">Martin Drapeau.</a>
+          &copy; 2014 <a href="http://martindrapeau.tumblr.com/">Martin Drapeau.</a>
           <a href="https://github.com/martindrapeau/backbone-game-engine/blob/gh-pages/LICENSE">Licensed under MIT.</a>
         </p>
         <p class="navbar-text navbar-right">Written in Montréal, Canada.</a></p>

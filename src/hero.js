@@ -267,7 +267,6 @@
         attrs.yVelocity = Math.round(jumpAnimation.yStartVelocity * (ratio + (1-ratio)/2));
 
         // Keep the horizontal velocity
-        var animation = this.getAnimation();
         jumpAnimation.minY = (this.get("y") - this.world.height()) * ratio;
       }
       if (!_.isEmpty(attrs)) this.set(attrs);
@@ -387,7 +386,7 @@
           bottomLeftTile = this.world.findCollidingAt(heroLeftX + heroWidth/4, heroBottomY),
           bottomRightTile = this.world.findCollidingAt(heroLeftX + heroWidth*3/4, heroBottomY),
           bottomY = _.minNotNull([
-            this.world.height(),
+            this.world.height() - heroHeight,
             bottomLeftTile ? bottomLeftTile.get("y") : null,
             bottomRightTile ? bottomRightTile.get("y") : null
           ]);

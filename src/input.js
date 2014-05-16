@@ -1,21 +1,5 @@
 (function() {
 
-  /**
-   *
-   * Backbone Game Engine - Input
-   *
-   * Backbone.Input is a Backbone Model which binds the keyboard.
-   * Can also draw a touchpad for capturing user input on touch devices.
-   *
-   * Dependencies: 
-   *  - underscore (http://underscorejs.org/)
-   *  - backbone (http://backbonejs.org/)
-   *
-   * Copyright (c) 2014 Martin Drapeau
-   * https://github.com/martindrapeau/backbone-game-engine
-   *
-   */
-
   // Input class; a Backbone Model which captures input events
   // and stores them as model attributes with true if pressed.
   // Supports keyboard, and a drawn touchpad activated by touch
@@ -41,7 +25,8 @@
       clicked: false, // Button clicked by the mouse
 
       // Touch pad
-      touchpad: "auto", // Boolean to draw. Set to auto to draw only for touch devices.
+      drawTouchpad: "auto", // Boolean to draw. Set to auto to draw only for touch devices.
+      drawPause: false, // Boolean to draw the pause button.
       touchEnabled: false // Touch device? Automatically determined. Do not set.
     },
     // Touch pad buttons to draw on screen
@@ -107,17 +92,18 @@
         drawButtonLabel(context, "A", right-40, bottom-50);
         context.restore();
       }
-    }/*, {
+    }, {
       button: "pause",
       x: (right-left)/2 - 90, y: bottom-80,
       width: 180, height: 80,
       draw: function(context, pressed) {
+        context.clearRect((right-left)/2 - 90, bottom-80, 180, 60);
         var opacity = pressed ? 1 : 0.5,
             fillStyle = ("rgba(128, 128, 128, {0})").replace("{0}", opacity);
         drawRoundRect(context, (right-left)/2 - 90, bottom-80, 180, 60, 5, fillStyle);
         drawButtonLabel(context, "PAUSE", (right-left)/2, bottom-50);
       }
-    }*/],
+    }],
     initialize: function(attributes, options) {
       options || (options = {});
       var input = this;
@@ -158,7 +144,7 @@
         document.documentElement.style.webkitTouchCallout = "none";
       }
 
-      this.on("change:touchpad", this.toggleTouchpad);
+      this.on("change:drawTouchpad", this.toggleTouchpad);
       this.on("attach", this.onAttach);
       this.on("detach", this.onDetach);
     },
@@ -211,9 +197,9 @@
       return this;
     },
     hasTouchpad: function() {
-      var  touchpad = this.get("touchpad");
-      if (_.isBoolean(touchpad)) return touchpad;
-      if (touchpad == "auto" && this.get("touchEnabled")) return true;
+      var  drawTouchpad = this.get("drawTouchpad");
+      if (_.isBoolean(drawTouchpad)) return drawTouchpad;
+      if (drawTouchpad == "auto" && this.get("touchEnabled")) return true;
       return false;
     },
 
@@ -222,11 +208,13 @@
       return this.hasTouchpad();
     },
     draw: function(context) {
-      var input = this;
+      var input = this,
+          drawPause = this.get("drawPause");
 
       // Draw the touch pad
       _.each(this.touchButtons, function(button) {
-        button.draw(context, !!input.get(button.button));
+        if (button.button != "pause" || drawPause)
+          button.draw(context, !!input.get(button.button));
       });
 
       return this;
