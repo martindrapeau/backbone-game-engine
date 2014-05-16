@@ -43,9 +43,17 @@
     ctx.fillRect(x, y, width, height);
   }
 
+  function drawCircle(ctx, x, y, radius, fill) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2*Math.PI, false);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+
   _.extend(window, {
     drawRect: drawRect,
-    drawRoundRect: drawRoundRect
+    drawRoundRect: drawRoundRect,
+    drawCircle: drawCircle
   });
 
 }).call(this);

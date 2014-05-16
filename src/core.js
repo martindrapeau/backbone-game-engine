@@ -2,34 +2,7 @@
 
   /**
    *
-   * Backbone Game Engine - Core
-   *
-   * An elementary HTML5 canvas game engine using Backbone. Leverages Events,
-   * Model and Collection classes. Model getters and setters are great
-   * for storing Sprite attributes, and publishing their changes.
-   *
-   * Available classes:
-   *  - Backbone.Engine: A Backbone Collection which implements an animation
-   *    loop to update and draw its Models (typically Sprites).
-   *
-   *  - Backbone.SpriteSheet: A Backbone Model representing a sprite sheet. Tied
-   *    to an Image, breaks it into frames used for animations.
-   *
-   *  - Backbone.Sprite: A Backbone Model representing a sprite on screen. Implements
-   *    animation sequences, drawing frame by frame from a sprite sheet.
-   *
-   *  - Backbone.Button: A button with an optional image.
-   *
-   *  - Backbobe.Clock: A timer which triggers tick events at a given interval.
-   *
-   *  - Backbone.Message: A message drawn on screen, which disapears after a delay.
-   *
-   *  - Backbone.DebugPanel: A Backbone View to display debug information on screen.
-   *
-   * Dependencies:
-   *  - underscore (http://underscorejs.org/)
-   *  - backbone (http://backbonejs.org/)
-   *  - hammer.js (http://eightmedia.github.io/hammer.js/)
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
    *
    * Copyright (c) 2014 Martin Drapeau
    * https://github.com/martindrapeau/backbone-game-engine
@@ -38,62 +11,6 @@
 
   // Sprite class; a Backbone Model which implements the required update
   // and draw functions to animate a sprite, frame by frame.
-  //
-  // Graphics are obtained from a sprite sheet. Property spriteSheet must
-  // point to the sprite sheet model.
-  // If you define a sprite sheet collection, you can simply set attribute
-  // spriteSheet to an existing sprite sheet model id. The collection will
-  // automatically attach it to the sprite. Otherwise, you will need to
-  // set property spriteSheet to a sprite sheet model yourself.
-  //
-  // Animations:
-  // Sprite property animations contains a hash of animations. Each 
-  // animation contains a sequence of frames and a delay between
-  // frames for animation. For example:
-  // animations: {
-  //   idle: {
-  //     sequences: [0, 1],
-  //     delay: 200
-  //   }
-  // }
-  // This defines an animation of two frames, alternating at an interval
-  // of 200ms. Values 0 and 1 in the sequences array are frame indices
-  // defined in the sprite sheet. Sprite attributes state and sequenceIndex
-  // control which animation, and sequence are currently used. The
-  // sequenceIndex is automatically adjusted by the sprite's draw function.
-  // Attribute state determines the current animation. Must be set to
-  // idle in the above example (as there is only one).
-  //
-  // Extra animation options are available. Here is a complete list:
-  //  - sequences: Array of frame indices, or squence objects. A sequence
-  //    object looks like this:
-  //    {frame: 52, x: 0, y: -32, scaleX: 1.00, scaleY: 1}
-  //    If allows to specify an offset to apply when the sprite is drawn,
-  //    and a scaling factor.
-  //  - scaleX, scaleY: Optional. Scaling factors. Set scaleX to -1 to flip 
-  //    horizontally. Defaults to 1 if omitted.
-  //  - delay: Optional. The time to change to the next sequence. No need
-  //    to specify if there is only one frame (as there is no animation).
-  //    You can also define a sprite method sequenceDelay() to programmatically
-  //    return the delay. It will be passed the current animation.
-  //
-  // Extending:
-  // To create your own sprite, extend this class and follow these rules:
-  //   - New classes must be directly under the Backbone namespace so
-  //     that the sprite sheet collection picks it up to set its spriteSheet
-  //     pointer property.
-  //   - Attribute name must be small-caps and dasherized. The class name
-  //     must be the same but camel-case. You can use function _.classify()
-  //     to perform the translation.
-  //   - Attribute spriteSheet must be the id of a sprite sheet previously
-  //     defined.
-  //   - 
-  // For example:
-  // Backbone.MySprite = Backbone.Model.extend({
-  //   name: "my-sprite",
-  //   spriteSheet: "my-sprite-sheet"
-  // });
-  // 
   Backbone.Sprite = Backbone.Model.extend({
     defaults: {
       name: undefined,
@@ -234,19 +151,6 @@
 
   // SpriteSheet class; a Backbone model which breaks an image into
   // frames used for animation.
-  //
-  // Attributes:
-  //   - img: The element id of the image to find in the DOM. A pointer to
-  //     the Image object is then stored in property img.
-  //   - tileWidth, tileHeight: Size of tiles in pixels.
-  //   - tileColumns, tileRows: Number of tiles in the image.
-  // 
-  // When the sprite sheet is instantiated, an array of frames is built.
-  // A frame object contains the coordinates of the frame. It consists of:
-  //   - x, y, width, height: Pixel position and size of the frame.
-  // 
-  // A Sprite model will reference the img and frames properties to draw
-  // on the canvas.
   Backbone.SpriteSheet = Backbone.Model.extend({
     defaults: {
       img: undefined, // Element id to find image in DOM
@@ -316,38 +220,12 @@
 
   // Engine class; a Backbone Collection of models that have the required update
   // and draw methods. Will draw them on an HTML5 canvas.
-  //
-  // Options:
-  //   - canvas: The canvas to draw upon.
-  //   - input: Optional. The user control input instance.
-  //   - debugPanel: Optional. If passed fps and cycleTime are output.
-  // 
-  // The engine can be started and stopped. When running, will perform an
-  // update/draw sequence 60 times per second. Use methods start(), stop()
-  // or toggle(). Use method isRunning() to determine if the engine is running.
-  //
-  // Uses requestAnimationFrame to do a render of all sprites in the collection.
-  // When running, method onAnimationFrame() is called 60 times per second (or
-  // slower depending on performance). Then a draw/update sequence happens
-  // consisting of:
-  //   - Looping through all sprites in the collection and calling their update()
-  //     method. A trueish result indicates a redraw is requested.
-  //   - Loops through all sprites who requested a redraw calling their draw()
-  //     method.
-  // To measure performance, two properties are set: fps and cycleTime. If you
-  // passed a debugPanel, they will be drawn on screen.
-  // Note: The engine does not clear the canvas before redraw. That is left up
-  // to you. See class World for an example.
-  //
-  // Models added to the collection receive an 'attach' event and have an extra
-  // property set 'engine' as backreference. When removed, they receive a 'detach'
-  // event.
-  // 
   Backbone.Engine = Backbone.Collection.extend({
     defaults: {
       canvas: undefined,
       debugPanel: null,
-      input: null
+      input: null,
+      clearOnDraw: false
     },
     initialize: function(sprites, options) {
       _.extend(this, this.defaults, _.pick(options || {}, _.keys(this.defaults)));
@@ -428,14 +306,19 @@
           dt = now - this.lastTime,
           sprite;
 
-      for (var i = 0; i < this.models.length; i++) {
-        sprite = this.models[i];
-        if (sprite._draw) sprite.draw.call(sprite, context);
-      }
-
+      // Update
       for (var i = 0; i < this.models.length; i++) {
         sprite = this.models[i];
         sprite._draw = sprite.update.call(sprite, dt);
+      }
+
+      if (this.clearOnDraw)
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+      // Draw
+      for (var i = 0; i < this.models.length; i++) {
+        sprite = this.models[i];
+        if (sprite._draw) sprite.draw.call(sprite, context);
       }
 
       // Call ourself again next time

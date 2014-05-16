@@ -58,8 +58,9 @@
             An elementary HTML5 Game Engine built on Backbone. Examples:
           </p>
           <ul>
+            <li>Elementary: <a href="ball/index.html" target="_blank">Bouncing ball</a></li>  
             <li>Basice: <a href="mario/index.html" target="_blank">Mario in an empty world</a></li>       
-            <li>Advanced: <a href="super-mario-bros/index.html" target="_blank">Super Mario Bros, level 1-1</a></li>     
+            <li>Advanced: <a href="super-mario-bros/index.html" target="_blank">Super Mario Bros, level 1-1</a></li>
           </ul>
 
           <h3>Features:</h3>
@@ -289,6 +290,7 @@ $(document).ready(function() {
           <ul>
             <li><code>canvas</code>: The canvas to draw upon. Drawing is on its 2d context.</li>
             <li><code>input</code>: Optional. The user control input instance. If passed and the pause button is enabled, will stop/start then engine when pressed.</li>
+            <li><code>clearOnDraw</code>: Optional. Boolean to ask for a clear of the canvas before redraw. Defaults to false. Note that this is an expensive call. Better to only clear the area that changed.</li>
             <li><code>debugPanel</code>: Optional. If passed <code>fps</code> and <code>cycleTime</code> are output.</li>
           </ul>
           <p>
@@ -299,7 +301,7 @@ $(document).ready(function() {
             <li>Loop through all models that requested a redraw, and call their <code>draw</code> method. Passing <code>context</code>, the canvas 2d context. Perform whatever magic you like in the draw method.</li>
             <li>Call itself again upon the next animation frame.</li>
           </ul>
-          <div class="alert alert-info">Note: The engine does not clear the canvas before redraw. That is left up to you. See class <a href="#documentation-World">World</a> for an example.</div>
+          <div class="alert alert-info">Note: By default the engine does not clear the canvas before redraw. You can set the <code>clearOnDraw</code> option to do so however it is an expensive call. Better to do it only when required. See class <a href="#documentation-World">Backbone.World</a> for an example.</div>
           <p>
             The <code>update</code> method is used to update the model position, animation, detect collisions, or whatever you like. If it requests a redraw, the engine will then call its <code>draw</code> method. The engine ensures that models are updated and drawn in the order they are sorted in the collection. You can define the sort order by defining a <a href="http://backbonejs.org/#Collection-comparator" target="_blank">comparator</a>.
           </p>
