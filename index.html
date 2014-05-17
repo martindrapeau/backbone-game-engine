@@ -7,9 +7,9 @@
     <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <link href="apple_touch_icon.png" rel="apple-touch-icon" />
     
-    <script src="docs-3rd/jquery.min.js" type="text/javascript"></script>
-    <script src="docs-3rd/bootstrap.min.js" type="text/javascript"></script>
-    <link href="docs-3rd/bootstrap.min.css" rel="stylesheet" type="text/css" charset="utf-8">
+    <script src="docs/jquery.min.js" type="text/javascript"></script>
+    <script src="docs/bootstrap.min.js" type="text/javascript"></script>
+    <link href="docs/bootstrap.min.css" rel="stylesheet" type="text/css" charset="utf-8">
     
     <style>
       header.navbar-inverse {border-radius: 0;}
@@ -60,6 +60,10 @@
       <div id="introduction" class="row">
         <div class="col-md-12">
           <h1>Introduction</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
           <p>
             An elementary HTML5 Game Engine built on Backbone. Examples:
           </p>
@@ -71,7 +75,18 @@
           <p>
             These examples are on <a href="https://github.com/martindrapeau/backbone-game-engine">Github</a>.
           </p>
+        </div>
+        <div class="col-md-3">
+          <p>
+            <a href="super-mario-bros/index.html" target="_blank">
+              <img src="docs/super-mario-bros-level-1-1.png" class="img-responsive" alt="Super Mario Bros level 1-1" title="Super Mario Bros level 1-1" />
+            </a>
+          </p>
+        </div>
+      </div>
 
+      <div id="features" class="row">
+        <div class="col-md-12">
           <h3>Features:</h3>
           <ul>
             <li><strong>Built on Backbone</strong>. Events, models, collections, inheritance and RESTful persistence. Why reinvent the wheel?</li>
@@ -84,6 +99,11 @@
             <li><strong>World editor</strong>. Conceived for tile-based games, comes with a world editor. Place your tiles and characters, then hit play to try it out. Hit save to save your world.</li>
           </ul>
 
+        </div>
+      </div>
+
+      <div id="dependencies" class="row">
+        <div class="col-md-12">
           <h3>Dependencies</h3>
           <ul>
             <li><a href="http://underscorejs.org/" target="_blank">Underscore</a> </li>
@@ -359,7 +379,7 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
   tileWidth: 32,
   tileHeight: 64,
   tileColumns: 21,
-  tileRows: 6
+  tileRows: 2
 }, {
   id: "tiles",
   img: "#tiles",
@@ -369,6 +389,9 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
   tileRows: 28
 }]).attachToSpriteClasses();
 </pre>
+          <p>
+            <img src="docs/super-mario-sprite.png" class="img-responsive" alt="Backbone.Input" />
+          </p>
           <p>
             Here two sprite sheets are created <code>mario</code> and <code>tiles</code>. Their graphics are in <code>Image</code> objects found in the DOM. The attribute <code>img</code> is the selector to retrieve them. Note that only id selector is supported.
           </p>
@@ -463,6 +486,9 @@ animations: {
           </p>
           <p>
             <code>Backbone.Input</code> supports keyboard, mouse and touch events. It can draw a touchpad on screen with left and right arrow keys, an A button and a B button. Optionally, a pause button can be drawn in the middle, or the area can be used to place a banner ad.
+          </p>
+          <p>
+            <img src="docs/input.png" class="img-responsive" alt="Backbone.Input" />
           </p>
           <div class="alert alert-info">
             Note: The Backbone.Input model only captures input when attached to a Backbone.Engine.
@@ -586,7 +612,10 @@ input.bind("change:left", function(input) {
           <h3>Backbone.WorldEditor</h3>
           <pre>new Backbone.WorldEditor([attributes], [options])</pre>
           <p>
-            <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. An editor is usually drawn at the bottom of the world. It must be attached to a <code>Backbone.Engine</code> model.
+            <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. An editor is usually drawn at the bottom of the world replacing the <a href="#documentation-Input">Backbone.Input</a>. It must be attached to a <code>Backbone.Engine</code> model.
+          </p>
+          <p>
+            <img src="docs/world-editor.png" class="img-responsive" alt="Backbone.Input" />
           </p>
           <h4>Attributes</h4>
           <ul>
@@ -759,6 +788,88 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
         </div>
       </div>
 
+      <div id="Going Offline" class="row">
+        <div class="col-md-12">
+          <h1>Going Offline</h1>
+          <p>
+            With <a href="https://developer.apple.com/library/safari/documentation/iphone/conceptual/safarijsdatabaseguide/offlineapplicationcache/offlineapplicationcache.html" target="_blank">HTML Application Cache</a>, you can go offline with your game. <a href="super-mario-bros/index.html" target="_blank">Super Mario Bros level 1-1</a> uses the application cache. The first time your browser loads that page, it will save the web page, along with all assets in its application cache. Subsequent visits will load these from the application cache instead of the server.
+          </p>
+          <div class="alert alert-info">
+            Note: Application Cache only works when loaded from a server. It will not if you have forked the repo, and are loading the file from your disk (<code>file:///</code>). That's good because under development, we want to load the new code every refresh.
+          </div>
+          <p>
+            If you have Google Chrome, open the console and you will see this:
+          </p>
+          <pre>
+Creating Application Cache with manifest http://martindrapeau.github.io/backbone-game-engine/super-mario-bros/offline.appcache
+Application Cache Checking event martindrapeau.github.io/:1
+Application Cache Downloading event martindrapeau.github.io/:1
+Application Cache Progress event (0 of 23) http://martindrapeau.github.io/backbone-game-engine/3rd/hammer.js
+Application Cache Progress event (1 of 23) http://martindrapeau.github.io/backbone-game-engine/src/input.js
+...
+Application Cache Progress event (22 of 23) http://martindrapeau.github.io/backbone-game-engine/super-mario-bros/super-mario-enemies-2x.png
+Application Cache Progress event (23 of 23)
+Application Cache Cached event 
+</pre>
+          <p>
+            Subsequent times, you will see this:
+          </p>
+          <pre>
+Document was loaded from Application Cache with manifest http://martindrapeau.github.io/backbone-game-engine/super-mario-bros/offline.appcache
+Application Cache Checking event
+Application Cache NoUpdate event
+</pre>
+        <h3>Manifest File</h3>
+        <p>
+          Using an Application Cache is dead simple. First you must add the <code>manifest</code> attribute to your HTML tag. It points to the manifest file:
+        </p>
+        <pre>
+&lt;!doctype html&gt;
+&lt;html manifest="offline.appcache"&gt;
+    &lt;head&gt;
+</pre>
+          Second, create the <code>manifest</code> file. It contains files that must be cached. For example here is the <code>offline.manifest</code>:
+        </p>
+        <pre>
+CACHE MANIFEST
+# Version 0.11 (c) 2014 Martin Drapeau
+
+../3rd/hammer.js
+../3rd/underscore.js
+../3rd/backbone.native.js
+../3rd/backbone.js
+
+../src/input.js
+../src/shapes.js
+../src/core.js
+../src/world.js
+../src/local-storage.js
+../src/camera.js
+../src/editor.js
+../src/hero.js
+
+mario.js
+tiles.js
+artifacts.js
+enemies.js
+display.js
+level_1-1.js
+main.js
+
+super-mario-2x.png
+super-mario-tiles-2x.png
+super-mario-enemies-2x.png
+icons.png
+</pre>
+          <p>
+            If you have server requests, you can add a <code>NETWORK</code> section. Consult the docs for details.
+          </p>
+          <p>
+            Fianally, the comment with <code>Version 0.11</code> is important. When I release a new version of Super Mario Bros level 1-1, I increase that number to force the browser to reload the files. It will also trigger an <code>updateready</code> event which I capture. I then show a download button to inform the user a new version is ready to be downloaded. Clicking on that button simply refreshes the browser to reload the new version.
+          </p>
+        </div>
+      </div>
+
     </div>
 
     <div class="col-md-3">
@@ -778,6 +889,7 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
           <li><a href="#documentation-Clock">&nbsp;&nbsp;Backbone.Clock</a></li>
           <li><a href="#documentation-Button">&nbsp;&nbsp;Backbone.Button</a></li>
           <li><a href="#documentation-Shapes">&nbsp;&nbsp;Shape functions</a></li>
+          <li><a href="#going-offline">Going Offline</a></li>
         </ul>
       </div>
     </div>
