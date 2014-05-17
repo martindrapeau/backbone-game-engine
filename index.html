@@ -16,15 +16,26 @@
       footer.navbar-default {border-radius: 0; margin-bottom: 0;}
       .bs-sidebar .nav > .active > ul {
           display: block;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
       }
       .bs-sidebar .nav > li > a {
-        padding: 5px;
+        padding: 2px 4px;
+      }
+      .bs-sidebar .nav > li.active {
+        background-color: #428bca;
+        border-radius: 0;
+      }
+      .bs-sidebar .nav > li.active > a {
+        color: white;
+      }
+      .bs-sidebar .nav > li.active > a:hover {
+        background-color: #428bca;
       }
     </style>
   </head>
-  <body>
-    <header class="navbar navbar-inverse">
+
+  <body data-spy="scroll" data-target="#sidebar" data-offset="100">
+    <header class="navbar navbar-inverse" role="banner">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle pull-left" data-toggle="collapse" data-target="#navbar-collapse">
           <span class="sr-only">Toggle navigation</span>
@@ -32,12 +43,12 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">Backbone Game Engine</a>
+        <a class="navbar-brand" href="index.html">Backbone Game Engine</a>
       </div>
-      <div id="#navbar-collapse" class="collapse navbar-collapse">
+      <div id="navbar-collapse" class="collapse navbar-collapse" role="navigation">
         <ul class="nav navbar-nav">
-          <li><a href="#introduction">Introduction</a></li>
-          <li><a href="#documentation">Documentation</a></li>
+          <li><a href="index.html">Documentation</a></li>
+          <li><a href="examples.html">Examples</a></li>
         </ul>
       </div>
     </header>
@@ -45,10 +56,10 @@
     <div class="container">
     <div class="row">
 
-    <div class="col-md-9" data-spy="scroll" data-target="#sidebar" data-offset="0">
-      <div class="row">
+    <div class="col-md-9">
+      <div id="introduction" class="row">
         <div class="col-md-12">
-          <h1 id="introduction">Introduction</h1>
+          <h1>Introduction</h1>
           <p>
             An elementary HTML5 Game Engine built on Backbone. Examples:
           </p>
@@ -57,6 +68,9 @@
             <li>Basice: <a href="mario/index.html" target="_blank">Mario in an empty world</a></li>       
             <li>Advanced: <a href="super-mario-bros/index.html" target="_blank">Super Mario Bros, level 1-1</a></li>
           </ul>
+          <p>
+            These examples are on <a href="https://github.com/martindrapeau/backbone-game-engine">Github</a>.
+          </p>
 
           <h3>Features:</h3>
           <ul>
@@ -67,7 +81,7 @@
             <li><strong>Built for mobile</strong>. Conceived to run on tablets. Share your URL with Mom so she can add it to the home screen of her iPad.</li>
             <li><strong>Take if offline</strong>. With HTML5 Application Cache, your game runs offline. Perfect for taking it on the road or a fishing trip.</li>
             <li><strong>Save state</strong>. With HTML5 Local Storage, save where you are.</li>
-            <li><strong>Level editor</strong>. Conceived for tile-based games, comes with a level editor. Place your tiles and characters, then hit play to try it out. Hit save to save your level.</li>
+            <li><strong>World editor</strong>. Conceived for tile-based games, comes with a world editor. Place your tiles and characters, then hit play to try it out. Hit save to save your world.</li>
           </ul>
 
           <h3>Dependencies</h3>
@@ -77,46 +91,28 @@
             <li><a href="https://github.com/inkling/backbone.native/" target="_blank">backbone.native</a>. To drop jQuery.</li>
             <li><a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a>. To handle touch events.</li>
           </ul>
-          <p>All included in the <a href="/backbone-game-engine/tree/gh-pages/3rd">3rd folder</a>.  That and nothing else.</p>
+          <p>
+            All included in the <code>3rd folder</code>.  That and nothing else.
+          </p>
 
           <h3>Why Backbone?</h3>
           <p>
             Backbone implements <a href="http://backbonejs.org/#Events" target="_blank">events</a>, <a href="http://backbonejs.org/#Model" target="_blank">models</a>, <a href="http://backbonejs.org/#Collection" target="_blank">collections</a>, <a href="http://backbonejs.org/#Model-extend" target="_blank">inheritance</a> and <a href="http://backbonejs.org/#Sync" target="_blank">persistence</a>. Models implement getters and setters for object attributes. Models and Collections have an <code>extend</code> function to easily do inheritance. They implement methods for persistence (RESTful JSON by default). They can also trigger events and bind to them. Everything you need to build a great extensible game engine. Plus, Backbone is now widely used and provides these features in a standard fashion with a huge community to support them. I hope this project can make game programming accessible to developers already familiar with Backbone.
-          </p>
-
-          <h3 id="getting-started">Getting Started</h3>
-          <p>
-            Backbone Game Engine was built to get you going fast. <a href="https://github.com/martindrapeau/backbone-game-engine">Fork this repository</a>, and your own Github page will be ready in minutes. You can then create your own games by simply creating a new directory, and putting files in it. Here is the recommended file structure:
-          </p>
-          <pre>
-3rd/
-src/
-...
-super-mario-bros/
-my-game/
-        index.html
-        main.js
-        sprites.js
-        sprite-sheet.png
-</pre>
-          <p>
-            <code>index.html</code> is the HTML document which loads your assets, and defines your canvas. <code>sprite.js</code> contains your sprite class definitions, and <code>sprite-sheet.png</code> your graphics. Finally, <code>main.js</code> is where you instantiate the game engine and sprites. It must get loaded last.
           </p>
           <br/>
         </div>
       </div>
 
       <!-- Documentation -->
-      <div class="row">
+      <div id="getting-started" class="row">
         <div class="col-md-12">
-          <h1 id="documentation">Documentation</h1>
-
+          <h1>Getting Started</h1>
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Backbone" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Backbone">Backbone</h3>
+          <h3>Backbone</h3>
           <p>
             The engine is based on Backbone so it is essential to understand its core structure: a <a href="http://backbonejs.org/#Model" target="_blank">Backbone.Model</a>. A model has hash of <code>attributes</code> that are changed via getter and setter methods <code>get</code> and <code>set</code>. These attributes should only contain state information as it is those attributes which get saved and restored. A model is a Javascript object. Hence behaviour can be stored as properties and methods directly on the object. For example, a sprite points to a sprite sheet. The sprite sheet id is stored as an attribute, but the pointer to the sprite sheet model is stored in a property.
           </p>
@@ -131,12 +127,24 @@ my-game/
 
       <div class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Structure">Structure</h3>
+          <h3 id="documentation-Structure">Directory structure</h3>
           <p>
-            Games and examples are located in their own directory with at least two files <code>index.html</code> and <code>main.js</code>. The HTML file can reference Javascript files, and images using relative paths.
+            Backbone Game Engine was built to get you going fast. <a href="https://github.com/martindrapeau/backbone-game-engine">Fork this repository</a>, and your own Github page will be ready in minutes. You can then create your own games by simply creating a new directory, and putting files in it. Here is the recommended file structure:
+          </p>
+          <pre>
+3rd/
+src/
+...
+super-mario-bros/
+my-game/
+        index.html
+        main.js
+</pre>
+          <p>
+            <code>index.html</code> is the HTML document which loads your assets, and defines your canvas. File <code>main.js</code> is where you instantiate the game engine and sprites. It must get loaded last.
           </p>
 
-          <h4 id="documentation-HTML">index.html</h4>
+          <h3 id="documentation-HTML">index.html</h3>
           <p>
             The HTML document (usually named <code>index.html</code> in its own folder) declares the assets to be loaded and the <code>canvas</code> element. Javascript assets are declared in the <code>HEAD</code> element. Images are loaded via <code>IMG</code> elements. They must be hidden with inline CSS. Everything is bootstrap-loaded as declared in the HTML file. There is no asynchronous loading.
           </p>
@@ -203,7 +211,7 @@ my-game/
             <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden. Its height is less than that of the <code>foreground</code> canvas since the bottom real-estate is taken by either a <a href="#documentation-Input">Backbone.Input</a> or <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> model.</li>
           </ul>
 
-          <h4 id="documentation-main">main.js</h4>
+          <h3 id="documentation-main">main.js</h3>
           <p>
             File <code>main.js</code> is where you declare and initialize your objects. It is recommended that you wrap that code in a function which gets executed once the document is loaded (document ready event). For convenience, <a href="https://github.com/inkling/backbone.native/" target="_blank">Backbone.native</a> was extended with that event with the jQuery syntax you are familiar with: <code>$(document).ready(function() {});</code>. 
           </p>
@@ -277,9 +285,18 @@ $(document).ready(function() {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Engine">Backbone.Engine</h3>
+          <h1>Reference</h1>
+          <p>
+            New classes are added to the namespace <code>Backbone</code>. Most are either derived from <code>Backbone.Model</code> or <code>Backbone.Collection</code>.
+          </p>
+        </div>
+      </div>
+
+      <div id="documentation-Engine" class="row">
+        <div class="col-md-12">
+          <h3>Backbone.Engine</h3>
           <pre>new Backbone.Engine([models], [options])</pre>
           <h4>Options</h4>
           <ul>
@@ -312,9 +329,9 @@ $(document).ready(function() {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-SpriteSheet" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-SpriteSheet">Backbone.SpriteSheet</h3>
+          <h3>Backbone.SpriteSheet</h3>
           <pre>
 new Backbone.SpriteSheet([attributes], [options]);
 new Backbone.SpriteSheetCollection([models], [options]);
@@ -361,9 +378,9 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Sprite" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Sprite">Backbone.Sprite</h3>
+          <h3>Backbone.Sprite</h3>
           <pre>new Backbone.Sprite([attributes], [options]);</pre>
           <h4>Attributes</h4>
           <ul>
@@ -437,9 +454,9 @@ animations: {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Input" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Input">Backbone.Input</h3>
+          <h3>Backbone.Input</h3>
           <pre>new Backbone.Input([attributes], [options]);</pre>
           <p>
             <code>Backbone.Input</code> class is a model which captures user input events and stores them as model attributes. For example pressing the left arrow, sets the <code>left</code> attribute to <code>true</code>. Depressing sets it to <code>false</code>. Bind to on the attribute change event to be notified.
@@ -493,9 +510,9 @@ input.bind("change:left", function(input) {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-World" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-World">Backbone.World</h3>
+          <h3>Backbone.World</h3>
           <pre>new Backbone.World([attributes], [options])</pre>
           <p>
             <code>Backbone.World</code> is model which contains a collection of sprites.
@@ -564,9 +581,9 @@ input.bind("change:left", function(input) {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-WorldEditor" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-WorldEditor">Backbone.WorldEditor</h3>
+          <h3>Backbone.WorldEditor</h3>
           <pre>new Backbone.WorldEditor([attributes], [options])</pre>
           <p>
             <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. An editor is usually drawn at the bottom of the world. It must be attached to a <code>Backbone.Engine</code> model.
@@ -595,9 +612,9 @@ input.bind("change:left", function(input) {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Hero" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Hero">Backbone.Hero</h3>
+          <h3>Backbone.Hero</h3>
           <pre>new Backbone.Hero([attributes], [options])</pre>
           <p>
             The <code>Backbone.Hero</code> model implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
@@ -632,9 +649,9 @@ input.bind("change:left", function(input) {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Camera" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Camera">Backbone.Camera</h3>
+          <h3>Backbone.Camera</h3>
           <pre>new Backbone.Camera([attributes], [options])</pre>
           <p>
             Backbone.Camera is a model which ensures a sprite, the subject, is always in the viewport (the canvas). It pans the Backbone.World when the character steps out of a window in the viewport. Backbone.Camera must be added to the engine.
@@ -670,9 +687,9 @@ var engine = new Backbone.Engine([world, camera]);
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Clock" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Clock">Backbone.Clock</h3>
+          <h3>Backbone.Clock</h3>
           <p>
             <code>Backbone.Clock</code> is a model which ticks at a set time interval. Attribute <code>ticks</code> stores an integer tick value that gets incremented every interval. Useful for synchronizing sprite animations.
           </p>
@@ -691,9 +708,9 @@ clock.on("change:ticks", function() {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Button" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Button">Backbone.Button</h3>
+          <h3>Backbone.Button</h3>
           <p>
             <code>Backbone.Button</code> is a model that draws a button with an image. It uses <a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a> to detect touch or mouse click events, and triggers a <code>tap</code> event when pressed.
           </p>
@@ -720,11 +737,11 @@ button.on("tap", function() {
         </div>
       </div>
 
-      <div class="row">
+      <div id="documentation-Shapes" class="row">
         <div class="col-md-12">
-          <h3 id="documentation-Shapes">Shape functions</h3>
+          <h3>Shape functions</h3>
           <p>
-            File shapes.js contains helper functions to draw elementary shapes in the 2d drawing context of a canvas. You are free to use direct methods on the context to draw. These are provided as convenience. The functions are added to the global scope, under <code>window</code>. Supported functions are:
+            File <code>shapes.js</code> contains helper functions to draw elementary shapes in the 2d drawing context of a canvas. You are free to use direct methods on the context to draw. These are provided as convenience. The functions are added to the global scope, under <code>window</code>. Supported functions are:
           </p>
           <pre>
 drawRect(ctx, x, y, width, height, fill, stroke)
@@ -748,20 +765,19 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
       <div id="sidebar" class="bs-sidebar affix">
         <ul class="nav bs-sidenav">
           <li class="active"><a href="#introduction">Introduction</a></li>
-          <li><a href="#documentation">Documentation</a></li>
-          <li><a href="#documentation-Backbone">Backbone</a></li>
-          <li><a href="#documentation-Structure">Structure</a></li>
-          <li><a href="#documentation-Engine">Backbone.Engine</a></li>
-          <li><a href="#documentation-SpriteSheet">Backbone.SpriteSheet</a></li>
-          <li><a href="#documentation-Sprite">Backbone.Sprite</a></li>
-          <li><a href="#documentation-Input">Backbone.Input</a></li>
-          <li><a href="#documentation-World">Backbone.World</a></li>
-          <li><a href="#documentation-WorldEditor">Backbone.WorldEditor</a></li>
-          <li><a href="#documentation-Hero">Backbone.Hero</a></li>
-          <li><a href="#documentation-Camera">Backbone.Camera</a></li>
-          <li><a href="#documentation-Clock">Backbone.Clock</a></li>
-          <li><a href="#documentation-Button">Backbone.Button</a></li>
-          <li><a href="#documentation-Shapes">Shape functions</a></li>
+          <li><a href="#getting-started">Getting Started</a></li>
+          <li><a href="#documentation">Reference</a></li>
+          <li><a href="#documentation-Engine">&nbsp;&nbsp;Backbone.Engine</a></li>
+          <li><a href="#documentation-SpriteSheet">&nbsp;&nbsp;Backbone.SpriteSheet</a></li>
+          <li><a href="#documentation-Sprite">&nbsp;&nbsp;Backbone.Sprite</a></li>
+          <li><a href="#documentation-Input">&nbsp;&nbsp;Backbone.Input</a></li>
+          <li><a href="#documentation-World">&nbsp;&nbsp;Backbone.World</a></li>
+          <li><a href="#documentation-WorldEditor">&nbsp;&nbsp;Backbone.WorldEditor</a></li>
+          <li><a href="#documentation-Hero">&nbsp;&nbsp;Backbone.Hero</a></li>
+          <li><a href="#documentation-Camera">&nbsp;&nbsp;Backbone.Camera</a></li>
+          <li><a href="#documentation-Clock">&nbsp;&nbsp;Backbone.Clock</a></li>
+          <li><a href="#documentation-Button">&nbsp;&nbsp;Backbone.Button</a></li>
+          <li><a href="#documentation-Shapes">&nbsp;&nbsp;Shape functions</a></li>
         </ul>
       </div>
     </div>

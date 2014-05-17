@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Backbone Game Engine</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="apple_touch_icon.png" rel="apple-touch-icon" />
+    
+    <script src="docs-3rd/jquery.min.js" type="text/javascript"></script>
+    <script src="docs-3rd/bootstrap.min.js" type="text/javascript"></script>
+    <link href="docs-3rd/bootstrap.min.css" rel="stylesheet" type="text/css" charset="utf-8">
+    
+    <style>
+      header.navbar-inverse {border-radius: 0;}
+      footer.navbar-default {border-radius: 0; margin-bottom: 0;}
+      .bs-sidebar .nav > .active > ul {
+          display: block;
+          margin-bottom: 4px;
+      }
+      .bs-sidebar .nav > li > a {
+        padding: 2px 4px;
+      }
+      .bs-sidebar .nav > li.active {
+        background-color: #428bca;
+        border-radius: 0;
+      }
+      .bs-sidebar .nav > li.active > a {
+        color: white;
+      }
+      .bs-sidebar .nav > li.active > a:hover {
+        background-color: #428bca;
+      }
+    </style>
+  </head>
+
+  <body data-spy="scroll" data-target="#sidebar" data-offset="100">
+    <header class="navbar navbar-inverse" role="banner">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle pull-left" data-toggle="collapse" data-target="#navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">Backbone Game Engine</a>
+      </div>
+      <div id="navbar-collapse" class="collapse navbar-collapse" role="navigation">
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">Documentation</a></li>
+          <li><a href="examples.html">Examples</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1>Examples</h1>
+          <ul>
+            <li>Elementary: <a href="ball/index.html" target="_blank">Bouncing ball</a></li>  
+            <li>Basice: <a href="mario/index.html" target="_blank">Mario in an empty world</a></li>       
+            <li>Advanced: <a href="super-mario-bros/index.html" target="_blank">Super Mario Bros, level 1-1</a></li>
+          </ul>
+          
+        </div>
+      </div>
+    </div>
+    <br/>
+
+    <footer class="navbar navbar-default">
+        <p class="navbar-text navbar-left">
+          &copy; 2014 <a href="http://martindrapeau.tumblr.com/">Martin Drapeau.</a>
+          <a href="https://github.com/martindrapeau/backbone-game-engine/blob/gh-pages/LICENSE">Licensed under MIT.</a>
+        </p>
+        <p class="navbar-text navbar-right">Written in Montréal, Canada.</p>
+        <p class="navbar-text navbar-right">&nbsp;</p>
+    </footer>
+    <a href="https://github.com/martindrapeau/backbone-game-engine"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+</html>
