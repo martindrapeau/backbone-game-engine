@@ -45,7 +45,7 @@
     <div class="container">
     <div class="row">
 
-    <div class="col-md-9" data-spy="scroll" data-target="#sidebar" data-offset"0">
+    <div class="col-md-9" data-spy="scroll" data-target="#sidebar" data-offset="0">
       <div class="row">
         <div class="col-md-12">
           <h1 id="introduction">Introduction</h1>
@@ -118,7 +118,7 @@ my-game/
         <div class="col-md-12">
           <h3 id="documentation-Backbone">Backbone</h3>
           <p>
-            The engine is based on Backbone so it is essential to understand its core structure: a <a hred="http://backbonejs.org/#Model" target="_blank">Backbone.Model</a>. A model has hash of <code>attributes</code> that are changed via getter and setter methods <code>get</code> and <code>set</code>. These attributes should only contain state information as it is those attributes which get saved and restored. A model is a Javascript object. Hence behaviour can be stored as properties and methods directly on the object. For example, a sprite points to a sprite sheet. The sprite sheet id is stored as an attribute, but the pointer to the sprite sheet model is stored in a property.
+            The engine is based on Backbone so it is essential to understand its core structure: a <a href="http://backbonejs.org/#Model" target="_blank">Backbone.Model</a>. A model has hash of <code>attributes</code> that are changed via getter and setter methods <code>get</code> and <code>set</code>. These attributes should only contain state information as it is those attributes which get saved and restored. A model is a Javascript object. Hence behaviour can be stored as properties and methods directly on the object. For example, a sprite points to a sprite sheet. The sprite sheet id is stored as an attribute, but the pointer to the sprite sheet model is stored in a property.
           </p>
           <p>
             In fact, a model stores its attributes in the object property <code>attributes</code>. Methods <code>get</code>, <code>set</code> and <code>toJSON</code> operate on that property. Just remember that state date like sprite coordinates, velocity, etc go in there. However references to other objects do not.
