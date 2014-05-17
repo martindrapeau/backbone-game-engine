@@ -1,5 +1,14 @@
 (function() {
 
+  /**
+   *
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
+   *
+   * Copyright (c) 2014 Martin Drapeau
+   * https://github.com/martindrapeau/backbone-game-engine
+   *
+   */
+
   // World Editor
   // Allows the user to place tiles and characters in the World.
   Backbone.WorldEditor = Backbone.Model.extend({

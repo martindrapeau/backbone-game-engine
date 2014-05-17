@@ -1,5 +1,14 @@
 $(document).ready(function() {
 
+  /**
+   *
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
+   *
+   * Copyright (c) 2014 Martin Drapeau
+   * https://github.com/martindrapeau/backbone-game-engine
+   *
+   */
+   
   // Mario alone in an empty world. Control him with the touchpad.
 
   Backbone.Mario = Backbone.Hero.extend({

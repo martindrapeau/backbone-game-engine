@@ -1,5 +1,14 @@
 $(document).ready(function() {
 
+  /**
+   *
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
+   *
+   * Copyright (c) 2014 Martin Drapeau
+   * https://github.com/martindrapeau/backbone-game-engine
+   *
+   */
+  
   var canvas = document.getElementById("foreground"),
       context = canvas.getContext("2d");
 

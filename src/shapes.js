@@ -1,5 +1,14 @@
 (function() {
 
+  /**
+   *
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
+   *
+   * Copyright (c) 2014 Martin Drapeau
+   * https://github.com/martindrapeau/backbone-game-engine
+   *
+   */
+   
   function drawRoundRect(ctx, x, y, width, height, borderRadius, fill, stroke) {
     if (typeof stroke == "undefined" ) stroke = true;
     if (typeof borderRadius === "undefined") borderRadius = 5;

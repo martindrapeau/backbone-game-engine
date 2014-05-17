@@ -1,15 +1,23 @@
 (function() {
 
-  // Input class; a Backbone Model which captures input events
-  // and stores them as model attributes with true if pressed.
-  // Supports keyboard, and a drawn touchpad activated by touch
-  // or mouse events.
+  /**
+   *
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
+   *
+   * Copyright (c) 2014 Martin Drapeau
+   * https://github.com/martindrapeau/backbone-game-engine
+   *
+   */
 
   var left = 0,
       right = 900,
       top = 0,
       bottom = 660;
 
+  // Input class; a Backbone Model which captures input events
+  // and stores them as model attributes with true if pressed.
+  // Supports keyboard, and a drawn touchpad activated by touch
+  // or mouse events.
   Backbone.Input = Backbone.Model.extend({
     defaults: {
       // Supported buttons

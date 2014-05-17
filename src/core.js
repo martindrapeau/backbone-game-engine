@@ -473,10 +473,6 @@
   })
 
   // DebugPanel class; draws debug information on screen.
-  //
-  // A simple Backbone model. Set attributes will be drawn on screen
-  // via a simple JSON.stringify() invocation. Feel free to subclass
-  // and define your own draw function for something fancier.
   Backbone.DebugPanel = Backbone.Model.extend({
     defaults: {
       fps: 0

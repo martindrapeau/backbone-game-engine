@@ -1,61 +1,17 @@
 (function() {
 
-  // World is Backbone model which contains a collection of sprites. Sprites
-  // can be added and removed via methods add() and remove(). Sprites are
-  // automatically attached to the engine. In each request frame, the same
-  // mechanics apply as for sprites attached to the engine; methods update()
-  // and draw() are called for each sprite. The exception is for static sprites
-  // which are only updated/redrawn when required (see below).
-  //
-  // A world is measured in tiles via attributes width, height, tileWidth
-  // and tileHeight. Call methods width() and height() to get the dimensions
-  // in pixels. Attributes x and y determine the origin in pixels (top-left
-  // corner) and allow the world to be panned hence changing the viewport.
-  //
-  // Methods getWorldIndex(), getWorldCol() and getWorldRow() can be used
-  // to find the position of a sprite (at its origin, top-left corner).
-  // A sprite's x and y attributes determine their position relative to the
-  // world origin.
-  //
-  // Internally, world splits sprites into 2 collections depending on their
-  // static attribute:
-  //   - StaticSprites: Background sprites that have no animation. These are
-  //     assumed to be tiles. They are indexed by their position (column and
-  //     row) and only drawn when required (i.e. world is panned). Use method
-  //     findCollidingAt() for quick lookup.
-  //   - DynamicSprites: Animated tiles and characters. Use methods findAt()
-  //     and filterAt() to find collisions with other sprites.
-  // If you define a tile, make sure its static attribute is set to true.
-  //
-  // When the world is created, sprites are instantiated in method spawnSprites.
-  // Each sprite instance is attached to the engine. Sprites then have properties
-  // engine and world set pointing to those respective objects.
-  //
-  // Attributes:
-  //   - x, y: Origin of top-left corner in pixels.
-  //   - width, height: Size of world in tiles
-  //   - tileWidth, tileHeight: Size of a tile in pixels.
-  //   - hero: Name of sprite character controlled by the user. Will
-  //     be passed the input as option when instantiated.
-  //   - sprites: Array of sprite models for persistence.
-  //   - backgroundColor: Background color of the world.
-  //   - state: Persisted state either play or edit.
-  //
-  // Options:
-  //   - backgroundImage: Optional. Pass to use a background image
-  //     instead of a background color. Anchored to the origin.
-  //   - input: Input instance to control the hero.
-  //   - camera: Camera instance to keep the hero in the viewport.
-  //   - debugPanel: Optional.
-  //
-  // Persistence:
-  // The world model attributes contain all that is necessary to persist the
-  // state of the world to disk, or in the cloud. Persistence is provided
-  // using Backbone sync. See the Backbone documentation for details.
-  //
+  /**
+   *
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
+   *
+   * Copyright (c) 2014 Martin Drapeau
+   * https://github.com/martindrapeau/backbone-game-engine
+   *
+   */
 
   Backbone.IndexedCollection = Backbone.Collection.extend({comparator: "id"});
 
+  // Backbone.World is Backbone model which contains a collection of sprites.
   Backbone.World = Backbone.Model.extend({
     defaults: {
       x: 0,

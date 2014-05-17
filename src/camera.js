@@ -1,5 +1,14 @@
 (function() {
 
+  /**
+   *
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
+   *
+   * Copyright (c) 2014 Martin Drapeau
+   * https://github.com/martindrapeau/backbone-game-engine
+   *
+   */
+
   // Camera class
   // Ensures the hero is always in the viewport.
   // Properly pans the world. For now, only horizontally.

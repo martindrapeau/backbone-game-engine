@@ -2,9 +2,7 @@
 
   /**
    *
-   * Backbone Game Engine
-   *
-   * Backbone.Hero implements the Mario character in Super Mario Bros.
+   * Backbone Game Engine - An elementary HTML5 canvas game engine using Backbone.
    *
    * Copyright (c) 2014 Martin Drapeau
    * https://github.com/martindrapeau/backbone-game-engine
@@ -29,6 +27,7 @@
       walkDelay = 100,
       runDelay = 50;
 
+  // Backbone.Hero implements the Mario character in Super Mario Bros.
   Backbone.Hero = Backbone.Sprite.extend({
     defaults: _.extend({}, Backbone.Sprite.prototype.defaults, {
       name: "hero",
