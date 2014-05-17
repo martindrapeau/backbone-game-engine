@@ -181,7 +181,8 @@
         }
       return this;
     },
-    // Fetches the Image object from the DOM element.
+    // Fetches the Image object from the DOM element (id selector) and
+    // sets property img.
     spawnImg: function() {
       var id = this.get("img").replace("#", ""),
           img = document.getElementById(id);
@@ -384,6 +385,7 @@
     },
     initialize: function() {
       _.bindAll(this, "onTap");
+      this.spawnImg();
       this.on("attach", this.onAttach);
       this.on("detach", this.onDetach);
     },
@@ -405,8 +407,8 @@
           fillStyle = (b.backgroundColor).replace("{0}", opacity);
 
       drawRoundRect(context, b.x, b.y, b.width, b.height, b.borderRadius, fillStyle, false);
-      if (b.img)
-        context.drawImage(b.img,
+      if (this.img)
+        context.drawImage(this.img,
           b.imgX, b.imgY, b.imgWidth, b.imgHeight,
           b.x + b.imgMargin, b.y + b.imgMargin, b.imgWidth, b.imgHeight
         );
@@ -420,7 +422,8 @@
       if (x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height)
         this.trigger("tap");
     },
-    overlaps: Backbone.Sprite.prototype.overlaps
+    overlaps: Backbone.Sprite.prototype.overlaps,
+    spawnImg: Backbone.SpriteSheet.prototype.spawnImg
   });
 
   // Displays a message top center

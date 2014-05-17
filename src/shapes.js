@@ -1,32 +1,19 @@
 (function() {
 
-  /**
-  * Draws a rounded rectangle using the current state of the canvas. 
-  * If you omit the last three params, it will draw a rectangle 
-  * outline with a 5 pixel border radius 
-  * @param {CanvasRenderingContext2D} ctx
-  * @param {Number} x The top left x coordinate
-  * @param {Number} y The top left y coordinate 
-  * @param {Number} width The width of the rectangle 
-  * @param {Number} height The height of the rectangle
-  * @param {Number} radius The corner radius. Defaults to 5;
-  * @param {Boolean} fill Whether to fill the rectangle. Defaults to false.
-  * @param {Boolean} stroke Whether to stroke the rectangle. Defaults to true.
-  * Source: http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
-  */
-  function drawRoundRect(ctx, x, y, width, height, radius, fill, stroke) {
+  function drawRoundRect(ctx, x, y, width, height, borderRadius, fill, stroke) {
     if (typeof stroke == "undefined" ) stroke = true;
-    if (typeof radius === "undefined") radius = 5;
+    if (typeof borderRadius === "undefined") borderRadius = 5;
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.moveTo(x + borderRadius, y);
+    ctx.lineTo(x + width - borderRadius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + borderRadius);
+    ctx.lineTo(x + width, y + height - borderRadius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - borderRadius, y + height);
+    ctx.lineTo(x + borderRadius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - borderRadius);
+    ctx.lineTo(x, y + borderRadius);
+    ctx.quadraticCurveTo(x, y, x + borderRadius, y);
     ctx.closePath();
     if (stroke) {
       ctx.strokeStyle = stroke;
@@ -36,18 +23,35 @@
       ctx.fillStyle = fill;
       ctx.fill();
     }
+    ctx.restore();
   }
 
-  function drawRect(ctx, x, y, width, height, fillStyle) {
-    ctx.fillStyle = fillStyle;
-    ctx.fillRect(x, y, width, height);
+  function drawRect(ctx, x, y, width, height, fill, stroke) {
+    ctx.save();
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fillRect(x, y, width, height);
+    }
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.strokeRect(x, y, width, height);
+    }
+    ctx.restore();
   }
 
-  function drawCircle(ctx, x, y, radius, fill) {
+  function drawCircle(ctx, x, y, borderRadius, fill, stroke) {
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2*Math.PI, false);
-    ctx.fillStyle = fill;
-    ctx.fill();
+    ctx.arc(x, y, borderRadius, 0, 2*Math.PI, false);
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.stroke();
+    }
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+    ctx.restore();
   }
 
   _.extend(window, {

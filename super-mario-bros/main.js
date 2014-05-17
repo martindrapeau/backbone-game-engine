@@ -76,19 +76,19 @@ $(document).ready(function() {
       // Buttons
       this.toggleButton = new Backbone.Button({
         x: 4, y: 4, width: 52, height: 52, borderRadius: 5,
-        img: document.getElementById("icons"), imgX: 0, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
+        img: "#icons", imgX: 0, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
       });
       this.toggleButton.on("tap", this.toggleState, this);
 
       this.saveButton = new Backbone.Button({
         x: 904, y: 548, width: 52, height: 52, borderRadius: 5,
-        img: document.getElementById("icons"), imgX: 96, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
+        img: "#icons", imgX: 96, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
       });
       this.saveButton.on("tap", this.saveWorld, this);
 
       this.downloadButton = new Backbone.Button({
         x: 888, y: 10, width: 52, height: 52, borderRadius: 5,
-        img: document.getElementById("icons"), imgX: 64, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
+        img: "#icons", imgX: 64, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
       });
       this.downloadButton.on("tap", this.downloadNewVersion, this);
 
