@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <link href="apple_touch_icon.png" rel="apple-touch-icon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     
     <script src="docs/jquery.min.js" type="text/javascript"></script>
     <script src="docs/bootstrap.min.js" type="text/javascript"></script>
@@ -63,7 +64,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6 col-xs-6">
           <p>
             An elementary HTML5 Game Engine built on Backbone. Examples:
           </p>
@@ -76,7 +77,7 @@
             These examples are on <a href="https://github.com/martindrapeau/backbone-game-engine">Github</a>.
           </p>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-xs-6">
           <p>
             <a href="super-mario-bros/index.html" target="_blank">
               <img src="docs/super-mario-bros-level-1-1.png" class="img-responsive" alt="Super Mario Bros level 1-1" title="Super Mario Bros level 1-1" />
@@ -523,7 +524,7 @@ Backbone.MySprite = Backbone.Sprite.extend({
 </pre>
 
           <p>
-            Above, the <code>Backbone.Sprite</code> was sub-classed using <code>extend</code> method. <code>defaults</code> are the default attributes to give any new <code>Backbone.MySprit</code> instance. Same thing for <code>animations</code>.
+            Above, the <code>Backbone.Sprite</code> was sub-classed using <code>extend</code> method. <code>defaults</code> are the default attributes to give any new <code>Backbone.MySprite</code> instance. Same thing for <code>animations</code>.
           </p>
           <p>
             If you want to reuse parts of <code>defaults</code> or <code>animations</code> from a parent class, make sure to make a copy. You can use the helper function <code>_.deepClone</code> for that purpose (<code>_.clone</code> only goes one level deep). Otherwise you may change the parent class behavior. For example the <code>Backbone.PennieUg</code> class reuses the <code>Backbone.Pennie</code> class' properties <code>defaults</code> and <code>animations</code> by first creating copies.
