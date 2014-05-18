@@ -793,6 +793,9 @@ input.bind("change:left", function(input) {
           <p>
             The <code>Backbone.Hero</code> is a sub-classed <code>Backbone.Sprite</code> which implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
           </p>
+          <div class="alert alert-info">
+            A <code>Backbone.Hero</code> must live inside a <code>Backbone.World</code>.
+          </div>
           <h4>Attributes</h4>
           <ul>
             <li><code>x, y</code>: Position of the sprite.</li>
@@ -829,7 +832,7 @@ input.bind("change:left", function(input) {
             Gravity is implemented with a positive <code>yAcceleration</code>. Unless atop a tile, our character will fall. However it is constrained by the extent of the <code>Backbone.World</code> it is contained in. And will therefore stop falling when the bottom is reached.
           </p>
           <p>
-            Our character detects collisions either from tiles or other characters to constrain its movements. It does so using collision detection methods from <a href="#documentation-World">Backbone.World</a>. Collisions are detected (to be completed...)
+            Our character detects collisions either from tiles or other characters to constrain its movements. It does so using collision detection methods from <code>Backbone.World</code>. Collisions are detected (to be completed...)
           </p>
           <h4>Usage</h4>
           <p>
