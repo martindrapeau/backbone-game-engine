@@ -791,11 +791,25 @@ input.bind("change:left", function(input) {
           <h3>Backbone.Hero</h3>
           <pre>new Backbone.Hero([attributes], [options])</pre>
           <p>
-            The <code>Backbone.Hero</code> model implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
+            The <code>Backbone.Hero</code> is a sub-classed <code>Backbone.Sprite</code> which implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
           </p>
-          <p>
-            Attach a <code>Backbone.Input</code> model to capture user input either with the keyboard (left and right arrows, z and x) or via touch events on the on-screen drawn gamepad. When added to a <code>Backbone.World</code> model, it interacts with tiles and characters.
-          </p>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>x, y</code>: Position of the sprite.</li>
+            <li><code>width, height</code>: Size of the sprite in pixels. Defaults to  32 x 64.</li>
+            <li><code>name</code>: Name of the sprite. Defaults to mario.</li>
+            <li><code>type</code>: Type of sprite. Defaults to character.</li>
+            <li><code>spriteSheet</code>: Id of sprite sheet.</li>
+            <li><code>state</code>: Current animation. Starts with idle-right.</li>
+            <li><code>collision</code>: Boolean indicating whether it can be detected by other sprites. Defaults to true.</li>
+            <li><code>powerUp</code>: Whether Mario is small or big. Defaults to small.</li>
+            <li><code>velocity, acceleration</code>: Current horizontal movement. Do not set.</li>
+            <li><code>yVelocity, yAcceleration</code>: Current vertical movement. Do not set.</li>
+          </ul>
+          <h4>Options</h4>
+          <ul>
+            <li><code>input</code>: Optional. A <code>Backbone.Input</code> instance to allow control of the character with the keyboard (left and right arrows, z and x) or via touch events on the on-screen drawn gamepad.</li>
+          </ul>
           <p>
             Attribute <code>state</code> determines the current animation. A state is a pair of move and direction. For example <code>idle-right</code>, <code>walk-left</code> and <code>jump-right</code>. Method <code>getStateInfo</code> will decompose the state for you into those components.
           </p>
@@ -809,17 +823,63 @@ input.bind("change:left", function(input) {
             Physics are implemented with attributes <code>velocity</code>, <code>acceleration</code>, <code>yVelocity</code> and <code>yAcceleration</code> measured in pixels per seconds. The two first control horizontal translations over time where a positive <code>velocity</code> indicates a move to the right, and negative to the left. The latter two control vertical translations where a positive <code>yVelocity</code> indicates a move downwards, and negative upwards.
           </p>
           <p>
-            Each animation have targets of these properties when required. They are omitted when not (i.e. <code>walk-right</code> has not <code>yVelocity</code> or <code>yAcceleration</code>). The <code>update</code> method updates the model attributes according to the targets configured on the current animation. When <code>state</code> changes to another animation, so do the targets, and so follow the actual velocities over time to reach their targets. This gives the character momentum.
+            Each animation have targets of these properties when required. They are omitted otherwise (i.e. <code>walk-right</code> has no <code>yVelocity</code> or <code>yAcceleration</code>). The <code>update</code> method updates the model attributes according to the targets configured on the current animation. When <code>state</code> changes to another animation, so do the targets, and so follow the actual velocities over time to reach their targets. This gives the character momentum.
           </p>
           <p>
-            Gravity is implemented with a positive <code>yAcceleration</code>. Unless atop a tile, our character will fall. However it is constrained by the extent of the canvas. And will therefore stop falling when the bottom is reaches.
+            Gravity is implemented with a positive <code>yAcceleration</code>. Unless atop a tile, our character will fall. However it is constrained by the extent of the <code>Backbone.World</code> it is contained in. And will therefore stop falling when the bottom is reached.
           </p>
           <p>
-            If our character is part of a <code>Backbone.World</code> model, it is constrained by the world extent. In addition, it can interact with other models in the world like tiles and characters. It can jump and land on tiles.
+            Our character detects collisions either from tiles or other characters to constrain its movements. It does so using collision detection methods from <a href="#documentation-World">Backbone.World</a>. Collisions are detected (to be completed...)
           </p>
+          <h4>Usage</h4>
           <p>
-            In a <code>Backbone.World</code>, the character detects collisions either from tiles or other characters to constrain its movements.
+            This excerpt is taken from the Mario example.
           </p>
+          <pre>
+  Backbone.Mario = Backbone.Hero.extend({
+    defaults: _.extend({}, Backbone.Hero.prototype.defaults, {
+      name: "mario",
+      spriteSheet: "mario"
+    })
+  });
+
+  var canvas = document.getElementById("foreground");
+
+  var spriteSheets = new Backbone.SpriteSheetCollection([{
+    id: "mario",
+    img: "#mario",
+    tileWidth: 32,
+    tileHeight: 64,
+    tileColumns: 21,
+    tileRows: 6
+  }]).attachToSpriteClasses();
+
+  var input = new Backbone.Input({
+    drawTouchpad: true,
+    drawPause: true
+  });
+
+  var mario = new Backbone.Mario({
+    x: 400, y: 400
+  }, {
+    input: input
+  });
+
+  var world = new Backbone.World({
+    width: 30, height: 18,
+    tileWidth: 32, tileHeight: 32,
+    backgroundColor: "rgba(66, 66, 255, 1)"
+  });
+  world.add(mario);
+
+  var engine = new Backbone.Engine([
+    world,
+    input
+  ], {
+    canvas: canvas,
+    input: input
+  });
+</pre>
         </div>
       </div>
 
