@@ -254,10 +254,10 @@ my-game/
 
           <h3 id="documentation-main">main.js</h3>
           <p>
-            File <code>main.js</code> is where you declare and initialize your objects. It is recommended that you wrap that code in a function which gets executed once the document is loaded (document ready event). For convenience, <a href="https://github.com/inkling/backbone.native/" target="_blank">Backbone.native</a> was extended with that event with the jQuery syntax you are familiar with: <code>$(document).ready(function() {});</code>. 
+            File <code>main.js</code> is where you declare and initialize your objects. It is recommended that you wrap that code in a function which gets executed once the document and all assets are loaded (i.e. document loaded event). For convenience, <a href="https://github.com/inkling/backbone.native/" target="_blank">Backbone.native</a> was extended with that event with the jQuery syntax you are familiar with: <code>$(document).ready(function() {});</code>. 
           </p>
           <p>
-            Other files use a simple closure instead since they contain class definitions mainly. However in <code>main.js</code> is where <code>Canvas</code> and <code>Image</code> objects are retrieved from the DOM elements. Remember that assets are loaded synchronously.
+            Other files use a simple anonymous function instead since they contain class declarations mainly. However in <code>main.js</code> is where <code>Canvas</code> and <code>Image</code> objects are retrieved from the DOM elements. So they must first be loaded. This keeps things simple. Assets are as a consequence always loaded synchronously.
           </p>
           <p>
             Here is a sample <code>main.js</code> file, taken from the <a href="mario/index.html" target="_blank">Mario</a> example.
@@ -330,7 +330,7 @@ $(document).ready(function() {
         <div class="col-md-12">
           <h1>Reference</h1>
           <p>
-            New classes are added to the namespace <code>Backbone</code>. Most are either derived from <code>Backbone.Model</code> or <code>Backbone.Collection</code>.
+            Backbone Game Engine defines classes in the <code>Backbone</code> namespace. Most are sub-classed from <code>Backbone.Model</code> or <code>Backbone.Collection</code>.
           </p>
         </div>
       </div>
@@ -340,7 +340,7 @@ $(document).ready(function() {
           <h3>Backbone.Engine</h3>
           <pre>new Backbone.Engine([models], [options])</pre>
           <p>
-            The core object to run everything is the <em>engine</em>, a Backbone Collection of sprites.
+            The core object to run everything is the <em>engine</em>, a Backbone collection of sprites (Backbone models).
           </p>
           <h4>Options</h4>
           <ul>
@@ -354,7 +354,7 @@ $(document).ready(function() {
           </p>
           <ul>
             <li>Loop through models (in order), and calls their <code>update</code> method. Passing <code>dt</code>, the time in milliseconds since the last call to update. The update method must return <code>true</code> to ask for a redraw, or <code>false</code> not to.</li>
-            <li>Loop through all models that requested a redraw, and call their <code>draw</code> method. Passing <code>context</code>, the canvas 2d context. Perform whatever magic you like in the draw method.</li>
+            <li>Loop through all models that requested a redraw, and call their <code>draw</code> method passing <code>context</code>, the canvas 2d context. Perform whatever magic you like in the draw method.</li>
             <li>Call itself again upon the next animation frame.</li>
           </ul>
           <div class="alert alert-info">Note: By default the engine does not clear the canvas before redraw. You can set the <code>clearOnDraw</code> option to do so however it is an expensive call. Better to do it only when required. See class <a href="#documentation-World">Backbone.World</a> for an example.</div>
@@ -362,13 +362,35 @@ $(document).ready(function() {
             The <code>update</code> method is used to update the model position, animation, detect collisions, or whatever you like. If it requests a redraw, the engine will then call its <code>draw</code> method. The engine ensures that models are updated and drawn in the order they are sorted in the collection. You can define the sort order by defining a <a href="http://backbonejs.org/#Collection-comparator" target="_blank">comparator</a>.
           </p>
           <p>
-            Models added to the collection receive an <code>attach</code> event and have an extra property set <code>engine</code> as backreference. When removed, they receive a <code>detach</code> event.
+            Models added to the collection receive an <code>attach</code> event and have property <code>engine</code> set as backreference. When removed, they receive a <code>detach</code> event.
           </p>
           <p>
             To measure performance, two properties are set: <code>fps</code> and <code>cycleTime</code>. If you passed option <code>debugPanel</code>, they will be drawn on screen.
           </p>
           <p>
-            The engine can be started and stopped. When running, will perform an update/draw sequence 60 times per second. Use methods <code>start</code>, <code>stop</code> or <code>toggle</code>. Use method <code>isRunning</code> to determine if the engine is running. If you passed option <code>input</code>, the engine will bind to the <strong>pause</strong> button to toggle start/stop.
+            The engine can be started and stopped. When running, will perform an update/draw sequence 60 times per second. Use methods <code>start</code>, <code>stop</code> or <code>toggle</code>. Use method <code>isRunning</code> to determine if the engine is running. If you passed option <code>input</code>, the engine will bind to the <em>pause</em> button (or the <em>p</em> key) to toggle start/stop.
+          </p>
+          <h4>Usage</h4>
+          <pre>
+  var canvas = document.getElementById("foreground");
+
+  var debugPanel = new Backbone.DebugPanel();
+
+  var ball = new Backbone.Ball({
+    x: 100, y: 100, color: "blue"
+  });
+
+  var engine = new Backbone.Engine([
+    ball,
+    debugPanel
+  ], {
+    canvas: canvas,
+    debugPanel: debugPanel,
+    clearOnDraw: true
+  });
+</pre>
+          <p>
+            Taken from the <a href="ball/index.html" target="_blank">Bouncing Ball</a> example. Draws two models: the debug panel and a bouncing ball.
           </p>
         </div>
       </div>
@@ -385,12 +407,12 @@ new Backbone.SpriteSheetCollection([models], [options]);
           </p>
           <h4>Attributes</h4>
           <ul>
-            <li><code>img</code>: The element id of the image to find in the DOM. A pointer to the Image object is then stored in property <code>img</code>.</li>
+            <li><code>img</code>: The element id selector of the image to find in the DOM. A pointer to the Image object is then stored in property <code>img</code>.</li>
             <li><code>tileWidth, tileHeight</code>: Size of tiles in pixels.</li>
             <li><code>tileColumns, tileRows</code>: Number of tiles in the image.</li>
           </ul>
           <p>
-            When the sprite sheet is instantiated, an array of frames is built. A frame object contains the coordinates of the frame. It consists of <code>{x, y, width, height}</code> representing the pixel position and size of the frame. In the sprite <code>draw</code> method, these will be passed to the <a href="https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D#drawImage()" target="_blank">HTML5 canvas drawImage</a> function as arguments <code>sx, sy, sw, sh</code>.
+            When the sprite sheet is instantiated, an array of frames is built. A frame object contains the coordinates of the frame. It consists of <code>{x, y, width, height}</code> representing the pixel position and size of the frame. These will be passed to the <a href="https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D#drawImage()" target="_blank">HTML5 canvas drawImage</a> function as arguments <code>sx, sy, sw, sh</code> by the <code>draw</code> method.
           </p>
           <h4>Usage</h4>
           <p>
@@ -429,6 +451,9 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
         <div class="col-md-12">
           <h3>Backbone.Sprite</h3>
           <pre>new Backbone.Sprite([attributes], [options]);</pre>
+          <p>
+            <code>Backbone.Sprite</code> is a <a href="http://backbonejs.org/#Model" target="_blank">Backbone Model</a> which implements the required <code>update</code> and <code>draw</code> methods to animate a sprite, frame by frame.
+          </p>
           <h4>Attributes</h4>
           <ul>
             <li><code>x, y</code>: The coordinates in pixels.</li>
@@ -440,13 +465,34 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <li><code>static</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
           </ul>
           <p>
-            <code>Backbone.Sprite</code> is a <a href="http://backbonejs.org/#Model" target="_blank">Backbone Model</a> which implements the required <code>update</code> and <code>draw</code> methods to animate a sprite, frame by frame.
+            Graphics are obtained from a <a href="#documentation-SpriteSheet">Backbone.SpriteSheet</a> model. In attribute <code>spriteSheet</code>, specify the sprite sheet id you previously defined in a <code>Backbone.SpriteSheetCollection</code> instance. The collection will automatically attach it to the sprite by setting property <code>spriteSheet</code> as back reference. Building on the example above:
           </p>
+          <pre>
+var spriteSheets = new Backbone.SpriteSheetCollection([{
+  id: "mario",
+  img: "#mario",
+  tileWidth: 32,
+  tileHeight: 64,
+  tileColumns: 21,
+  tileRows: 2
+}]).attachToSpriteClasses();
+
+var mario = new Backbone.Mario({
+  spriteSheet: "mario"
+});
+
+mario.get("spriteSheet");
+// mario
+
+spriteSheets.get("mario");
+// child {cid: "c2", attributes: Object, collection: child, _changing: false, _previousAttributes: Object…}
+
+mario.spriteSheet;
+// child {cid: "c2", attributes: Object, collection: child, _changing: false, _previousAttributes: Object…}
+</pre>
+          <h4>Inheritance</h4>
           <p>
-            Graphics are obtained from a <a href="#documentation-SpriteSheet">Backbone.SpriteSheet</a> model. Property <code>spriteSheet</code> must point to the sprite sheet model. If you define a sprite sheet collection, you can simply set attribute <code>spriteSheet</code> to an existing sprite sheet model id. The collection will automatically attach it to the sprite. Otherwise, you will need to set property <code>spriteSheet</code> to a sprite sheet model yourself.
-          </p>
-          <p>
-            Instantiating a sprite model is not very useful by itself. You must first extend the <code>Backbone.Sprite</code> class to provide your own animations and a pointer to the sprite sheet. For example this creates a sprite with 3 animations <code>idle</code>, <code>walk-left</code> and <code>walk-right</code>. It points to the sprite sheet id <code>mario</code>.
+            Instantiating a <code>Backbone.Sprite</code> model is not very useful by itself. You must first extend the <code>Backbone.Sprite</code> class to provide your own animations and a pointer to the sprite sheet. For example this defines a sprite with 3 animations <code>idle</code>, <code>walk-left</code> and <code>walk-right</code>. It points to the sprite sheet id <code>mario</code>.
           </p>
           <pre>
 Backbone.MySprite = Backbone.Sprite.extend({
@@ -475,6 +521,26 @@ Backbone.MySprite = Backbone.Sprite.extend({
   }
 });
 </pre>
+
+          <p>
+            Above, the <code>Backbone.Sprite</code> was sub-classed using <code>extend</code> method. <code>defaults</code> are the default attributes to give any new <code>Backbone.MySprit</code> instance. Same thing for <code>animations</code>.
+          </p>
+          <p>
+            If you want to reuse parts of <code>defaults</code> or <code>animations</code> from a parent class, make sure to make a copy. You can use the helper function <code>_.deepClone</code> for that purpose (<code>_.clone</code> only goes one level deep). Otherwise you may change the parent class behavior. For example the <code>Backbone.PennieUg</code> class reuses the <code>Backbone.Pennie</code> class' properties <code>defaults</code> and <code>animations</code> by first creating copies.
+          </p>
+          <pre>
+
+  Backbone.PennieUg = Backbone.Pennie.extend({
+    defaults: _.extend(_.deepClone(Backbone.Pennie.prototype.defaults), {
+      name: "pennie-ug"
+    }),
+    animations: _.deepClone(Backbone.Pennie.prototype.animations)
+  });
+  Backbone.PennieUg.prototype.animations.idle.sequences = [168, 168, 169, 170, 169, 168];
+</pre>
+          <div class="alert alert-info">
+            Helper function <code>deepClone</code> was created a mixin of <code>underscore</code>. When it make sense, make general functions available that way. Look at the end of <code>src/core.js</code> for all mixins.
+          </div>
           <h4>Animations</h4>
           <p>
             Sprite property <code>animations</code> contains a hash of animations. Each animation contains a sequence of frames and a delay between frames for animation. For example:
@@ -498,6 +564,41 @@ animations: {
             <li><code>scaleX, scaleY</code>: Optional. Scaling factors. Set <code>scaleX</code> to -1 to flip horizontally. Defaults to 1 if omitted.</li>
             <li><code>delay</code>: Optional. The time to change to the next sequence. No need to specify if there is only one frame (as there is no animation). You can also define a sprite method <code>sequenceDelay</code> to programmatically return the delay. It will be passed the current animation.</li>
           </ul>
+          <p>
+            For detailed examples of animations, look at file <code>artifacts.js</code> in the <code>super-mario-bros</code> folder. Class <code>Backbone.Pennie</code> implements a basic animation sequence using frame indices, while <code>Backbone.FlyingPennie</code> implements a more complex animation with sequence objects.
+          </p>
+          <pre>
+Backbone.Pennie = Backbone.AnimatedTile.extend({
+  ...
+  animations: {
+    idle: {
+      sequences: [52, 52, 53, 54, 53, 52],
+      delay: 50
+    }
+  },
+  ...
+
+Backbone.FlyingPennie = Backbone.Sprite.extend({
+  ...
+  animations: {
+    anim: {
+      sequences: [
+        {frame: 52, x: 0, y: -32, scaleX: 1.00, scaleY: 1},
+        {frame: 52, x: 0, y: -64, scaleX: 0.50, scaleY: 1},
+        {frame: 53, x: 0, y: -90, scaleX: 0.50, scaleY: 1},
+        {frame: 53, x: 0, y: -128, scaleX: 1.00, scaleY: 1},
+        {frame: 53, x: 0, y: -128, scaleX: 0.50, scaleY: 1},
+        {frame: 52, x: 0, y: -112, scaleX: 0.50, scaleY: 1},
+        {frame: 52, x: 0, y: -90, scaleX: 1.00, scaleY: 1},
+        {frame: 52, x: 0, y: -80, scaleX: 0.50, scaleY: 1},
+        {frame: 53, x: 0, y: -80, scaleX: 0.50, scaleY: 1}
+      ],
+      delay: 50
+    }
+  },
+  ...
+
+</pre>
         </div>
       </div>
 
@@ -588,7 +689,7 @@ input.bind("change:left", function(input) {
             Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a href="#documentation-Engine" target="_blank">Backbone.Engine</a> the world is attached to. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
           </p>
           <p>
-            A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the dimensions in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned hence changing the viewport.
+            A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the size in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned consequently changing the viewport.
           </p>
           <p>
             Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
@@ -597,21 +698,21 @@ input.bind("change:left", function(input) {
             Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
           </p>
           <ul>
-            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to true will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a point coordinates. In addition, these sprites are only drawn when required (i.e. world is panned). Use method <code>findCollidingAt</code> for quick lookup.</li>
-            <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to false to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup of order N. Keep the number of sprites here to a minimum. Use methods <code>findAt</code> and <code>filterAt</code> to find collisions with other sprites.</li>
+            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to true will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a pair of x/y coordinates. In addition, these sprites are only drawn when required (i.e. world is panned). Use method <code>findCollidingAt</code> for quick lookup.</li>
+            <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to false to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup has an order of N. Keep the number of sprites here to a minimum. Use methods <code>findAt</code> and <code>filterAt</code> to find collisions with other sprites.</li>
           </ul>
           <p>
             If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
           </p>
           <p>
-            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
+            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine and have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
           </p>
           <h4>Persistence</h4>
           <p>
             The world model attributes contain all that is necessary to persist the state of the world to disk, or in the cloud. Calling the <code>save</code> method first serializes the sprite collection into the <code>sprites</code> attribute by calling the <code>toSave</code> method on each sprite to save their position and state. It then delegates to the backbone model's <code>save</code> method to save to a server or local storage in JSON format. See the Backbone documentation for details.
           </p>
           <p>
-            The world can be restored by calling <code>restore</code> passing a saved worl in JSON format.
+            The world can be restored by calling <code>restore</code> and passing as argument a saved world in JSON format.
           </p>
           <h4>Collisions</h4>
           <p>
@@ -623,11 +724,31 @@ input.bind("change:left", function(input) {
             <li><code>findCollidingAt(x, y)</code></li>
           </ul>
           <p>
-            The first two find the first or a list of sprites overlapping a specified point, and are meant mainly for finding moving character sprites. They have filtering options to lookup only sprites of certain types, to exclude a sprite (provided its id) and to include only sprites with attribute <code>collision</code> set to true.
+            The first two find the first or a list of sprites overlapping a specified point, and are meant mainly for finding moving sprites (characters). They have filtering options to lookup only sprites of certain types, to exclude a sprite (provided its id) and to include only sprites with attribute <code>collision</code> set to true.
           </p>
           <p>
-            Method <code>findCollidingAt</code> is meant for tile lookup. It is fast since lookup is on the indexed model <code>id</code>. It returns the first sprite overlapping the passed point. It is useful for preventing characters from walking through walls or falling through tiles.
+            Method <code>findCollidingAt</code> is meant for tile lookup. It is fast since lookup is on the indexed model <code>id</code> (column/row position). It returns the first sprite overlapping the passed point. It is useful for preventing characters from walking through walls or falling through tiles.
           </p>
+          <h4>Usage</h4>
+          <pre>
+  var mario = new Backbone.Mario({
+    x: 400, y: 400
+  });
+
+  var world = new Backbone.World({
+    width: 30, height: 18,
+    tileWidth: 32, tileHeight: 32,
+    backgroundColor: "rgba(66, 66, 255, 1)"
+  });
+  world.add(mario);
+
+  var engine = new Backbone.Engine([
+    world
+  ]);
+</pre>
+        <p>
+          A sprite (mario) is first created and added it the world. The world is then added to the engine. This is taken from file <code>mario/main.js</code> for the Mario example.
+        </p>
         </div>
       </div>
 
@@ -660,7 +781,7 @@ input.bind("change:left", function(input) {
             The palette is drawn as a series of tiles left to right, top to bottom. Each tile is a sprite. The sprite may be bigger than the specified tile size, in which case it will overlap over tiles to the right or to the bottom. Therefore keep offsize sprites last, and keep an empty row below.
           </p>
           <div class="alert alert-info">
-            Note: Backbone.WorldEditor depends on <a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a> for touch events (also handles mouse events). It allows panning of the world, and selection of sprites.
+            Note: Backbone.WorldEditor depends on <a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a> for touch events (and mouse events). It allows panning of the world, and selection of sprites.
           </div>
         </div>
       </div>
