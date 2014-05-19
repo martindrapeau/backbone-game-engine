@@ -255,41 +255,8 @@
          *
          * Used in Backbone.History.prototype.start.
          */
+        hide: null,
         appendTo: null,
-
-        /**
-         * Martin Drapeau: Naive implementations.
-         * 
-         */
-        ready: function(callback) {
-            document.addEventListener('DOMContentLoaded', callback, false);
-        },
-        show: function() {
-            for (var i=0; i < this.length; i++)
-                this[i].style.display = "block";
-            return this;
-        },
-        hide: function() {
-            for (var i=0; i < this.length; i++)
-                this[i].style.display = "none";
-            return this;
-        },
-        addClass: function(className) {
-            var toAdd = className.split(/\s+/g);
-            for (var i=0; i < this.length; i++) {
-                var existing = this[i].className.split(/\s+/g);
-                this[i].className = _.union(existing, toAdd).join(" ");
-            }
-            return this;
-        },
-        removeClass: function(className) {
-            var toRemove = className.split(/\s+/g);
-            for (var i=0; i < this.length; i++) {
-                var existing = this[i].className.split(/\s+/g);
-                this[i].className = _.difference(existing, toRemove).join(" ");
-            }
-            return this;
-        },
 
         /**
          * Find is not supported to encourage the use of querySelector(All) as an alternative.

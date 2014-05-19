@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <title>Backbone Game Engine</title>
-    <meta name="description" content="Elemntary HTML5 Canvas Game Engine based on Backbone.">
+    <meta name="description" content="Elementary HTML5 Canvas Game Engine based on Backbone.">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
@@ -277,7 +277,7 @@ my-game/
 
           <h3 id="documentation-main">main.js</h3>
           <p>
-            File <code>main.js</code> is where you declare and initialize your objects. It is recommended that you wrap that code in a function which gets executed once the document and all assets are loaded (i.e. document loaded event). For convenience, <a href="https://github.com/inkling/backbone.native/" target="_blank">Backbone.native</a> was extended with that event with the jQuery syntax you are familiar with: <code>$(document).ready(function() {});</code>. 
+            File <code>main.js</code> is where you declare and initialize your objects. It is recommended that you wrap that code in a function which gets executed once the document and all assets are loaded (i.e. window.onload event). You can use for example <code>$(window).on("load", function() {});</code>. 
           </p>
           <p>
             Other files use a simple anonymous function instead since they contain class declarations mainly. However in <code>main.js</code> is where <code>Canvas</code> and <code>Image</code> objects are retrieved from the DOM elements. So they must first be loaded. This keeps things simple. Assets are as a consequence always loaded synchronously.
@@ -286,7 +286,7 @@ my-game/
             Here is a sample <code>main.js</code> file, taken from the <a href="mario/index.html" target="_blank">Mario</a> example.
           </p>
           <pre>
-$(document).ready(function() {
+$(window).on("load", function() {
 
   // Mario alone in an empty world. Control him with the touchpad.
 
