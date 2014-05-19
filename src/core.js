@@ -223,6 +223,7 @@
   // and draw methods. Will draw them on an HTML5 canvas.
   Backbone.Engine = Backbone.Collection.extend({
     defaults: {
+      version: 0.1,
       canvas: undefined,
       debugPanel: null,
       input: null,
