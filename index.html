@@ -142,6 +142,14 @@
           <p>
             Backbone implements <a href="http://backbonejs.org/#Events" target="_blank">events</a>, <a href="http://backbonejs.org/#Model" target="_blank">models</a>, <a href="http://backbonejs.org/#Collection" target="_blank">collections</a>, <a href="http://backbonejs.org/#Model-extend" target="_blank">inheritance</a> and <a href="http://backbonejs.org/#Sync" target="_blank">persistence</a>. Models implement getters and setters for object attributes. Models and Collections have an <code>extend</code> function to easily do inheritance. They implement methods for persistence (RESTful JSON by default). They can also trigger events and bind to them. Everything you need to build a great extensible game engine. Plus, Backbone is now widely used and provides these features in a standard fashion with a huge community to support them. I hope this project can make game programming accessible to developers already familiar with Backbone.
           </p>
+
+          <h3>Using and Contributing</h3>
+          <p>
+            Backbone Game Engine was built to get you going fast. <a href="https://github.com/martindrapeau/backbone-game-engine">Fork this repository</a>, and your own Github page will be ready in minutes. You can then create your own games by simply creating a new directory, and putting files in it.
+          </p>
+          <p>
+            To report a bug, use <a href="https://github.com/martindrapeau/backbone-game-engine/issues" target="_blank">Github issues</a>. To contribute improvements, bug fixes or new examples, make changes to your fork and do a pull request.
+          </p>
           <br/>
         </div>
       </div>
@@ -193,7 +201,7 @@ spriteSheet.img.height
         <div class="col-md-12">
           <h3 id="documentation-Structure">Directory structure</h3>
           <p>
-            Backbone Game Engine was built to get you going fast. <a href="https://github.com/martindrapeau/backbone-game-engine">Fork this repository</a>, and your own Github page will be ready in minutes. You can then create your own games by simply creating a new directory, and putting files in it. Here is the recommended file structure:
+            To create a new examples (or game), create an empty directory at the same level as <code>super-mario-bros</code>. Then, add some files. Here is the recommended file structure:
           </p>
           <pre>
 3rd/
@@ -963,6 +971,42 @@ var engine = new Backbone.Engine([world, camera]);
 var clock = new Backbone.Clock({delay: 2000});
 clock.on("change:ticks", function() {
   console.log("tick", clock.get("ticks");
+});
+</pre>
+          <p>
+            As an example, look at the Super Mario Bros example, question blocks and pennies are all synced on the same clock. These sprites are sub-classes of <code>Backbone.AnimatedTile</code>. Instances create a Backbone.Clock if one does not exist. Otherwise, they find the existing one by that name and reuse it.
+          </p>
+          <pre>
+Backbone.AnimatedTile = Backbone.Tile.extend({
+  initialize: function(attributes, options) {
+    Backbone.Tile.prototype.initialize.apply(this, arguments);
+    this.on("attach", this.onAttach, this);
+    this.on("detach", this.onDetach, this);
+  },
+  onAttach: function() {
+    if (!this.engine) return;
+    this.onDetach();
+
+    this.clock = this.engine.findWhere({name: "animatedTileClock"});
+
+    if (!this.clock)
+      this.clock = this.engine.add(new Backbone.Clock({name: "animatedTileClock", delay: 200}));
+
+    this.listenTo(this.clock, "change:ticks", this.updateAnimationIndex);
+  },
+  onDetach: function() {
+    if (this.clock) this.stopListening(this.clock);
+    this.clock = undefined;
+  },
+  update: function(dt) {
+    return true;
+  },
+  updateAnimationIndex: function() {
+    var animation = this.getAnimation(),
+        sequenceIndex = this.get("sequenceIndex") || 0;
+    if (!animation) return;
+    this.set("sequenceIndex", sequenceIndex < animation.sequences.length-1 ? sequenceIndex + 1 : 0);
+  }
 });
 </pre>
         </div>
