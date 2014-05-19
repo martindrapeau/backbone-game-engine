@@ -187,7 +187,7 @@ my-game/
           </p>
           <pre>
 &lt;!doctype html&gt;
-&lt;html&gt;
+&lt;html style="-ms-touch-action: none;"&gt;
     &lt;head&gt;
         &lt;title&gt;Mario - Backbone Game Engine&lt;/title&gt;
         &lt;meta charset="utf-8"&gt;
@@ -241,6 +241,7 @@ my-game/
           </p>
           <ul>
             <li>HTML meta tags <code>viewport</code> and <code>apple-mobile-web-app-capable</code> ensure the canvas is properly sized on iPads and other mobile devices.  The width of specified there should be the same as the canvas elements.</li>
+            <li>Style <code>-touch-action: none;</code> on the <code>HTML</code> tag disables touch behaviors, like pan and zoom for IE10.</li>
             <li>Elements must all have ids since we use the native <code>getElementById</code> Javascript function to retrieve the <code>Canvas</code> and <code>Image</code> objects from their respective DOM elements.</li>
             <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden. Its height is less than that of the <code>foreground</code> canvas since the bottom real-estate is taken by either a <a href="#documentation-Input">Backbone.Input</a> or <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> model.</li>
           </ul>
@@ -1161,6 +1162,18 @@ icons.png
         </div>
       </div>
 
+      <div id="performance" class="row">
+        <div class="col-md-12">
+          <h1>Performance and Debugging</h1>
+          <p>
+            HTML5 canvas has come a long way in terms on performance. Browser implementations of canvas offer decent performance. On mobile, Apple leads the pack being able to sustain a 60fps for the Super Mario Bros example. However on Android, frame rates drop fast to the 30s when the background needs to be redrawn.
+          </p>
+          <p>
+            Keep cycle time time below 10ms. Efficient memory management. Javascript garbage collection. Tips and tricks (http://www.html5rocks.com/en/tutorials/canvas/performance/).
+          </p>
+        </div>
+      </div>
+
       <div id="publishing" class="row">
         <div class="col-md-12">
           <h1>Publishing your Game</h1>
@@ -1174,7 +1187,7 @@ icons.png
             For publishing to the Apple App Store, or Google Play, you can use <a href="https://www.ludei.com/cocoonjs/" target="_blank">CocoonJS</a>. They claim to increase the canvas performance up to 10x (that's good because HTML5 canvas performance on Android is not great).
           </p>
           <p>
-            If you use CocoonJS, ensure to follow their best practices. Notably, only use the canvas (there is only basic support for HTML). Backbone Game Engine was written without jQuery for this reason.
+            If you use CocoonJS, ensure to follow their best practices. Notably, only use the canvas (there is only basic support for HTML). Backbone Game Engine was written canvas-first and without jQuery and DOM manipulations for this reason.
           </p>
         </div>
       </div>
