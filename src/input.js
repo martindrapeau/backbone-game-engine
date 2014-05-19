@@ -123,7 +123,10 @@
         );
 
       // Handle touch events
-      var touchEnabled = "onorientationchange" in window || window.navigator.isCocoonJS;
+      var touchEnabled =
+        "onorientationchange" in window ||
+        window.navigator.msMaxTouchPoints ||
+        window.navigator.isCocoonJS;
       this.set({touchEnabled: touchEnabled});
 
       // Debug panel
