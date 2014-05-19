@@ -1171,7 +1171,10 @@ icons.png
             If you own an iPad or iPhone, you can add it to the home screen as a Web app. It will open in full-screen and if you've implemented an Application Cache, it will work offline too.
           </p>
           <p>
-            For publishing to the Apple App Store, or Google Play, you can use <a href="https://www.ludei.com/cocoonjs/" target="_blank">CocoonJS</a>. They claim to increase the canvas performance up to 10x. That's good because canvas performance on Android is not great.
+            For publishing to the Apple App Store, or Google Play, you can use <a href="https://www.ludei.com/cocoonjs/" target="_blank">CocoonJS</a>. They claim to increase the canvas performance up to 10x (that's good because HTML5 canvas performance on Android is not great).
+          </p>
+          <p>
+            If you use CocoonJS, ensure to follow their best practices. Notably, only use the canvas (there is only basic support for HTML). Backbone Game Engine was written without jQuery for this reason.
           </p>
         </div>
       </div>
