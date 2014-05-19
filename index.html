@@ -187,7 +187,7 @@ my-game/
           </p>
           <pre>
 &lt;!doctype html&gt;
-&lt;html style="-ms-touch-action: none;"&gt;
+&lt;html style="touch-action: none;"&gt;
     &lt;head&gt;
         &lt;title&gt;Mario - Backbone Game Engine&lt;/title&gt;
         &lt;meta charset="utf-8"&gt;
@@ -241,7 +241,7 @@ my-game/
           </p>
           <ul>
             <li>HTML meta tags <code>viewport</code> and <code>apple-mobile-web-app-capable</code> ensure the canvas is properly sized on iPads and other mobile devices.  The width of specified there should be the same as the canvas elements.</li>
-            <li>Style <code>-touch-action: none;</code> on the <code>HTML</code> tag disables touch behaviors, like pan and zoom for IE10.</li>
+            <li>Style <code>touch-action: none;</code> on the <code>HTML</code> tag disables touch behaviors, like pan and zoom for IE10.</li>
             <li>Elements must all have ids since we use the native <code>getElementById</code> Javascript function to retrieve the <code>Canvas</code> and <code>Image</code> objects from their respective DOM elements.</li>
             <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden. Its height is less than that of the <code>foreground</code> canvas since the bottom real-estate is taken by either a <a href="#documentation-Input">Backbone.Input</a> or <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> model.</li>
           </ul>
