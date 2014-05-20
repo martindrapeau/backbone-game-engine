@@ -161,9 +161,18 @@ spriteSheet.img.height
 
       <div class="row">
         <div class="col-md-12">
+          <h3 id="documentation-no-jQuery">Living without jQuery</h3>
+          <p>
+            Backbone Game Engine does not use jQuery. Instead, it depends on <a href="https://github.com/inkling/backbone.native/" target="_blank">backbone.native</a> which re-creates the ubiqutous <code>$</code> function/object with only essentials required by Backbone. As such, you are limited to simple DOM selectors enabled by <code>querySelectorAll</code> and events. Since the framework is for canvas-based games, avoid HTML manipulations. Canvas-based only allows for easier wrapping with CocoonJS. Consult the documentation of <code>backbone.native</code> to understand limitations.
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
           <h3 id="documentation-Structure">Directory structure</h3>
           <p>
-            To create a new examples (or game), create an empty directory at the same level as <code>super-mario-bros</code>. Then, add some files. Here is the recommended file structure:
+            To create a new example (or game), create an empty directory at the same level as <code>super-mario-bros</code>. Then, add some files. Here is the recommended file structure:
           </p>
           <pre>
 3rd/
