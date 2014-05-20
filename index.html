@@ -647,11 +647,11 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
             The following helper methods can be called ro find out what buttons are pressed.
           </p>
           <ul>
-            <li><code>leftPressed</code></li>
-            <li><code>rightPressed</code></li>
-            <li><code>buttonAPressed</code></li>
-            <li><code>buttonBPressed</code></li>
-            <li><code>pausePressed</code></li>
+            <li><code>leftPressed()</code></li>
+            <li><code>rightPressed()</code></li>
+            <li><code>buttonAPressed()</code></li>
+            <li><code>buttonBPressed()</code></li>
+            <li><code>pausePressed()</code></li>
           </ul>
           <h4>Usage</h4>
           <pre>
@@ -698,7 +698,7 @@ input.bind("change:left", function(input) {
             A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the size in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned consequently changing the viewport.
           </p>
           <p>
-            Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
+            Methods <code>getWorldIndex({x,y}|model)</code>, <code>getWorldCol(x)</code> and <code>getWorldRow(y)</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
           </p>
           <p>
             Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
