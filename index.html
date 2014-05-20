@@ -44,7 +44,7 @@
     <div class="col-md-9">
       <div id="introduction" class="row">
         <div class="col-md-12">
-          <h1>HTML5 Canvas & Backbone</h1>
+          <h1>HTML5 Canvas &amp; Backbone</h1>
         </div>
       </div>
       <div class="row">
@@ -1166,11 +1166,33 @@ icons.png
         <div class="col-md-12">
           <h1>Performance and Debugging</h1>
           <p>
-            HTML5 canvas has come a long way in terms on performance. Browser implementations of canvas offer decent performance. On mobile, Apple leads the pack being able to sustain a 60fps for the Super Mario Bros example. However on Android, frame rates drop fast to the 30s when the background needs to be redrawn.
+            HTML5 canvas has come a long way in terms on performance. Browser implementations of canvas now offer impressive performance. On mobile, Apple leads the pack being able to sustain a 60fps for the Super Mario Bros example. However on Android, frame rates drop fast to the 30s when the background needs to be redrawn. On Surface performance seems good on newer models, as slow as Android tablets on the first generation RT model.
           </p>
           <p>
-            Keep cycle time time below 10ms. Efficient memory management. Javascript garbage collection. Tips and tricks (http://www.html5rocks.com/en/tutorials/canvas/performance/).
+            This being said, there are things you can do to ensure the best performance.
           </p>
+          <h4>Keep cycle time below 16ms</h4>
+          <p>
+            That is the time you have between redraws, 60 times a second. The <code>Backbone.Engine</code> will report the frame rate (fps), and cycle time (ct) if you add and attach a <code>Debug.Panel</code>. Make sure to use it. If you see the fps go down, and the ct go up, then your <code>update</code> and <code>draw</code> times must be too long. You can time the <code>update</code> time to pinpoint the issue.
+          </p>
+          <h4>Play well with Javascript Garbage Collection</h4>
+          <p>
+            You can't avoid it. You will leak memory. Every call made by <code>requestAnimationFrame</code> creates a function scope. It does so 60 times a second and it will need to be garbage collected. The browser will pause to collect garbage.
+          </p>
+          <p>
+            You can however control the leakage rate. Try to create objects upfront, and pool resources as much as possible. That's why sprite sheets are shared among sprites. If you ever see that your game jerks, at an even interval (i.e. every 30s), then you are probably being hit by the garbage collector.
+          </p>
+          <p>
+            You can use the Timeline tool in Chrome/Safari Developer Tools to identify this. Record a session and once done, you can apply a filter <code>gc</code> to filter on garbage collection events. You will notice they are at evenly spaced intervals. On my machine, for Super Mario Bros, 3.5MB is collected every 4s on average. There is no jerk. I consider that healthy.
+          </p>
+          <p>
+            Some further references and good resources on performance:
+          </p>
+          <ul>
+            <li><a href="http://blog.artillery.com/2012/10/browser-garbage-collection-and-framerate.html" target="_blank">Browser Garbage Collection and Frame Rate</a></li>
+            <li><a href="https://www.scirra.com/blog/76/how-to-write-low-garbage-real-time-javascript" target="_blank">How to write low garbage real-time Javascript</a></li>
+            <li><a href="http://www.html5rocks.com/en/tutorials/canvas/performance/" target="_blank">Improving HTML5 Canvas Performance</a></li>
+          </ul>
         </div>
       </div>
 
@@ -1224,6 +1246,7 @@ icons.png
           <li><a href="#documentation-Shapes">&nbsp;&nbsp;Shape functions</a></li>
           <li><a href="#going-offline">Going Offline</a></li>
           <li><a href="#persistence">Persistence</a></li>
+          <li><a href="#performance">Performance</a></li>
           <li><a href="#publishing">Publishing</a></li>
           <li><a href="#change-log">Change Log</a></li>
         </ul>
