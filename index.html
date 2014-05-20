@@ -834,8 +834,46 @@ input.bind("change:left", function(input) {
           <p>
             Gravity is implemented with a positive <code>yAcceleration</code>. Unless atop a tile, our character will fall. However it is constrained by the extent of the <code>Backbone.World</code> it is contained in. And will therefore stop falling when the bottom is reached.
           </p>
+          <h4>Collisions</h4>
           <p>
-            Our character detects collisions either from tiles or other characters to constrain its movements. It does so using collision detection methods from <code>Backbone.World</code>. Collisions are detected (to be completed...)
+            Our character detects collisions either from tiles or other characters to constrain its movements. It does so using collision detection methods from <code>Backbone.World</code>: <code>findCollidingAt</code> for tiles, and <code>findAt</code> for other characters. Every <code>update</code>, a check for collisions is made at 8 possible locations on the outline of the sprite:
+          </p>
+          <p>
+            <img class="img-responsive" src="docs/hero-collisions.png" alt="Hero Collisions" />
+          </p>
+          <p>
+            Collisions are only detected when necessary. For instance, when jumping collisions are detected top and right only. The decision is based on looking at <code>velocity</code> and <code>yVelocity</code>.
+          </p>
+          <pre>
+if (velocity &gt;= 0) {
+  // Stop if obstacle to the right
+  var rightTopTile = obstacleCheckTopY > 0 ? this.world.findCollidingAt(heroLeftX + heroWidth, obstacleCheckTopY) : null,
+      rightBottomTile = obstacleCheckBottomY > 0 ? this.world.findCollidingAt(heroLeftX + heroWidth, obstacleCheckBottomY) : null,
+      rightBottomEnemie = this.world.findAt(heroLeftX + heroWidth, obstacleCheckBottomY, "character", this, true),
+      rightX = _.minNotNull([
+        this.world.width(),
+        rightTopTile ? rightTopTile.get("x") : null,
+        rightBottomTile ? rightBottomTile.get("x") : null,
+        rightBottomEnemie ? rightBottomEnemie.get("x") : null
+      ]);
+</pre>
+          <p>
+            When an obstacle is hit, the character stops moving. Its <code>x</code> is anchored, and <code>velocity</code> set to 0.
+          </p>
+          <pre>
+if (heroLeftX + heroWidth >= rightX) {
+  if (!rightTopTile &amp;&amp; !rightBottomTile &amp;&amp; !rightBottomEnemie ||
+      rightTopTile ||
+      rightBottomTile ||
+      rightBottomEnemie &amp;&amp; rightBottomEnemie.isBlocking(this, "left")) {
+    attrs.velocity = velocity = 0;
+    attrs.x = x = rightX - heroWidth;
+  }
+  if (rightBottomEnemie) rightBottomEnemie.trigger("hit", this, "left");
+}
+</pre>
+          <p>
+            A collision with another character triggers an <code>hit</code> event on that sprite. The event hanlder will receive the colliding sprite (hero), and its relative position where the hit occured (left of the enemie sprite in this case).
           </p>
           <h4>Usage</h4>
           <p>
