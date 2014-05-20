@@ -37,7 +37,7 @@
       this.debugPanel = options.debugPanel;
       
       _.bindAll(this,
-        "save", "getWorldIndex", "getWorldCol", "getWorldRow", "addOrReplace",
+        "save", "getWorldIndex", "getWorldCol", "getWorldRow", "cloneAtPosition",
         "findAt", "filterAt", "spawnSprites", "height", "width", "add", "remove"
       );
 
@@ -409,13 +409,14 @@
       this.sprites.remove.apply(this.sprites, arguments);
       sprite.world = undefined;
     },
-    addOrReplace: function(sprite, x, y) {
+    cloneAtPosition: function(sprite, x, y, options) {
+      options || (options = {});
+      options.world = this;
+
       var w = this.toShallowJSON(),
           existing = this.findAt(x, y),
           existingName = existing ? existing.get("name") : null,
-          spriteName = sprite ? sprite.get("name") : "",
-          spriteOptions = {world: this};
-
+          spriteName = sprite ? sprite.get("name") : "";
       if (!sprite && !existing) return null;
 
       if (!sprite && existing) {
@@ -444,7 +445,7 @@
       if (spriteName == w.hero) {
         var hero = this.sprites.findWhere({name: w.hero});
         if (hero) this.sprites.remove(hero);
-        spriteOptions.input = this.input;
+        options.input = this.input;
       }
 
       var spriteHeight = sprite.get("height"),
@@ -458,10 +459,10 @@
         y: row * w.tileHeight,
         col: col,
         row: row
-      }), spriteOptions);
+      }), options);
       this.sprites.add(newSprite);
 
-      if (spriteName == w.hero)
+      if (spriteName == w.hero && this.camera)
         this.camera.setOptions({world: this, subject: newSprite});
 
       newSprite.engine = this.engine;

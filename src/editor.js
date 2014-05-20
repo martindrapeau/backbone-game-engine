@@ -159,7 +159,7 @@
         var sprite = this.getSelectedSprite();
         x -= this.world.get("x");
         y -= this.world.get("y");
-        this.world.addOrReplace(sprite, x, y);
+        this.world.cloneAtPosition(sprite, x, y);
       }
     },
 

@@ -707,11 +707,40 @@ input.bind("change:left", function(input) {
             <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to true will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a pair of x/y coordinates. In addition, these sprites are only drawn when required (i.e. world is panned). Use method <code>findCollidingAt</code> for quick lookup.</li>
             <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to false to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup has an order of N. Keep the number of sprites here to a minimum. Use methods <code>findAt</code> and <code>filterAt</code> to find collisions with other sprites.</li>
           </ul>
+          <div class="alert alert-info">
+            Note: If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
+          </div>
+          <h4>Sprites</h4>
           <p>
-            If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
+            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
           </p>
           <p>
-            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine and have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
+            Sprites can be categorized with attribute <code>type</code> as to identify one another when they interact with each other. Sprites of type <code>tile</code> Are usually static and obstacles. Sprites of type <code>character</code> are usually dynamic and moving sprites.
+          </p>
+          <p>
+            You can add sprites with method <code>add</code> which delegates to the <code>sprites</code> collection's <code>add</code> method. It takes care of passing the <code>world</code> as option.
+          </p>
+          <p>
+            You can also use method <code>cloneAtPosition(sprite, x, y)</code>. It takes as argument an existing sprite, and coordinates. It will clone the sprite and place it at the specified coordinates passing <code>world</code> as option. If the sprite name matches that of the world attribute <code>hero</code> it will also pass option <code>input</code>, and if a <code>Backbone.Camera</code> exists, it will be tied to it. Backbone.WorldEditor</code> uses this function for instance.
+          </p>
+          <h4>Background and Tiles</h4>
+          <p>
+            The background of a world is composed of same-size tiles defined by attributes <code>tileWidth</code> and <code>tileHeight</code>. A tile is a sprite with <code>static</code> attribute set to true. The model <code>id</code> is the position of the sprite on screen (column and row). As such, there can only be one tile per location.
+          </p>
+          <p>
+            You can find if a tile is at a specific coordinate with method <code>findCollidingAt(x, y)</code>. This method is fast because lookup is based on id; an index of the position. It should be used to detect sprite collisions with tiles.
+          </p>
+          <h4>Character Sprites</h4>
+          <p>
+            Characters are sprites that interact with their environment. <code>Backbone.Hero</code> is a character, and so are enemies in the Super Mario Bros example. Character sprite models must have a <code>type</code> attribute set to <code>character</code>. Method <code>findAt(x, y, [type], [exclude], [collision])</code> will return the top-most sprite at a specific coordinate. Method <code>filterAt(x, y, [type], [exclude], [collision])</code> will return all sprites at a specific coordinate. Optional arguments allow filtering:
+          </p>
+          <ul>
+            <li><code>type</code>: Optional. If set, will only lookup sprites matching that type.</li>
+            <li><code>exlcude</code>: Optional. The sprite model to exclude in lookup.</li>
+            <li><code>collision</code>: Optional. Boolean indicating whether to only include sprites that have the <code>collision</code> attribute explicitly set to <code>true</code>.
+          </ul>
+          <p>
+            Those methods can be used to detect collisions between characters.
           </p>
           <h4>Persistence</h4>
           <p>
@@ -719,21 +748,6 @@ input.bind("change:left", function(input) {
           </p>
           <p>
             The world can be restored by calling <code>restore</code> and passing as argument a saved world in JSON format.
-          </p>
-          <h4>Collisions</h4>
-          <p>
-            Sprites inside the <code>Backbone.World</code> model can detect collisions with 3 helper methods:
-          </p>
-          <ul>
-            <li><code>findAt(x, y, [type], [exclude], [collision])</code></li>
-            <li><code>filterAt(x, y, [type], [exclude], [collision])</code></li>
-            <li><code>findCollidingAt(x, y)</code></li>
-          </ul>
-          <p>
-            The first two find the first or a list of sprites overlapping a specified point, and are meant mainly for finding moving sprites (characters). They have filtering options to lookup only sprites of certain types, to exclude a sprite (provided its id) and to include only sprites with attribute <code>collision</code> set to true.
-          </p>
-          <p>
-            Method <code>findCollidingAt</code> is meant for tile lookup. It is fast since lookup is on the indexed model <code>id</code> (column/row position). It returns the first sprite overlapping the passed point. It is useful for preventing characters from walking through walls or falling through tiles.
           </p>
           <h4>Usage</h4>
           <pre>
