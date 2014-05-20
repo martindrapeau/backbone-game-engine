@@ -43,7 +43,7 @@
       x: left, y: bottom-100,
       width: 120,  height: 150,
       draw: function(context, pressed) {
-        context.clearRect(left+40, bottom-90, 60, 80);
+        context.clearRect(left+35, bottom-90, 70, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
@@ -59,7 +59,7 @@
       x: 120, y: bottom-100,
       width: 120,  height: 100,
       draw: function(context, pressed) {
-        context.clearRect(left+140, bottom-90, 60, 80);
+        context.clearRect(left+135, bottom-90, 70, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
@@ -75,7 +75,7 @@
       x: right-240, y: bottom-100,
       width: 150,  height: 150,
       draw: function(context, pressed) {
-        context.clearRect(right-180, bottom-90, 80, 80);
+        context.clearRect(right-185, bottom-90, 90, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
@@ -90,7 +90,7 @@
       x: right-90, y: bottom-100,
       width: 150,  height: 150,
       draw: function(context, pressed) {
-        context.clearRect(right-80, bottom-90, 80, 80);
+        context.clearRect(right-85, bottom-90, 90, 80);
         var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
