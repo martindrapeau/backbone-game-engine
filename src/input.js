@@ -294,7 +294,11 @@
     },
     onTouchStart: function(e) {
       e.preventDefault();
-      var touches = e.changedTouches;
+      var touches = e.changedTouches || [{
+          identifier: e.pointerId,
+          pageX: e.pageX,
+          pageY: e.pageY
+        }];
 
       for (var i = 0; i < touches.length; i++)
         ongoingTouches.push(copyTouch(touches[i]));
@@ -302,7 +306,11 @@
     },
     onTouchMove: function(e) {
       e.preventDefault();
-      var touches = e.changedTouches;
+      var touches = e.changedTouches || [{
+          identifier: e.pointerId,
+          pageX: e.pageX,
+          pageY: e.pageY
+        }];
 
       for (var i = 0; i < touches.length; i++) {
         var idx = ongoingTouchIndexById(touches[i].identifier);
@@ -313,7 +321,11 @@
     },
     onTouchEnd: function(e) {
       e.preventDefault();
-      var touches = e.changedTouches;
+      var touches = e.changedTouches || [{
+          identifier: e.pointerId,
+          pageX: e.pageX,
+          pageY: e.pageY
+        }];
 
       for (var i=0; i < touches.length; i++) {
         var idx = ongoingTouchIndexById(touches[i].identifier);
