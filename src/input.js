@@ -191,12 +191,20 @@
       if (!this.hasTouchpad()) return;
       
       if (this.get("touchEnabled")) {
-        console.log("Input: attaching touch events");
-        $(document).on("touchstart.InputTouchpad", this.onTouchStart);
-        $(document).on("touchmove.InputTouchpad", this.onTouchMove);
-        $(document).on("touchend.InputTouchpad", this.onTouchEnd);
-        $(document).on("touchleave.InputTouchpad", this.onTouchEnd);
-        $(document).on("touchcancel.InputTouchpad", this.onTouchEnd);
+        if (window.navigator.msMaxTouchPoints) {
+          console.log("Input: attaching MS touch events");
+          $(document).on("pointerdown.InputTouchpad", this.onTouchStart);
+          $(document).on("pointermove.InputTouchpad", this.onTouchMove);
+          $(document).on("pointerup.InputTouchpad", this.onTouchEnd);
+          $(document).on("pointercancel.InputTouchpad", this.onTouchEnd);
+        } else {
+          console.log("Input: attaching touch events");
+          $(document).on("touchstart.InputTouchpad", this.onTouchStart);
+          $(document).on("touchmove.InputTouchpad", this.onTouchMove);
+          $(document).on("touchend.InputTouchpad", this.onTouchEnd);
+          $(document).on("touchleave.InputTouchpad", this.onTouchEnd);
+          $(document).on("touchcancel.InputTouchpad", this.onTouchEnd);
+        }
       } else {
         // Fallback to handling mouse events
         console.log("Input: attaching mouse events");
