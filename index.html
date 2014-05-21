@@ -693,15 +693,15 @@ input.bind("change:left", function(input) {
           </ul>
           <h4>Methods</h4>
           <p>
-            A <code>Backbone.World</code> is a model that wraps a collection. It therefore provides these 3 methods to populate the collection:
+            A <code>Backbone.World</code> is a model that wraps a collection stored in property <code>sprites</code>.To prevent outside direct access to this collection, it provides these 3 methods:
           </p>
           <ul>
-            <li><code>reset([attributes])</code>: Reset the world and sprites collection. If argument </code>attributes</li> is passed, will call a <code>set</code> on the model. If omitted, only resets the sprites collection by retrieving the <code>sprites</code> attribute from the model.</li>
+            <li><code>reset([attributes])</code>: Reset the world model and sprites collection. If argument </code>attributes</li> is passed, will call a <code>set</code> on the model. If omitted, only resets the sprites collection by retrieving the <code>sprites</code> attribute from the model.</li>
             <li><code>add(models, [options])</code>: Add one or many models. Adds <code>world</code> to options and delegates to the <code>sprites</code> collection's <code>add</code> method. Then sets the <code>world</code> property as back-reference on the new model(s). Returns the new model(s).</li>
             <li><code>remove(models, [options])</code>: Removes one or many models. Delegates to the <code>sprites</code> collection's <code>remove</code> method. Deletes the <code>world</code> back-reference and returns the model(s).</li>
           </ul>
           <p>
-            In addition to <code>Backbone.Model</code> methods, it also has these:
+            In addition to <code>Backbone.Model</code> methods, it also exposes these:
           </p>
           <ul>
             <li><code>update(dt)</code>: Update function called by the engine. Will in turn call the update method of all sprites.</li>
