@@ -692,7 +692,7 @@ input.bind("change:left", function(input) {
             <li><code>debugPanel</code>: Optional.</li>
           </ul>
           <p>
-            Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a href="#documentation-Engine" target="_blank">Backbone.Engine</a> the world is attached to. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
+            Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a href="#documentation-Engine" target="_blank">Backbone.Engine</a> the world is attached to. Sprites then have properties <code>engine</code> and <code>world</code> set as back-reference. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
           </p>
           <p>
             A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the size in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned consequently changing the viewport.

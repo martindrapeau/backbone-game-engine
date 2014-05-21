@@ -95,6 +95,12 @@ $(window).on("load", function() {
       });
       this.saveButton.on("tap", this.saveWorld, this);
 
+      this.restartButton = new Backbone.Button({
+        x: 904, y: 608, width: 52, height: 52, borderRadius: 5,
+        img: "#icons", imgX: 128, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
+      });
+      this.restartButton.on("tap", this.restartWorld, this);
+
       this.downloadButton = new Backbone.Button({
         x: 888, y: 10, width: 52, height: 52, borderRadius: 5,
         img: "#icons", imgX: 64, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
@@ -133,7 +139,7 @@ $(window).on("load", function() {
       this.onChangeState();
 
       // If we have Application Cache active, load the latest world
-      if (window.applicationCache && window.applicationCache.status) this.loadWorld();
+      this.loadWorld();
     },
     toggleState: function(e) {
       var state = this.world.get("state");
@@ -147,13 +153,13 @@ $(window).on("load", function() {
         context.clearRect(0, 0, canvas.width, canvas.height);
         this.engine.remove(this.input);
         this.engine.add(this.editor);
-        this.engine.add(this.saveButton);
+        this.engine.add([this.saveButton, this.restartButton]);
         this.toggleButton.set({imgX: 32});
       } else {
         // Play
         context.clearRect(0, 0, canvas.width, canvas.height);
         this.engine.remove(this.editor);
-        this.engine.remove(this.saveButton);
+        this.engine.remove([this.saveButton, this.restartButton]);
         this.engine.add(this.input);
         this.toggleButton.set({imgX: 0});
       }
@@ -172,10 +178,11 @@ $(window).on("load", function() {
             message.hide();
           }, 1000);
         },
-        error: function(xhR, textStatus, errorThrown ) {
+        error: function(xhr, textStatus, errorThrown ) {
           message.show("Error: " + errorThrown);
         }
       });
+      return this;
     },
     // Load our world from the server.
     loadWorld: function() {
@@ -198,6 +205,26 @@ $(window).on("load", function() {
           }, 2000);
         }
       });
+      return this;
+    },
+    restartWorld: function() {
+      var controller = this,
+          world = this.world,
+          message = this.message;
+
+      message.show("Restarting...");
+
+      localStorage.removeItem(world.id);
+
+      world.set(window._world)
+        .spawnSprites()
+        .trigger("attach", world.engine);
+
+      setTimeout(function() {
+        message.hide();
+      }, 2000);
+
+      return this;
     },
     downloadNewVersion: function() {
       window.applicationCache.swapCache();

@@ -401,13 +401,25 @@
           sprite = id ? this.sprites.get(id) : null;
       return sprite && sprite.get("collision") ? sprite : null;
     },
-    add: function(sprite) {
-      sprite.world = this;
-      this.sprites.add.apply(this.sprites, arguments);
+    add: function(models, options) {
+      options || (options = {});
+      options.world = this;
+      models = this.sprites.add.call(this.sprites, models, options);
+      if (_.isArray(models))
+        for (var i = 0; i < models.length; i++)
+          models[i].world = this;
+      else
+        models.world = this;
+      return models;
     },
-    remove: function(sprite) {
-      this.sprites.remove.apply(this.sprites, arguments);
-      sprite.world = undefined;
+    remove: function(models, options) {
+      models = this.sprites.remove.apply(this.sprites, arguments);
+      if (_.isArray(models))
+        for (var i = 0; i < models.length; i++)
+          if (models[i].world === this) delete models[i].world;
+      else
+        if (models.world === this) delete models.world;
+      return models;
     },
     cloneAtPosition: function(sprite, x, y, options) {
       options || (options = {});
@@ -430,21 +442,21 @@
           var cur = existing.getStateInfo(),
               removeOnDir = existingName == w.hero ? "left" : "right";
           if (!cur.dir || cur.dir == removeOnDir) {
-            this.sprites.remove(existing);
+            this.remove(existing);
             return null;
           }
           existing.toggleDirection(cur.opo);
           return existing;
         } else {
           // Replace existing
-          this.sprites.remove(existing);
+          this.remove(existing);
         }
       }
 
       // Mario is a singleton - remove if anywhere else
       if (spriteName == w.hero) {
         var hero = this.sprites.findWhere({name: w.hero});
-        if (hero) this.sprites.remove(hero);
+        if (hero) this.remove(hero);
         options.input = this.input;
       }
 
@@ -460,7 +472,7 @@
         col: col,
         row: row
       }), options);
-      this.sprites.add(newSprite);
+      this.add(newSprite, options);
 
       if (spriteName == w.hero && this.camera)
         this.camera.setOptions({world: this, subject: newSprite});
