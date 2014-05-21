@@ -672,7 +672,7 @@ input.bind("change:left", function(input) {
           <h3>Backbone.World</h3>
           <pre>new Backbone.World([attributes], [options])</pre>
           <p>
-            <code>Backbone.World</code> is model which contains a collection of sprites.
+            <code>Backbone.World</code> is model which contains a collection of sprites that interact with eachother. A world is an environment composed of tiles and characters. The world extends beyond the canvas. The visible portion is the viewport. <code>Backbone.World</code> is a sprite; it implements the <code>update</code> and <code>draw</code> methods required by the <code>Backbone.Engine</code> collection.
           </p>
           <h4>Attributes</h4>
           <ul>
@@ -693,14 +693,19 @@ input.bind("change:left", function(input) {
           </ul>
           <h4>Methods</h4>
           <p>
-            A <code>Backbone.World</code> has these methods in addition to <code>Backbone.Model</code> methods.
+            A <code>Backbone.World</code> is a model that wraps a collection. It therefore provides these 3 methods to populate the collection:
           </p>
           <ul>
-            <li><code>reset()</code>: Instantiates sprites at startup.</li>
-            <li><code>update(dt)</code>: Update function called by the engine. Will in turn call the update method of all sprites.</li>
-            <li><code>draw(context)</code>: Draw function called by the engine. Will in turn call the draw method of all sprites.</li>
+            <li><code>reset([attributes])</code>: Reset the world and sprites collection. If argument </code>attributes</li> is passed, will call a <code>set</code> on the model. If omitted, only resets the sprites collection by retrieving the <code>sprites</code> attribute from the model.</li>
             <li><code>add(models, [options])</code>: Add one or many models. Adds <code>world</code> to options and delegates to the <code>sprites</code> collection's <code>add</code> method. Then sets the <code>world</code> property as back-reference on the new model(s). Returns the new model(s).</li>
             <li><code>remove(models, [options])</code>: Removes one or many models. Delegates to the <code>sprites</code> collection's <code>remove</code> method. Deletes the <code>world</code> back-reference and returns the model(s).</li>
+          </ul>
+          <p>
+            In addition to <code>Backbone.Model</code> methods, it also has these:
+          </p>
+          <ul>
+            <li><code>update(dt)</code>: Update function called by the engine. Will in turn call the update method of all sprites.</li>
+            <li><code>draw(context)</code>: Draw function called by the engine. Will in turn call the draw method of all sprites.</li>
             <li><code>cloneAtPosition(sprite, x, y)</code>: Clones the sprite model and places the new instance at the specified coordinates. Will pass <code>world</code> to the <code>options</code> payload when created. Will also set property <code>world</code> as back-reference. If the sprite name matches that of the world attribute <code>hero</code> it will also pass option <code>input</code>, and if a <code>Backbone.Camera</code> exists, it will be tied to it. This function also acts as a toggle when placing a sprite over a tile where another exists. The existing one is removed. This ensures only one tile (static sprite) exists at one location.</li>
             <li><code>width(), height()</code>: Return the size of the world in pixels.</li>
             <li><code>getWorldIndex(object)</code>: Calculates the index position of a tile based on coordinates. Argument <code>object</code> must contain <code>x</code> and <code>y</code>, or be a model with those attributes. The index is calculated with formula <code>height * x/tileWidth + y/tileHeight</code>. This method is used to set the <code>id</code> of tile sprites.</li>
