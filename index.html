@@ -691,6 +691,22 @@ input.bind("change:left", function(input) {
             <li><code>camera</code>: Camera instance to keep the hero in the viewport.</li>
             <li><code>debugPanel</code>: Optional.</li>
           </ul>
+          <h4>Methods</h4>
+          <p>
+            A <code>Backbone.World</code> has these methods in addition to <code>Backbone.Model methods</code>.
+          </p>
+          <ul>
+            <li><code>spawnSprites()</code>: Instantiates sprites at startup. Described below.</li>
+            <li><code>add(models, [options])</code>: Add one or many models. Adds <code>world</code> to options and delegates to the <code>sprites</code> collection's <code>add</code> method. Then sets the <code>world</code> property as back-reference on the new model(s). Returns the new model(s).</li>
+            <li><code>remove(models, [options])</code>: Removes one or many models. Delegates to the <code>sprites</code> collection's <code>remove</code> method. Deletes the <code>world</code> back-reference and returns the model(s).</li>
+            <li><code>cloneAtPosition(sprite, x, y)</code>: Clones the sprite model and places the new instance at the specified coordinates. Will pass <code>world</code> to the <code>options</code> payload when created. Will also set property <code>world</code> as back-reference. If the sprite name matches that of the world attribute <code>hero</code> it will also pass option <code>input</code>, and if a <code>Backbone.Camera</code> exists, it will be tied to it. This function also acts as a toggle when placing a sprite over a tile where another exists. The existing one is removed. This ensures only one tile (static sprite) exists at one location.</li>
+            <li><code>width(), height()</code>: Return the size of the world in pixels.</li>
+            <li><code>getWorldIndex(object)</code>: Calculates the index position of a tile based on coordinates. Argument <code>object</code> must contain <code>x</code> and <code>y</code>, or be a model with those attributes. The index is calculated with formula <code>height * x/tileWidth + y/tileHeight</code>. This method is used to set the <code>id</code> of tile sprites.</li>
+            <li><code>getWorldCol(x), getWorldRow(y)</code>: Returns the tile position in columns or rows of a coordinate.</li>
+            <li><code>findCollidingAt(x, y)</code>: Finds the first sprite at the specified coordinate, which has the <code>collision</code> attribute set to true. Uses fast index lookup for static sprites.</li>
+            <li><code>findAt(x, y, [type], [exclude], [collision])</code>: Finds the first sprite at the specified coordinate. Described further below.</li>
+            <li><code>filterAt(x, y, [type], [exclude], [collision])</code>: Finds a list of sprites at the specified coordinate.  Described further below.</li>
+          </ul>
           <p>
             Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a href="#documentation-Engine" target="_blank">Backbone.Engine</a> the world is attached to. Sprites then have properties <code>engine</code> and <code>world</code> set as back-reference. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
           </p>
@@ -698,7 +714,7 @@ input.bind("change:left", function(input) {
             A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the size in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned consequently changing the viewport.
           </p>
           <p>
-            Methods <code>getWorldIndex({x,y}|model)</code>, <code>getWorldCol(x)</code> and <code>getWorldRow(y)</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
+            Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
           </p>
           <p>
             Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
