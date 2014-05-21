@@ -721,9 +721,6 @@ input.bind("change:left", function(input) {
             A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the size in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned consequently changing the viewport.
           </p>
           <p>
-            Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
-          </p>
-          <p>
             Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
           </p>
           <ul>
@@ -734,6 +731,9 @@ input.bind("change:left", function(input) {
             Note: If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
           </div>
           <h4>Sprites</h4>
+          <p>
+            Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
+          </p>
           <p>
             When the world is created, sprites are instantiated in method <code>reset</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
           </p>
