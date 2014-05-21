@@ -193,9 +193,7 @@ $(window).on("load", function() {
       message.show("Loading...");
       world.fetch({
         success: function() {
-          world
-            .spawnSprites()
-            .trigger("attach", world.engine);
+          world.reset();
           message.hide();
         },
         error: function(xhr, textStatus, errorThrown ) {
@@ -216,9 +214,7 @@ $(window).on("load", function() {
 
       localStorage.removeItem(world.id);
 
-      world.set(window._world)
-        .spawnSprites()
-        .trigger("attach", world.engine);
+      world.reset(window._world);
 
       setTimeout(function() {
         message.hide();

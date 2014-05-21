@@ -38,12 +38,12 @@
       
       _.bindAll(this,
         "save", "getWorldIndex", "getWorldCol", "getWorldRow", "cloneAtPosition",
-        "findAt", "filterAt", "spawnSprites", "height", "width", "add", "remove"
+        "findAt", "filterAt", "reset", "height", "width", "add", "remove"
       );
 
       this.sprites = new Backbone.Collection();
       this.setupBackground();
-      this.spawnSprites();
+      this.reset();
 
       this.on("attach", this.onAttach, this);
       this.on("detach", this.onDetach, this);
@@ -153,11 +153,12 @@
       return this;
     },
 
-    // Create the sprites collection from the sprites attribute.
-    spawnSprites: function() {
+    reset: function(attributes) {
+      if (attributes) this.set(attributes);
+
       var world = this,
           w = this.toShallowJSON(),
-          _sprites =  this.get("sprites");
+          _sprites = this.get("sprites");
 
       this.sprites.reset();
 
@@ -171,8 +172,9 @@
         return name;
       }
 
-      var sprites = _.reduce(_sprites, function(sprites, s) {
-        var cls = _.classify(s.name),
+      var sprites = _.reduce(_sprites, function(sprites, sprite) {
+        var s = sprite.attributes ? sprite.attributes : sprite,
+            cls = _.classify(s.name),
             col = world.getWorldCol(s.x),
             row = world.getWorldRow(s.y),
             options = {world: world};

@@ -696,7 +696,7 @@ input.bind("change:left", function(input) {
             A <code>Backbone.World</code> has these methods in addition to <code>Backbone.Model</code> methods.
           </p>
           <ul>
-            <li><code>spawnSprites()</code>: Instantiates sprites at startup.</li>
+            <li><code>reset()</code>: Instantiates sprites at startup.</li>
             <li><code>update(dt)</code>: Update function called by the engine. Will in turn call the update method of all sprites.</li>
             <li><code>draw(context)</code>: Draw function called by the engine. Will in turn call the draw method of all sprites.</li>
             <li><code>add(models, [options])</code>: Add one or many models. Adds <code>world</code> to options and delegates to the <code>sprites</code> collection's <code>add</code> method. Then sets the <code>world</code> property as back-reference on the new model(s). Returns the new model(s).</li>
@@ -730,7 +730,7 @@ input.bind("change:left", function(input) {
           </div>
           <h4>Sprites</h4>
           <p>
-            When the world is created, sprites are instantiated in method <code>spawnSprites</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
+            When the world is created, sprites are instantiated in method <code>reset</code>. Each sprite instance is attached to the engine. Sprites then have properties <code>engine</code> and <code>world</code> set pointing to those respective objects.
           </p>
           <p>
             Sprites can be categorized with attribute <code>type</code> as to identify one another when they interact with each other. Sprites of type <code>tile</code> Are usually static and obstacles. Sprites of type <code>character</code> are usually dynamic and moving sprites.
@@ -765,9 +765,9 @@ input.bind("change:left", function(input) {
             The world model attributes contain all that is necessary to persist the state of the world to disk, or in the cloud. Calling the <code>save</code> method first serializes the sprite collection into the <code>sprites</code> attribute by calling the <code>toSave</code> method on each sprite to save their position and state. It then delegates to the backbone model's <code>save</code> method to save to a server or local storage in JSON format. See the Backbone documentation for details.
           </p>
           <p>
-            The world can be restored by calling <code>set</code> passing as argument a saved world in JSON format, and then <code>spawnSprites</code>. For example, file <code>super-mario-world/level-1-1.js</code> contains the level in JSON format. It is set in global variable <code>_world</code>. The world can be restarted anytime with this line of code:
+            The world can be restored by calling <code>set</code> passing as argument a saved world in JSON format, and then <code>reset</code>. For example, file <code>super-mario-world/level-1-1.js</code> contains the level in JSON format. It is set in global variable <code>_world</code>. The world can be restarted anytime with this line of code:
           </p>
-          <pre>world.set(window._world).spawnSprites();</pre>
+          <pre>world.set(window._world).reset();</pre>
           <h4>Usage</h4>
           <pre>
   var mario = new Backbone.Mario({
