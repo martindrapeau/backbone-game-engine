@@ -349,11 +349,20 @@ $(window).on("load", function() {
             The core object to run everything is the <em>engine</em>, a Backbone collection of sprites (Backbone models).
           </p>
           <h4>Options</h4>
+          <p>
+            Upon instantiation, these options can be passed. They will be stored as properties on the <code>Backbone.Engine</code> model instance.
+          </p>
           <ul>
             <li><code>canvas</code>: The canvas to draw upon. Drawing is on its 2d context.</li>
             <li><code>input</code>: Optional. The user control input instance. If passed and the pause button is enabled, will stop/start then engine when pressed.</li>
             <li><code>clearOnDraw</code>: Optional. Boolean to ask for a clear of the canvas before redraw. Defaults to false. Note that this is an expensive call. Better to only clear the area that changed.</li>
             <li><code>debugPanel</code>: Optional. A <a href="#documentation-DebugPanel">Backbone.DebugPanel</a> instance. If passed <code>fps</code> and <code>cycleTime</code> are output.</li>
+          </ul>
+          <h4>Methods</h4>
+          <ul>
+            <li><code>isRunning()</code>: Returns true if the engine is running, or false if not.</li>
+            <li><code>start(), stop()</code>: Starts or stops the engine.</li>
+            <li><code>toggle()</code>: Toggle start/stop the engine.</li>
           </ul>
           <p>
             The <code>Backbone.Engine</code> class is a <a href="http://backbonejs.org/#Collection" target="_blank">Backbone.Collection</a> that uses HTML5's <a href="https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame" target="_blank">requestAnimationFrame</a> to provide a 60 frames per second game loop. Every frame, the engine performs these things:
@@ -404,12 +413,9 @@ $(window).on("load", function() {
       <div id="documentation-SpriteSheet" class="row">
         <div class="col-md-12">
           <h3>Backbone.SpriteSheet</h3>
-          <pre>
-new Backbone.SpriteSheet([attributes], [options]);
-new Backbone.SpriteSheetCollection([models], [options]);
-</pre>
+          <pre>new Backbone.SpriteSheet([attributes], [options]);</pre>
           <p>
-            <code>Backbone.SpriteSheet</code> is a Backbone model which breaks an image into frames used for animation. <code>Backbone.SpriteSheetCollection</code> is a Backbone collection of sprite sheets.
+            <code>Backbone.SpriteSheet</code> is a Backbone model which breaks an image into frames used for animation.
           </p>
           <h4>Attributes</h4>
           <ul>
@@ -417,9 +423,31 @@ new Backbone.SpriteSheetCollection([models], [options]);
             <li><code>tileWidth, tileHeight</code>: Size of tiles in pixels.</li>
             <li><code>tileColumns, tileRows</code>: Number of tiles in the image.</li>
           </ul>
+          <h4>Properties</h4>
+          <ul>
+            <li><code>frames</code>: Array of animation frames. Automatically set when model is instantiated.</li>
+            <li><code>img</code>: Pointer to <code>Image</code> object. Automatically set when model is instantiated.</li>
+          </ul>
           <p>
-            When the sprite sheet is instantiated, an array of frames is built. A frame object contains the coordinates of the frame. It consists of <code>{x, y, width, height}</code> representing the pixel position and size of the frame. These will be passed to the <a href="https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D#drawImage()" target="_blank">HTML5 canvas drawImage</a> function as arguments <code>sx, sy, sw, sh</code> by the <code>draw</code> method.
+            When a sprite sheet is instantiated, an array of frames is built and stored in property <code>frames</code>. A frame object contains the coordinates of the frame. It consists of <code>{x, y, width, height}</code> representing the pixel position and size of the frame. These will be passed to the <a href="https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D#drawImage()" target="_blank">HTML5 canvas drawImage</a> function as arguments <code>sx, sy, sw, sh</code> by the <code>draw</code> method.
           </p>
+          <p>
+            Sprite sheets are not generally created on their own, but rather in a <code>Backbone.SpriteSheetCollection</code>. See below for usage.
+          </p>
+        </div>
+      </div>
+
+      <div id="documentation-SpriteSheetCollection" class="row">
+        <div class="col-md-12">
+          <h3>Backbone.SpriteSheetCollection</h3>
+          <pre>new Backbone.SpriteSheetCollection([models], [options]);</pre>
+          <p>
+            <code>Backbone.SpriteSheetCollection</code> is a Backbone collection of <code>Backbone.SpriteSheet</code> models.
+          </p>
+          <h4>Methods</h4>
+          <ul>
+            <li><code>attachToSpriteClasses()</code>: Attaches sprite sheets to sprite class prototypes. Does so by finding all defined sprite classes (<code>Backbone.*</code>) with default attribute <code>spriteSheet</code> matching a sprite sheet id in the collection. Then sets their <code>spriteSheet</code> property to point to the correct sprite sheet in the collection.</li>
+          </ul>
           <h4>Usage</h4>
           <p>
             Define your sprite sheets by creating a collection as such:
@@ -466,9 +494,23 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <li><code>width, height</code>: Size of the sprite in pixels.</li>
             <li><code>state</code>: The current animation.</li>
             <li><code>sequenceIndex</code>: The current animation sequence frame. Automatically set.</li>
-            <li><code>spriteSheet</code>: Sprite sheet id.</li>
+            <li><code>spriteSheet</code>: Sprite sheet id. </li>
             <li><code>collision</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
             <li><code>static</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
+          </ul>
+          <h4>Properties</h4>
+          <ul>
+            <li><code>animations</code>: Hash of animations of the sprite. Described further below.</li>
+            <li><code>spriteSheet</code>: Instance of the <code>Backbone.SpriteSheet</code> holding the images to animate. This is automatically set when you define your sprite sheet collection. See <a href="#documentation-SpriteSheetCollection">Backbone.SpriteSheetCollection</a> for details.</li>
+            <li><code>saveAttributes</code>: Attributes serialized for persistence. Defaults to <code>["name", "state", "sequenceIndex", "x", "y"]</code>.</li>
+          </ul>
+          <h4>Methods</h4>
+          <ul>
+            <li><code>toSave()</code>: Serializes attributes for persistence. Attributes to be serialized are specified in the <code>saveAttributes</code> property.</li>
+            <li><code>update(dt)</code>: Called by then engine 60 times a second. Updates sprite attribues and implements behavior. Returns true to ask for a redraw, or false for none.</li>
+            <li><code>draw(contexT)</code>: Called by the engine after <code>update</code>, if a redraw was asked. Takes care of rendering the sprite, and its proper animation at the correct position.</li>
+            <li><code>getAnimation([state])</code>: Returns the current animation based on argument <code>state</code>. If argument <code>state</code> is omitted, the attribute is used instead.</li>
+            <li><code>getStateInfo([state])</code>: Decomposes <code>state</code> into move and direction. For example <code>walk-left</code> would be decomposed into <code>{mov:"walk", dir:"left", opo:"right"}</code>. If argument <code>state</code> is omitted, the attribute is used instead. See <a href="#documentation-Hero">Backbone.Hero</a> for details.</li>
           </ul>
           <p>
             Graphics are obtained from a <a href="#documentation-SpriteSheet">Backbone.SpriteSheet</a> model. In attribute <code>spriteSheet</code>, specify the sprite sheet id you previously defined in a <code>Backbone.SpriteSheetCollection</code> instance. The collection will automatically attach it to the sprite by setting property <code>spriteSheet</code> as back reference. Building on the example above:
@@ -627,7 +669,7 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
           <h4>Attributes</h4>
           <p>These attributes can be passed when creating the model, to configure the input.</p>
           <ul>
-            <li><code>drawTouchpad</code>: Optional. Boolean to indicate whether to draw the touchpad. Defaults to true.</li>
+            <li><code>drawTouchpad</code>: Optional. Boolean or string "auto" to indicate whether to draw the touchpad. When "auto", the touchpad will be drawn only on touch devies. Defaults to "auto".</li>
             <li><code>drawPause</code>: Optional. Boolean to indicate whether to draw the pause button on the touchpad. Defaults to false.</li>
           </ul>
           <p>The following model attributes are set by the model. They should not be set externally.</p>
@@ -642,16 +684,14 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
             <li><code>touched</code>: Array of buttons touched on touch screen.</li>
             <li><code>clicked</code>: Boolean set to true when a mouse button is pressed.</li>
           </ul>
-          <h4>Helper methods</h4>
-          <p>
-            The following helper methods can be called ro find out what buttons are pressed.
-          </p>
+          <h4>Methods</h4>
           <ul>
-            <li><code>leftPressed()</code></li>
-            <li><code>rightPressed()</code></li>
-            <li><code>buttonAPressed()</code></li>
-            <li><code>buttonBPressed()</code></li>
-            <li><code>pausePressed()</code></li>
+            <li><code>hasTouchpad()</code>: Returns true if the touchpad is drawn.</li>
+            <li><code>leftPressed()</code>: Returns true if the left button is pressed.</li>
+            <li><code>rightPressed()</code>: Returns true if the right button is pressed.</li>
+            <li><code>buttonAPressed()</code>: Returns true if button A is pressed.</li>
+            <li><code>buttonBPressed()</code>: Returns true if button B is pressed.</li>
+            <li><code>pausePressed()</code>: Returns true if the pause button is pressed. </li>
           </ul>
           <h4>Usage</h4>
           <pre>
@@ -1322,6 +1362,7 @@ icons.png
           <li><a href="#documentation">Reference</a></li>
           <li><a href="#documentation-Engine">&nbsp;&nbsp;Backbone.Engine</a></li>
           <li><a href="#documentation-SpriteSheet">&nbsp;&nbsp;Backbone.SpriteSheet</a></li>
+          <li><a href="#documentation-SpriteSheetCollection">&nbsp;&nbsp;Backbone.SpriteSheetCollection</a></li>
           <li><a href="#documentation-Sprite">&nbsp;&nbsp;Backbone.Sprite</a></li>
           <li><a href="#documentation-Input">&nbsp;&nbsp;Backbone.Input</a></li>
           <li><a href="#documentation-World">&nbsp;&nbsp;Backbone.World</a></li>
