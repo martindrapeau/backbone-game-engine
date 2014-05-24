@@ -38,12 +38,12 @@
       
       _.bindAll(this,
         "save", "getWorldIndex", "getWorldCol", "getWorldRow", "cloneAtPosition",
-        "findAt", "filterAt", "reset", "height", "width", "add", "remove"
+        "findAt", "filterAt", "spawnSprites", "height", "width", "add", "remove"
       );
 
       this.sprites = new Backbone.Collection();
       this.setupBackground();
-      this.reset();
+      this.spawnSprites();
 
       this.on("attach", this.onAttach, this);
       this.on("detach", this.onDetach, this);
@@ -153,9 +153,7 @@
       return this;
     },
 
-    reset: function(attributes) {
-      if (attributes) this.set(attributes);
-
+    spawnSprites: function() {
       var world = this,
           w = this.toShallowJSON(),
           _sprites = this.get("sprites");
@@ -199,6 +197,7 @@
 
       this.requestBackgroundRedraw = true;
       this.sprites.reset(sprites);
+      if (this.engine) this.onAttach();
 
       return this;
     },
@@ -210,6 +209,7 @@
       });
 
       this.set({
+        state: "play",
         sprites: sprites,
         savedOn: new Date().toJSON()
       }, {silent: true});

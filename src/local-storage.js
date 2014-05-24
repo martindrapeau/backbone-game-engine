@@ -32,6 +32,7 @@
 
       
       this.set({
+        state: "play",
         sprites: this.sprites.map(function(sprite) {
           return sprite.toSave.apply(sprite);
         }),
