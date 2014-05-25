@@ -237,15 +237,15 @@
           pressed = this.input.buttonBPressed(),
           attrs = {};
 
-        // Speed up or slow down
-        if (pressed && state == "walk-right") attrs.state = "run-right";
-        else if (pressed && state == "walk-left") attrs.state = "run-left";
-        else if (!pressed && state == "run-right") attrs.state = "walk-right";
-        else if (!pressed && state == "run-left") attrs.state = "walk-left";
-        if (!_.isEmpty(attrs)) this.set(attrs);
+      // Speed up or slow down
+      if (pressed && state == "walk-right") attrs.state = "run-right";
+      else if (pressed && state == "walk-left") attrs.state = "run-left";
+      else if (!pressed && state == "run-right") attrs.state = "walk-right";
+      else if (!pressed && state == "run-left") attrs.state = "walk-left";
+      if (!_.isEmpty(attrs)) this.set(attrs);
 
-        return this;
-      },
+      return this;
+    },
     // Jump
     buttonAToggled: function() {
       var state = this.get("state"),
@@ -377,7 +377,7 @@
       // Collision detection
       var heroSmall = this.get("powerUp") == "small",
           heroWidth = this.get("width"),
-          tileHeight = this.get("height")
+          tileHeight = this.get("height"),
           heroHeight = heroSmall ? tileHeight/2 : tileHeight,
           heroBottomY = Math.round(y + yVelocity * (dt/1000)) + tileHeight,
           heroTopY = heroBottomY - heroHeight,
@@ -385,7 +385,7 @@
           bottomLeftTile = this.world.findCollidingAt(heroLeftX + heroWidth/4, heroBottomY),
           bottomRightTile = this.world.findCollidingAt(heroLeftX + heroWidth*3/4, heroBottomY),
           bottomY = _.minNotNull([
-            this.world.height() - heroHeight,
+            this.world.height(),
             bottomLeftTile ? bottomLeftTile.get("y") : null,
             bottomRightTile ? bottomRightTile.get("y") : null
           ]);
@@ -394,7 +394,7 @@
         // Falling...
 
         if (heroBottomY >= bottomY) {
-        // Stop falling if obstacle below
+          // Stop falling if obstacle below
           attrs.yVelocity = yVelocity = 0;
           attrs.y = y = bottomY - tileHeight;
           heroBottomY = y + tileHeight;

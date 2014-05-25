@@ -43,7 +43,7 @@ $(window).on("load", function() {
   });
 
   var world = new Backbone.World({
-  	width: 30, height: 18,
+  	width: 30, height: 17,
   	tileWidth: 32, tileHeight: 32,
     backgroundColor: "rgba(66, 66, 255, 1)"
   });

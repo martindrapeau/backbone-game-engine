@@ -447,7 +447,8 @@
             this.remove(existing);
             return null;
           }
-          existing.toggleDirection(cur.opo);
+          if (cur.opo && _.isFunction(existing.toggleDirection))
+            existing.toggleDirection(cur.opo);
           return existing;
         } else {
           // Replace existing
