@@ -897,6 +897,14 @@ input.bind("change:left", function(input) {
           <ul>
             <li><code>input</code>: Optional. A <code>Backbone.Input</code> instance to allow control of the character with the keyboard (left and right arrows, z and x) or via touch events on the on-screen drawn gamepad.</li>
           </ul>
+          <h4>Methods</h4>
+          <p>
+            <code>Backbone.Hero</code> inherits all methods from <code>Backbone.Sprite</code>. In addition, it provides these public methods.
+          </p>
+          <ul>
+            <li><code>update(dt)</code>: Handles the character movements.</li>
+            <li><code>toggleDirection(dirIntent)</code>: Invokes a <code>left</code> or <code>right</code> direction change.</li>
+          </ul>
           <p>
             Attribute <code>state</code> determines the current animation. A state is a pair of move and direction. For example <code>idle-right</code>, <code>walk-left</code> and <code>jump-right</code>. Method <code>getStateInfo</code> will decompose the state for you into those components.
           </p>

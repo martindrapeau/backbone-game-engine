@@ -341,9 +341,9 @@
           // TO DO: This should never happen - but seems to. Figure out why...
           if (velocity != 0) {
             if (this.input.rightPressed())
-              this.dirToggled("right")
+              this.toggleDirection("right");
             else if (this.input.leftPressed())
-              this.dirToggled("left");
+              this.toggleDirection("left");
             else
               throw "Idle with velocity != 0 and no dir pressed!";
           }
