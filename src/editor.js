@@ -97,7 +97,7 @@
         if (sprite.attributes.type == "tile" || sprite.attributes.type == "character") {
           sprite.set({x: x, y: y});
           sprite.update(dt);
-          x += sp.tileWidth + 2*sp.padding;
+          x += sprite.attributes.width + 2*sp.padding;
           if (x >= sp.width-2) {
             y += sp.tileHeight + 2*sp.padding;
             x = sp.x + 2*sp.padding;

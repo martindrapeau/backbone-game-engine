@@ -108,13 +108,13 @@
     isBlocking: function(sprite, position) {
       return true;
     },
-    squish: function(sprite, position) {
-      if (sprite.get("name") != "mario") return;
+    squish: function(sprite) {
       var cur = this.getStateInfo();
       this.set({state: "squished-" + cur.dir, collision: false});
     },
-    hit: function(sprite, position) {
-
+    hit: function(sprite, dir, yDir) {
+      if (sprite.get("name") != "mario") return;
+      if (yDir == "top") return this.squish(sprite);
     },
     update: function(dt) {
       // Movements are only possible inside a world
@@ -261,8 +261,7 @@
     isBlocking: function(sprite, position) {
       return true;
     },
-    squish: function(sprite, position) {
-      if (!sprite || sprite.get("name") != "mario") return;
+    squish: function(sprite, dir) {
       var cur = this.getStateInfo();
 
       if (this.wakeTimerId) {
@@ -273,12 +272,20 @@
       if (cur.mov != "squished") {
         this.set("state", "squished-" + cur.dir);
         this.wakeTimerId = setTimeout(this.wake.bind(this), 5000);
-      }
-      else
+      } else {
         this.hit.apply(this, arguments);
+      }
     },
-    hit: function(sprite, position) {
+    hit: function(sprite, dir, yDir) {
       if (!sprite || sprite.get("name") != "mario") return;
+
+      if (yDir == "top") {
+        return this.squish(sprite, dir);
+      } else if (yDir == "bottom") {
+        return;
+      }
+
+      // Hit left or right
       var cur = this.getStateInfo();
       if (cur.mov != "squished" && cur.mov != "wake") return;
 
@@ -287,7 +294,7 @@
         this.wakeTimerId = null;
       }
 
-      if (position == "left")
+      if (dir == "left")
         this.set("state", "slide-right");
       else
         this.set("state","slide-left");

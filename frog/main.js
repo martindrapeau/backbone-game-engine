@@ -19,7 +19,7 @@ $(window).on("load", function() {
     "cloud-small", "ground", "land8", "ground2", "block", "land7", "block2",
     "cloud-platform1", "cloud-platform2", "cloud-platform3", "cloud-platform4", "cloud-platform5", "cloud-platform6",
     "water2", "cloud4", "cloud5", "cloud6", "cloud-happy4", "cloud-happy5", "cloud-happy6",
-    "frog"
+    "frog", "platform"
   ];
 
   Backbone.Controller = Backbone.Model.extend({

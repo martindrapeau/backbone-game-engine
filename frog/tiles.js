@@ -120,4 +120,44 @@
 
   extendSprite("Tile", "cloud-platform6", {collision: true}, {idle: {sequences: [706]}});
 
+  Backbone.Platform = Backbone.Sprite.extend({
+    defaults: {
+      type: "character",
+      name: "platform",
+      width: 96,
+      height: 32,
+      spriteSheet: "tiles",
+      tileX: 256,
+      tileY: 640,
+      state: "idle",
+      static: false,
+      collision: true
+    },
+    initialize: function(attributes, options) {
+      options || (options = {});
+      this.world = options.world;
+    },
+    update: function(dt) {
+      return true;
+    },
+    draw: function(context, options) {
+      options || (options = {});
+
+      var x = this.get("x") + (options.offsetX || 0),
+          y = this.get("y") + (options.offsetY || 0),
+          tileX = this.get("tileX"),
+          tileY = this.get("tileY"),
+          tileWidth = this.get("width"),
+          tileHeight = this.get("height");
+
+      context.drawImage(
+        this.spriteSheet.img,
+        tileX, tileY, tileWidth, tileHeight,
+        Math.round(x), Math.round(y), tileWidth, tileHeight
+      );
+
+      return this;
+    }
+  });
+
 }).call(this);

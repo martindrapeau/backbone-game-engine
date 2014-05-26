@@ -408,26 +408,26 @@
             attrs.nextState = "idle-" + nex.dir;
         } else {
           // Enemie below?
-          var bottomLeftEnemie = heroBottomY > 0 ? this.world.findAt(heroLeftX + heroWidth/4, heroBottomY, "character", this, true) : null,
-              bottomRightEnemie = heroBottomY > 0 ? this.world.findAt(heroLeftX + heroWidth*3/4, heroBottomY, "character", this, true) : null,
-              enemieBottomY = _.minNotNull([
+          var bottomLeftCharacter = heroBottomY > 0 ? this.world.findAt(heroLeftX + heroWidth/4, heroBottomY, "character", this, true) : null,
+              bottomRightCharacter = heroBottomY > 0 ? this.world.findAt(heroLeftX + heroWidth*3/4, heroBottomY, "character", this, true) : null,
+              characterBottomY = _.minNotNull([
                   bottomY,
-                  bottomLeftEnemie ? bottomLeftEnemie.get("y") : null,
-                  bottomRightEnemie ? bottomRightEnemie.get("y") : null
+                  bottomLeftCharacter ? bottomLeftCharacter.get("y") : null,
+                  bottomRightCharacter ? bottomRightCharacter.get("y") : null
               ]);
-          if (enemieBottomY != bottomY) {
-            // Bounce back and sqwish the enemie
-            if (bottomLeftEnemie && bottomLeftEnemie.isBlocking(this, "top") ||
-                bottomRightEnemie && bottomRightEnemie.isBlocking(this, "top")) {
+          if (characterBottomY != bottomY) {
+            // Bounce back and squish the enemie
+            if (bottomLeftCharacter && bottomLeftCharacter.isBlocking(this, "top") ||
+                bottomRightCharacter && bottomRightCharacter.isBlocking(this, "top")) {
               attrs.yVelocity = yVelocity = animation.yStartVelocity*1/4;
-              attrs.y = y = enemieBottomY - tileHeight;
+              attrs.y = y = characterBottomY - tileHeight;
               heroBottomY = y + tileHeight;
               heroTopY = heroBottomY - heroHeight;
             }
-            if (bottomLeftEnemie)
-              bottomLeftEnemie.trigger("squish", this, "right");
-            if (bottomRightEnemie && bottomLeftEnemie != bottomRightEnemie)
-              bottomRightEnemie.trigger("squish", this, "left");
+            if (bottomLeftCharacter)
+              bottomLeftCharacter.trigger("hit", this, "right", "top");
+            if (bottomRightCharacter && bottomLeftCharacter != bottomRightCharacter)
+              bottomRightCharacter.trigger("hit", this, "left", "top");
           }
         }
 
@@ -454,16 +454,16 @@
           }
         } else {
           // Enemie above?
-          var topLeftEnemie = this.world.findAt(heroLeftX + heroWidth/4, heroTopY, "character", this, true),
-              topRightEnemie = this.world.findAt(heroLeftX + heroWidth*3/4, heroTopY, "character", this, true),
-              enemieTopY = _.maxNotNull([
+          var topLeftCharacter = this.world.findAt(heroLeftX + heroWidth/4, heroTopY, "character", this, true),
+              topRightCharacter = this.world.findAt(heroLeftX + heroWidth*3/4, heroTopY, "character", this, true),
+              characterTopY = _.maxNotNull([
                   topY,
-                  topLeftEnemie ? (topLeftEnemie.get("y") + topLeftEnemie.get("height")) : null,
-                  topRightEnemie ? (topRightEnemie.get("y") + topRightEnemie.get("height")) : null
+                  topLeftCharacter ? (topLeftCharacter.get("y") + topLeftCharacter.get("height")) : null,
+                  topRightCharacter ? (topRightCharacter.get("y") + topRightCharacter.get("height")) : null
               ]);
-          if (enemieTopY != topY) {
-            if (topLeftEnemie) topLeftEnemie.trigger("hit", this, "bottom");
-            if (topRightEnemie) topRightEnemie.trigger("hit", this, "bottom");
+          if (characterTopY != topY) {
+            if (topLeftCharacter) topLeftCharacter.trigger("hit", this, "left", "bottom");
+            if (topRightCharacter) topRightCharacter.trigger("hit", this, "right", "bottom");
           }
         }
       } else if (cur.mov != "jump" && heroBottomY < bottomY) {
@@ -479,23 +479,23 @@
         // Stop if obstacle left
         var leftTopTile = obstacleCheckTopY > 0 ? this.world.findCollidingAt(heroLeftX, obstacleCheckTopY) : null,
             leftBottomTile = obstacleCheckBottomY > 0 ? this.world.findCollidingAt(heroLeftX, obstacleCheckBottomY) : null,
-            leftBottomEnemie = this.world.findAt(heroLeftX, obstacleCheckBottomY, "character", this, true),
+            leftBottomCharacter = this.world.findAt(heroLeftX, obstacleCheckBottomY, "character", this, true),
             leftX = _.maxNotNull([
               0,
               leftTopTile ? (leftTopTile.get("x") + leftTopTile.get("width")) : null,
               leftBottomTile ? (leftBottomTile.get("x") + leftBottomTile.get("width")) : null,
-              leftBottomEnemie ? (leftBottomEnemie.get("x") + leftBottomEnemie.get("width")) : null
+              leftBottomCharacter ? (leftBottomCharacter.get("x") + leftBottomCharacter.get("width")) : null
             ]);
 
         if (heroLeftX <= leftX) {
-          if (!leftTopTile && !leftBottomTile && !leftBottomEnemie ||
+          if (!leftTopTile && !leftBottomTile && !leftBottomCharacter ||
             leftTopTile ||
             leftBottomTile ||
-            leftBottomEnemie && leftBottomEnemie.isBlocking(this, "right")) {
+            leftBottomCharacter && leftBottomCharacter.isBlocking(this, "right")) {
             attrs.velocity = velocity = 0;
             attrs.x = x = leftX;
           }
-          if (leftBottomEnemie) leftBottomEnemie.trigger("hit", this, "right");
+          if (leftBottomCharacter) leftBottomCharacter.trigger("hit", this, "right");
         }
       }
 
@@ -503,23 +503,23 @@
         // Stop if obstacle to the right
         var rightTopTile = obstacleCheckTopY > 0 ? this.world.findCollidingAt(heroLeftX + heroWidth, obstacleCheckTopY) : null,
             rightBottomTile = obstacleCheckBottomY > 0 ? this.world.findCollidingAt(heroLeftX + heroWidth, obstacleCheckBottomY) : null,
-            rightBottomEnemie = this.world.findAt(heroLeftX + heroWidth, obstacleCheckBottomY, "character", this, true),
+            rightBottomCharacter = this.world.findAt(heroLeftX + heroWidth, obstacleCheckBottomY, "character", this, true),
             rightX = _.minNotNull([
               this.world.width(),
               rightTopTile ? rightTopTile.get("x") : null,
               rightBottomTile ? rightBottomTile.get("x") : null,
-              rightBottomEnemie ? rightBottomEnemie.get("x") : null
+              rightBottomCharacter ? rightBottomCharacter.get("x") : null
             ]);
 
         if (heroLeftX + heroWidth >= rightX) {
-          if (!rightTopTile && !rightBottomTile && !rightBottomEnemie ||
+          if (!rightTopTile && !rightBottomTile && !rightBottomCharacter ||
               rightTopTile ||
               rightBottomTile ||
-              rightBottomEnemie && rightBottomEnemie.isBlocking(this, "left")) {
+              rightBottomCharacter && rightBottomCharacter.isBlocking(this, "left")) {
             attrs.velocity = velocity = 0;
             attrs.x = x = rightX - heroWidth;
           }
-          if (rightBottomEnemie) rightBottomEnemie.trigger("hit", this, "left");
+          if (rightBottomCharacter) rightBottomCharacter.trigger("hit", this, "left");
         }
       }
 

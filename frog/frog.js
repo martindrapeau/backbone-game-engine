@@ -144,7 +144,7 @@
       if (!_.isEmpty(attrs)) this.set(attrs);
     },
     update: function(dt) {
-      // Reuse Hero's update logiv
+      // Reuse Hero's update
       var result = Backbone.Hero.prototype.update.apply(this, arguments);
       if (!result) return result;
 
