@@ -120,7 +120,7 @@
 
   extendSprite("Tile", "cloud-platform6", {collision: true}, {idle: {sequences: [706]}});
 
-  Backbone.Platform = Backbone.Sprite.extend({
+  Backbone.Platform = Backbone.Character.extend({
     defaults: {
       type: "character",
       name: "platform",

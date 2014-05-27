@@ -17,8 +17,8 @@
       fallVelocity = 600,
       fallAcceleration = 1200;
 
-  Backbone.Frog = Backbone.Sprite.extend({
-    defaults: _.extend({}, Backbone.Sprite.prototype.defaults, {
+  Backbone.Frog = Backbone.Character.extend({
+    defaults: _.extend({}, Backbone.Character.prototype.defaults, {
       name: "frog",
       type: "character",
       width: 50,
@@ -75,13 +75,10 @@
         scaleY: 1
       }
     },
-    saveAttributes: _.union(
-      Backbone.Sprite.prototype.saveAttributes,
-      ["velocity", "acceleration", "yVelocity", "yAcceleration"]
-    ),
+    saveAttributes: Backbone.Hero.prototype.saveAttributes,
     initialize: function(attributes, options) {
       options || (options = {});
-      Backbone.Sprite.prototype.initialize.apply(this, arguments);
+      Backbone.Character.prototype.initialize.apply(this, arguments);
 
       this.input = options.input;
       this.world = options.world;
