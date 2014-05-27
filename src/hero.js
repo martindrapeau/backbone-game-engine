@@ -28,8 +28,8 @@
       runDelay = 50;
 
   // Backbone.Hero implements the Mario character in Super Mario Bros.
-  Backbone.Hero = Backbone.Sprite.extend({
-    defaults: _.extend({}, Backbone.Sprite.prototype.defaults, {
+  Backbone.Hero = Backbone.Character.extend({
+    defaults: _.extend({}, Backbone.Character.prototype.defaults, {
       name: "hero",
       type: "character",
       width: 32,
@@ -150,12 +150,12 @@
       }
     },
     saveAttributes: _.union(
-      Backbone.Sprite.prototype.saveAttributes,
+      Backbone.Character.prototype.saveAttributes,
       ["velocity", "acceleration", "yVelocity", "yAcceleration"]
     ),
     initialize: function(attributes, options) {
       options || (options = {});
-      Backbone.Sprite.prototype.initialize.apply(this, arguments);
+      Backbone.Character.prototype.initialize.apply(this, arguments);
 
       this.input = options.input;
       this.world = options.world;
@@ -417,8 +417,8 @@
               ]);
           if (characterBottomY != bottomY) {
             // Bounce back and squish the enemie
-            if (bottomLeftCharacter && bottomLeftCharacter.isBlocking(this, "top") ||
-                bottomRightCharacter && bottomRightCharacter.isBlocking(this, "top")) {
+            if (bottomLeftCharacter && bottomLeftCharacter.isBlocking(this) ||
+                bottomRightCharacter && bottomRightCharacter.isBlocking(this)) {
               attrs.yVelocity = yVelocity = animation.yStartVelocity*1/4;
               attrs.y = y = characterBottomY - tileHeight;
               heroBottomY = y + tileHeight;
@@ -491,7 +491,7 @@
           if (!leftTopTile && !leftBottomTile && !leftBottomCharacter ||
             leftTopTile ||
             leftBottomTile ||
-            leftBottomCharacter && leftBottomCharacter.isBlocking(this, "right")) {
+            leftBottomCharacter && leftBottomCharacter.isBlocking(this)) {
             attrs.velocity = velocity = 0;
             attrs.x = x = leftX;
           }
@@ -515,7 +515,7 @@
           if (!rightTopTile && !rightBottomTile && !rightBottomCharacter ||
               rightTopTile ||
               rightBottomTile ||
-              rightBottomCharacter && rightBottomCharacter.isBlocking(this, "left")) {
+              rightBottomCharacter && rightBottomCharacter.isBlocking(this)) {
             attrs.velocity = velocity = 0;
             attrs.x = x = rightX - heroWidth;
           }

@@ -510,8 +510,17 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <li><code>update(dt)</code>: Called by then engine 60 times a second. Updates sprite attribues and implements behavior. Returns true to ask for a redraw, or false for none.</li>
             <li><code>draw(contexT)</code>: Called by the engine after <code>update</code>, if a redraw was asked. Takes care of rendering the sprite, and its proper animation at the correct position.</li>
             <li><code>getAnimation([state])</code>: Returns the current animation based on argument <code>state</code>. If argument <code>state</code> is omitted, the attribute is used instead.</li>
-            <li><code>getStateInfo([state])</code>: Decomposes <code>state</code> into move and direction. For example <code>walk-left</code> would be decomposed into <code>{mov:"walk", dir:"left", opo:"right"}</code>. If argument <code>state</code> is omitted, the attribute is used instead. See <a href="#documentation-Hero">Backbone.Hero</a> for details.</li>
+            <li><code>overlaps(x, y):</code>: Checks to see if the sprite overlaps with the passed coordinates. Returns a Boolean.</li>
           </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine.</li>
+          </ul>
+          <p>
+            The <code>attach</code> and <code>detach</code> events can be used to start/stop listening to events. For example, the <code>Backbone.Hero</code> sprite starts listening to user input when attached, and stops when detached.
+          </p>
+          <h4>Sprite and sprite sheets</h4>
           <p>
             Graphics are obtained from a <a href="#documentation-SpriteSheet">Backbone.SpriteSheet</a> model. In attribute <code>spriteSheet</code>, specify the sprite sheet id you previously defined in a <code>Backbone.SpriteSheetCollection</code> instance. The collection will automatically attach it to the sprite by setting property <code>spriteSheet</code> as back reference. Building on the example above:
           </p>
@@ -693,6 +702,14 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
             <li><code>buttonBPressed()</code>: Returns true if button B is pressed.</li>
             <li><code>pausePressed()</code>: Returns true if the pause button is pressed. </li>
           </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine. Will start listening to user input.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine. Will stop listening to user input.</li>
+          </ul>
+          <p>
+            You can add or remove a <code>Backbone.Input</code> model from the engine on the fly. In the Super Mario Bros example, the <code>Backbone.Input</code> and the <code>Backbone.WorldEditor</code> are swapped when moving from play to edit modes.
+          </p>
           <h4>Usage</h4>
           <pre>
 var input = new Backbone.Input();
@@ -754,6 +771,12 @@ input.bind("change:left", function(input) {
             <li><code>findAt(x, y, [type], [exclude], [collision])</code>: Finds the first sprite at the specified coordinate. Usage and arguments are described further below.</li>
             <li><code>filterAt(x, y, [type], [exclude], [collision])</code>: Finds a list of sprites at the specified coordinate.  Usage and arguments are described further below.</li>
           </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine. Will trigger the <code>attach</code> method of all sprites in the world.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine. Will trigger the <code>detach</code> event of all sprites in the world.</li>
+          </ul>
+          <h4>How it works</h4>
           <p>
             Sprites can be added and removed via methods <code>add</code> and <code>remove</code>. Sprites are automatically attached to the <a href="#documentation-Engine" target="_blank">Backbone.Engine</a> the world is attached to. Sprites then have properties <code>engine</code> and <code>world</code> set as back-reference. In each request frame, the same mechanics apply as for sprites attached directly to an engine; methods <code>update</code> and <code>draw</code> are called for each sprite. The exception is for static sprites which are only updated/redrawn when required (see below).
           </p>
@@ -795,7 +818,7 @@ input.bind("change:left", function(input) {
           </p>
           <h4>Character Sprites</h4>
           <p>
-            Characters are sprites that interact with their environment. <code>Backbone.Hero</code> is a character, and so are enemies in the Super Mario Bros example. Character sprite models must have a <code>type</code> attribute set to <code>character</code>. Method <code>findAt(x, y, [type], [exclude], [collision])</code> will return the top-most sprite at a specific coordinate. Method <code>filterAt(x, y, [type], [exclude], [collision])</code> will return all sprites at a specific coordinate. Optional arguments allow filtering:
+            Characters are sprites that interact with their environment. <a href="#documentation-Character">Backbone.Character</a> and <a href="#documentation-Hero">Backbone.Hero</a> are character sprites. Character sprite models must have a <code>type</code> attribute set to <code>character</code>. Method <code>findAt(x, y, [type], [exclude], [collision])</code> will return the top-most sprite at a specific coordinate. Method <code>filterAt(x, y, [type], [exclude], [collision])</code> will return all sprites at a specific coordinate. Optional arguments allow filtering:
           </p>
           <ul>
             <li><code>type</code>: Optional. If set, will only lookup sprites matching that type.</li>
@@ -861,6 +884,12 @@ input.bind("change:left", function(input) {
           <ul>
             <li><code>world</code>: The Backbone.World to edit.</li>
           </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine. Will start listening to user input.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine. Will stop listening to user input.</li>
+          </ul>
+          <h4>How it works</h4>
           <p>
             The palette is drawn as a series of tiles left to right, top to bottom. Each tile is a sprite. The sprite may be bigger than the specified tile size, in which case it will overlap over tiles to the right or to the bottom. Therefore keep offsize sprites last, and keep an empty row below.
           </p>
@@ -870,12 +899,70 @@ input.bind("change:left", function(input) {
         </div>
       </div>
 
+      <div id="documentation-Character" class="row">
+        <div class="col-md-12">
+          <h3>Backbone.Character</h3>
+          <pre>new Backbone.Character([attributes], [options])</pre>
+          <p>
+            The <code>Backbone.Character</code> is a sub-classed <code>Backbone.Sprite</code> which implements an animated character with elementary AI (artificial intelligence) and physics. AI is limited to move left and right. Direction changes occur with collisions against an obstacle; either a tile or another character.
+          </p>
+          <div class="alert alert-info">
+            A <code>Backbone.Character</code> must live inside a <code>Backbone.World</code>.
+          </div>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>x, y</code>: Position of the sprite.</li>
+            <li><code>width, height</code>: Size of the sprite in pixels. Defaults to  32 x 32.</li>
+            <li><code>name</code>: Name of the sprite.</li>
+            <li><code>type</code>: Type of sprite. Defaults to character.</li>
+            <li><code>spriteSheet</code>: Id of sprite sheet.</li>
+            <li><code>state</code>: Current animation. Starts with idle-right.</li>
+            <li><code>collision</code>: Boolean indicating whether it can be detected by other sprites. Defaults to true.</li>
+            <li><code>velocity, acceleration</code>: Current horizontal movement. Controlled by the AI in <code>update</code>.</li>
+            <li><code>yVelocity, yAcceleration</code>: Current vertical movement. Controlled by the AI in <cpde>update</cpde>.</li>
+          </ul>
+          <h4>Methods</h4>
+          <p>
+            <code>Backbone.Character</code> inherits all methods from <code>Backbone.Sprite</code>. In addition, it provides these public methods.
+          </p>
+          <ul>
+            <li><code>getStateInfo([state])</code>: Decomposes <code>state</code> into move and direction. For example <code>walk-left</code> would be decomposed into <code>{mov:"walk", dir:"left", opo:"right"}</code>. If argument <code>state</code> is omitted, the attribute is used instead. See <a href="#documentation-Hero">Backbone.Hero</a> for a more detailed description.</li>
+            <li><code>update(dt)</code>: Handles the character movements and AI.</li>
+            <li><code>toggleDirection(dirIntent)</code>: Invokes a <code>left</code> or <code>right</code> direction change.</li>
+            <li><code>isBlocking()</code>: Returns a Boolean indicating whether a collision is blocking, or passthrough.</li>
+            <li><code>hit(sprite, [dir], [yDir])</code>: Function invoked usually by a <code>hit</code> event. Implement this to determine what happens when another <code>sprite</code> hits the character. Argument <code>dir</code> is the horizontal direction of the hit (from the <code>left</code> or the <code>right</code>). Argument <code>yDir</code> is the vertical equivalenet (from the <code>top</code> or the <code>bottom</code>).</li>
+          </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the world. Turns on the AI.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the world. Turns off the AI meaning the character will not move.</li>
+            <li><code>hit</code>: Trigger this event on the <code>Backbone.Character</code> to indicate a hit with another character. Delegates to the <code>hit</code> method above. For example, <code>Backbone.Hero</code> executes this when he lands on a character: <code>sprite.trigger("hit", this, "left", "top");</code>.</li>
+          </ul>
+          <h4>Example</h4>
+          <p>
+            In the Super Mario Bros example, look at file <code>enemies.js</code>. There are implementations for basic characters in that game. The <code>hit</code> method implements the action when Mario lands on a character. In the case of a Mushroom, it gets <em>squished</em> and collision detection gets turned off.
+          </p>
+          <pre>
+...
+squish: function(sprite) {
+  var cur = this.getStateInfo();
+  this.set({state: "squished-" + cur.dir, collision: false});
+},
+hit: function(sprite, dir, yDir) {
+  if (sprite.get("name") != this.world.get("hero")) return;
+  if (yDir == "top") return this.squish(sprite);
+},
+...
+</pre>
+        </div>
+      </div>
+
       <div id="documentation-Hero" class="row">
         <div class="col-md-12">
           <h3>Backbone.Hero</h3>
           <pre>new Backbone.Hero([attributes], [options])</pre>
           <p>
-            The <code>Backbone.Hero</code> is a sub-classed <code>Backbone.Sprite</code> which implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
+            The <code>Backbone.Hero</code> is a sub-classed <code>Backbone.Character</code> which implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
           </p>
           <div class="alert alert-info">
             A <code>Backbone.Hero</code> must live inside a <code>Backbone.World</code>.
@@ -899,12 +986,20 @@ input.bind("change:left", function(input) {
           </ul>
           <h4>Methods</h4>
           <p>
-            <code>Backbone.Hero</code> inherits all methods from <code>Backbone.Sprite</code>. In addition, it provides these public methods.
+            <code>Backbone.Hero</code> inherits all methods from <code>Backbone.Sprite</code> and <code>Backbone.Character</code>. In addition, it overrides this public method:
           </p>
           <ul>
             <li><code>update(dt)</code>: Handles the character movements.</li>
-            <li><code>toggleDirection(dirIntent)</code>: Invokes a <code>left</code> or <code>right</code> direction change.</li>
           </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the world. Starts capturing events from the attached <code>Backbone.Input</code> instance.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the world. Stops capturing events from the <code>Backbone.Input</code> instance.</li>
+          </ul>
+          <div class="alert alert-info">
+            <code>Backbone.Hero</code> does not implement the <code>hit</code> event. It does however trigger that event on other characters upon collisions. This logic is implemented in the <code>update</code> method.
+          </div>
+          <h4>How it works</h4>
           <p>
             Attribute <code>state</code> determines the current animation. A state is a pair of move and direction. For example <code>idle-right</code>, <code>walk-left</code> and <code>jump-right</code>. Method <code>getStateInfo</code> will decompose the state for you into those components.
           </p>
@@ -1021,7 +1116,7 @@ if (heroLeftX + heroWidth >= rightX) {
           <h3>Backbone.Camera</h3>
           <pre>new Backbone.Camera([attributes], [options])</pre>
           <p>
-            Backbone.Camera is a model which ensures a sprite, the subject, is always in the viewport (the canvas). It pans the Backbone.World when the character steps out of a window in the viewport. Backbone.Camera must be added to the engine.
+            <code>Backbone.Camera</code> is a model which ensures a sprite, the subject, is always in the viewport (the canvas). It pans the <code>Backbone.World</code> when the character steps out of a window in the viewport. <code>Backbone.Camera</code> must be added to the engine (not the world).
           </p>
           <h4>Attributes</h4>
           <ul>
@@ -1031,6 +1126,16 @@ if (heroLeftX + heroWidth >= rightX) {
           <ul>
             <li><code>subject</code>: The sprite to keep in the viewport.</li>
             <li><code>world</code>: The Backbone.World.</li>
+          </ul>
+          <h4>Methods</h4>
+          <ul>
+            <li><code>maybePanX()</code>: Called when the <code>x</code> position of the subject changes. Ensures the subject is within the specified window, otherwise pans the world.</li>
+            <li><code>maybePanY()</code>: To be implemented...</li>
+          </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine. Starts monitoring the subject and pans the <code>Backbone.World</code> when necessary.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine. Stops monitoring the subject.</li>
           </ul>
           <h4>Usage</h4>
           <pre>
@@ -1051,6 +1156,9 @@ var camera = new Backbone.Camera(
 world.add(mario);
 var engine = new Backbone.Engine([world, camera]);
 </pre>
+          <div class="alert alert-info">
+            Note: The camera implementation is currently limited to horizontal movements. Vertical monitoring and panning is not yet implemented.
+          </div>
         </div>
       </div>
 
@@ -1064,6 +1172,16 @@ var engine = new Backbone.Engine([world, camera]);
           <ul>
             <li><code>ticks</code>: Initial tick value. An integer that gets incremented every interval.</li>
             <li><code>delay</code>: Interval between ticks.</li>
+          </ul>
+          <h4>Methods</h4>
+          <ul>
+            <li><code>update(dt)</code>: Updates the ticks.</li>
+            <li><code>draw(context)</code>: No-op. Simply returns the model.</li>
+          </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine. Starts ticking.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine. Stops ticking.</li>
           </ul>
           <h4>Usage</h4>
           <pre>
@@ -1127,6 +1245,17 @@ Backbone.AnimatedTile = Backbone.Tile.extend({
             <li><code>imgMargin</code>: Offset in pixels to apply when drawing the image inside the button.</li>
             <li><code>backgroundColor</code>: Fill style of the button.</li>
           </ul>
+          <h4>Methods</h4>
+          <ul>
+            <li><code>update(dt)</code>: No-op. Simply returns true.</li>
+            <li><code>draw(context)</code>: Draws the button.</li>
+            <li><code>overlaps(x, y):</code>: Checks to see if the sprite overlaps with the passed coordinates. Returns a Boolean.</li>
+          </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine. Starts listening to user input.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine. Stops listening to user input.</li>
+          </ul>
           <h4>Usage</h4>
           <pre>
 var button = new Backbone.Button({
@@ -1146,6 +1275,13 @@ button.on("tap", function() {
           <p>
             <code>Backbone.DebugPanel</code> is a Backbone model on which you set attributes to be dumped on screen. Upon draw, it will <code>JSON.stringify</code> attributes.
           </p>
+          <h4>Events</h4>
+          <ul>
+            <li><code>update(dt)</code>: No-op. Simply returns true.</li>
+            <li><code>draw(context)</code>: Draws the debug information on screen.</li>
+            <li><code>attach</code>: Triggered when the sprite is attached to the engine.</li>
+            <li><code>detach</code>: Triggered when the sprite is detached to the engine.</li>
+          </ul>
           <h4>Usage</h4>
           <pre>
 var debugPanel = new Backbone.DebugPanel();
@@ -1375,6 +1511,7 @@ icons.png
           <li><a href="#documentation-Input">&nbsp;&nbsp;Backbone.Input</a></li>
           <li><a href="#documentation-World">&nbsp;&nbsp;Backbone.World</a></li>
           <li><a href="#documentation-WorldEditor">&nbsp;&nbsp;Backbone.WorldEditor</a></li>
+          <li><a href="#documentation-Character">&nbsp;&nbsp;Backbone.Character</a></li>
           <li><a href="#documentation-Hero">&nbsp;&nbsp;Backbone.Hero</a></li>
           <li><a href="#documentation-Camera">&nbsp;&nbsp;Backbone.Camera</a></li>
           <li><a href="#documentation-Clock">&nbsp;&nbsp;Backbone.Clock</a></li>

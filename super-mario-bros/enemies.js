@@ -16,8 +16,8 @@
       animations;
 
   // Mushroom is the base enemie class.
-  Backbone.Mushroom = Backbone.Sprite.extend({
-    defaults: _.extend({}, Backbone.Sprite.prototype.defaults, {
+  Backbone.Mushroom = Backbone.Character.extend({
+    defaults: _.extend(_.deepClone(Backbone.Character.prototype.defaults), {
       name: "mushroom",
       type: "character",
       width: 32,
@@ -28,49 +28,7 @@
       yVelocity: 0,
       collision: true
     }),
-    animations: {
-      "idle-left": {
-        sequences: [0],
-        velocity: 0,
-        scaleX: 1,
-        scaleY: 1
-      },
-      "idle-right": {
-        sequences: [0],
-        velocity: 0,
-        scaleX: -1,
-        scaleY: 1
-      },
-      "walk-left": {
-        sequences: [1, 0],
-        velocity: -walkVelocity,
-        scaleX: 1,
-        scaleY: 1,
-        delay: sequenceDelay
-      },
-      "walk-right": {
-        sequences: [1, 0],
-        velocity: walkVelocity,
-        scaleX: -1,
-        scaleY: 1,
-        delay: sequenceDelay
-      },
-      "fall-left": {
-        sequences: [0],
-        velocity: -walkVelocity,
-        yVelocity: fallVelocity,
-        yAcceleration: fallAcceleration,
-        scaleX: 1,
-        scaleY: 1
-      },
-      "fall-right": {
-        sequences: [0],
-        velocity: walkVelocity,
-        yVelocity: fallVelocity,
-        yAcceleration: fallAcceleration,
-        scaleX: -1,
-        scaleY: 1
-      },
+    animations: _.extend(_.deepClone(Backbone.Character.prototype.animations), {
       "squished-left": {
         sequences: [2],
         velocity: 0,
@@ -83,153 +41,17 @@
         scaleX: -1,
         scaleY: 1
       }
-    },
-    initialize: function(attributes, options) {
-      Backbone.Sprite.prototype.initialize.apply(this, arguments);
-      options || (options = {});
-      this.world = options.world;
-      _.bindAll(this, "isBlocking");
-
-      this.on("attach", this.onAttach, this);
-      this.on("detach", this.onDetach, this);
-
-      // Squish
-      this.on("squish", this.squish, this);
-      this.on("hit", this.hit, this);
-    },
-    onAttach: function() {
-      if (!this.engine) return;
-      this.onDetach();
-
-      if (this.world) this.set("state", "walk-left");
-    },
-    onDetach: function() {
-    },
-    isBlocking: function(sprite, position) {
-      return true;
-    },
+    }),
     squish: function(sprite) {
       var cur = this.getStateInfo();
       this.set({state: "squished-" + cur.dir, collision: false});
+      return this;
     },
     hit: function(sprite, dir, yDir) {
-      if (sprite.get("name") != "mario") return;
+      if (sprite.get("name") != this.world.get("hero")) return this;
       if (yDir == "top") return this.squish(sprite);
     },
-    update: function(dt) {
-      // Movements are only possible inside a world
-      if (!this.world) return true;
-
-      var velocity = this.get("velocity") || 0,
-          yVelocity = this.get("yVelocity") || 0,
-          x = this.get("x"),
-          y = this.get("y"),
-          state = this.get("state"),
-          cur = this.getStateInfo(),
-          animation = this.getAnimation(),
-          sequenceIndex = this.get("sequenceIndex"),
-          delay = animation.delay || 0,
-          now = _.now(),
-          attrs = {};
-
-      if (!animation.sequences || sequenceIndex >= animation.sequences.length) {
-        attrs.sequenceIndex = 0;
-        this.lastSequenceChangeTime = now;
-      } else if (delay && now > this.lastSequenceChangeTime + delay) {
-        attrs.sequenceIndex = sequenceIndex < animation.sequences.length-1 ? sequenceIndex + 1 : 0;
-        this.lastSequenceChangeTime = now;
-      }
-      if (velocity != animation.velocity) velocity = animation.velocity;
-
-      // If falling, update vertical velocity
-      if (cur.mov == "fall") {
-        if (yVelocity < animation.yVelocity)
-          yVelocity += animation.yAcceleration * (dt/1000);
-
-        if (yVelocity >= animation.yVelocity)
-          yVelocity = animation.yVelocity;
-        attrs.yVelocity = yVelocity;
-      }
-
-      // Collisions
-      var collision = this.get("collision"),
-          mushWidth = this.get("width"),
-          mushHeight = this.get("height"),
-          mushTopY = Math.round(y + yVelocity * (dt/1000)),
-          mushBottomY = mushTopY + mushHeight,
-          mushLeftX = Math.round(x + velocity * (dt/1000)),
-          mushRightX = mushLeftX + mushWidth,
-          bottomTile = this.world.findCollidingAt(mushLeftX + mushWidth/2, mushBottomY),
-          bottomY = _.minNotNull([
-            this.world.height(),
-            bottomTile ? bottomTile.get("y") : null
-          ]);
-
-      // Gravity
-      if (mushBottomY >= bottomY) {
-        // Stop falling if obstacle below
-        attrs.yVelocity = yVelocity = 0;
-        attrs.y = y = bottomY - mushHeight;
-        if (cur.mov == "fall")
-          attrs.state = "walk-" + cur.dir;
-      } else if (cur.mov != "fall" && mushBottomY < bottomY) {
-        // Start falling if no obstacle below
-        attrs.state = "fall-" + cur.dir;
-      }
-
-      // Walls and other obstacles
-      if (velocity <= 0 && collision) {
-        // Turn around if obstacle left
-        var leftTile = this.world.findCollidingAt(mushLeftX, mushTopY + mushHeight*3/4),
-            leftCharacter = this.world.findAt(mushLeftX, mushTopY + mushHeight*3/4, "character", this, true),
-            leftX = _.maxNotNull([
-              0,
-              leftTile ? (leftTile.get("x") + leftTile.get("width")) : null,
-              leftCharacter ? (leftCharacter.get("x") + leftCharacter.get("width")) : null
-            ]);
-
-        if (mushLeftX <= leftX) {
-          attrs.state = cur.mov + "-right";
-          attrs.velocity = velocity * -1;
-          attrs.x = x = leftX;
-        }
-      }
-
-      if (velocity >= 0 && collision) {
-        // Turn around if obstacle to the right
-        var rightTile = this.world.findCollidingAt(mushRightX, mushTopY + mushHeight*3/4),
-            rightCharacter = this.world.findAt(mushRightX, mushTopY + mushHeight*3/4, "character", this, true),
-            rightX = _.minNotNull([
-              this.world.width(),
-              rightTile ? rightTile.get("x") : null,
-              rightCharacter ? rightCharacter.get("x") : null
-            ]);
-
-        if (mushRightX >= rightX) {
-          attrs.state = cur.mov + "-left";
-          attrs.velocity = velocity * -1;
-          attrs.x = x = rightX - mushWidth;
-          }
-      }
-
-      // In edit mode, do not allow horizontal displacements or animations
-      if (this.world.get("state") == "edit") {
-        velocity = 0;
-        attrs.sequenceIndex = 0;
-      }
-
-      if (velocity) attrs.x = x = x + velocity * (dt/1000);
-      if (yVelocity) attrs.y = y = y + yVelocity * (dt/1000);
-
-      attrs.col = this.world.getWorldCol(x + mushWidth/2);
-      attrs.row = this.world.getWorldRow(y + mushHeight/4);
-
-      // Set modified attributes
-      if (!_.isEmpty(attrs)) this.set(attrs);
-
-      return true;
-    },
-    // Overlap only on bottom half. Top is empty space.
+    // Overlap only on bottom half. Top of sprite is empty space.
     overlaps: function(x, y) {
       var sw = this.get("width"),
           sh = this.get("height"),
@@ -245,11 +67,6 @@
         );
       }
       return (x >= sx && y >= sy && x <= sx + sw && y <= sy + sh);
-    },
-    toggleDirection: function(dirIntent) {
-      var cur = this.getStateInfo();
-      this.set({state: cur.mov + "-" + dirIntent});
-      return this;
     }
   });
 
@@ -258,9 +75,6 @@
       name: "turtle"
     }),
     animations: _.deepClone(Backbone.Mushroom.prototype.animations),
-    isBlocking: function(sprite, position) {
-      return true;
-    },
     squish: function(sprite, dir) {
       var cur = this.getStateInfo();
 
@@ -275,6 +89,7 @@
       } else {
         this.hit.apply(this, arguments);
       }
+      sprite.trigger("bounce", this);
     },
     hit: function(sprite, dir, yDir) {
       if (!sprite || sprite.get("name") != "mario") return;

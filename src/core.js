@@ -120,21 +120,6 @@
         );
       }
       return (x >= sx && y >= sy && x <= sx + sw && y <= sy + sh);
-    },
-    getStateInfo: function(state) {
-      var state = state || this.get("state"),
-      pieces = state.split("-");
-      if (pieces.length < 2) return {
-        state: state,
-        mov: state
-      };
-
-      return {
-        state: state,
-        mov: pieces[0], // idle, walk, ...
-        dir: pieces[1], // right or left
-        opo: pieces[1] == "right" ? "left" : "right" // oposite direction
-      };
     }
   });
 
