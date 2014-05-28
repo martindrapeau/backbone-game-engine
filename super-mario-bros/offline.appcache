@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Version 0.16 (c) 2014 Martin Drapeau
+# Version 0.17 (c) 2014 Martin Drapeau
 
 ../3rd/hammer.js
 ../3rd/underscore.js
@@ -9,11 +9,12 @@ CACHE MANIFEST
 ../src/input.js
 ../src/shapes.js
 ../src/core.js
+../src/character.js
+../src/hero.js
 ../src/world.js
 ../src/local-storage.js
 ../src/camera.js
 ../src/editor.js
-../src/hero.js
 
 mario.js
 tiles.js
