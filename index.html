@@ -930,13 +930,13 @@ input.bind("change:left", function(input) {
             <li><code>update(dt)</code>: Handles the character movements and AI.</li>
             <li><code>toggleDirection(dirIntent)</code>: Invokes a <code>left</code> or <code>right</code> direction change.</li>
             <li><code>isBlocking()</code>: Returns a Boolean indicating whether a collision is blocking, or passthrough.</li>
-            <li><code>hit(sprite, [dir], [yDir])</code>: Function invoked usually by a <code>hit</code> event. Implement this to determine what happens when another <code>sprite</code> hits the character. Argument <code>dir</code> is the horizontal direction of the hit (from the <code>left</code> or the <code>right</code>). Argument <code>yDir</code> is the vertical equivalenet (from the <code>top</code> or the <code>bottom</code>).</li>
+            <li><code>hit(sprite, [dir], [dir2])</code>: Function invoked usually by a <code>hit</code> event. Implement this to determine what happens when another <code>sprite</code> hits the character. Argument <code>dir</code> is the primary direction of the hit (<code>left</code>, <code>right</code>, <code>top</code> or <code>bottom</code>). Argument <code>dir2</code> is the secondary direction. In top-left for example, it would be left.</li>
           </ul>
           <h4>Events</h4>
           <ul>
             <li><code>attach</code>: Triggered when the sprite is attached to the world. Turns on the AI.</li>
             <li><code>detach</code>: Triggered when the sprite is detached to the world. Turns off the AI meaning the character will not move.</li>
-            <li><code>hit</code>: Trigger this event on the <code>Backbone.Character</code> to indicate a hit with another character. Delegates to the <code>hit</code> method above. For example, <code>Backbone.Hero</code> executes this when he lands on a character: <code>sprite.trigger("hit", this, "left", "top");</code>.</li>
+            <li><code>hit</code>: Trigger this event on the <code>Backbone.Character</code> to indicate a hit with another character. Delegates to the <code>hit</code> method above. For example, <code>Backbone.Hero</code> executes this when he lands on a character: <code>sprite.trigger("hit", this, "top", "left");</code>.</li>
           </ul>
           <h4>Example</h4>
           <p>
@@ -948,9 +948,9 @@ squish: function(sprite) {
   var cur = this.getStateInfo();
   this.set({state: "squished-" + cur.dir, collision: false});
 },
-hit: function(sprite, dir, yDir) {
+hit: function(sprite, dir, dir2) {
   if (sprite.get("name") != this.world.get("hero")) return;
-  if (yDir == "top") return this.squish(sprite);
+  if (dir == "top") return this.squish(sprite);
 },
 ...
 </pre>
@@ -990,7 +990,25 @@ hit: function(sprite, dir, yDir) {
           </p>
           <ul>
             <li><code>update(dt)</code>: Handles the character movements.</li>
+            <li><code>getHitReaction(character, dir, [dir2])</code>: When the hero hits another character, this method is called to get the reaction. Argument <code>dir</code> is the hit direction (can be <code>left</code>, <code>right</code>, <code>top</code> or <code>bottom</code>). For example, direction for landing on another character is <code>bottom</code>. Must return the reaction. Possible return values are:
+              <ul>
+                <li><code>null</code>: No reaction. Hero passes through the character.</li>
+                <li><code>block</code>: Character is blocking. Hero stops moving in the direction <code>dir</code>.</li>
+                <li><code>bounce</code>: Character is blocking but pushes back. Hero bounces back in the opposite direction <code>dir</code>. For example when Mario lands on top of a turtle, he bounces back.</li>
+              </ul>
+              Argument <code>dir2</code> is optional. If specified it is the secondary direction. For example if hit from the top-left, <code>dir</code> would be <code>top</code> and <code>dir2</code> would be <code>left</code>.
+            </li>
           </ul>
+          <p>
+            The default implementation of <code>getHitReaction</code> is as follows. Override it to change its behavior:
+          </p>
+          <pre>
+getHitReaction: function(character, dir, dir2) {
+  if (!character.isBlocking(this)) return null;
+  if (dir == "bottom") return "bounce";
+  return "block";
+}
+</pre>
           <h4>Events</h4>
           <ul>
             <li><code>attach</code>: Triggered when the sprite is attached to the world. Starts capturing events from the attached <code>Backbone.Input</code> instance.</li>

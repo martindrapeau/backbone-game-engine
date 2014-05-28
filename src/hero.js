@@ -416,18 +416,19 @@
                   bottomRightCharacter ? bottomRightCharacter.get("y") : null
               ]);
           if (characterBottomY != bottomY) {
-            // Bounce back and squish the enemie
-            if (bottomLeftCharacter && bottomLeftCharacter.isBlocking(this) ||
-                bottomRightCharacter && bottomRightCharacter.isBlocking(this)) {
-              attrs.yVelocity = yVelocity = animation.yStartVelocity*1/4;
+            var reaction = this.getHitReaction(bottomLeftCharacter || bottomRightCharacter, "bottom", bottomLeftCharacter ? "left": "right");
+            if (reaction == "block" || reaction == "bounce") {
               attrs.y = y = characterBottomY - tileHeight;
               heroBottomY = y + tileHeight;
               heroTopY = heroBottomY - heroHeight;
             }
+            if (reaction == "block") attrs.yVelocity = yVelocity = 0;
+            if (reaction == "bounce") attrs.yVelocity = yVelocity = animation.yStartVelocity*1/4;
+
             if (bottomLeftCharacter)
-              bottomLeftCharacter.trigger("hit", this, "right", "top");
+              bottomLeftCharacter.trigger("hit", this, "top", "right");
             if (bottomRightCharacter && bottomLeftCharacter != bottomRightCharacter)
-              bottomRightCharacter.trigger("hit", this, "left", "top");
+              bottomRightCharacter.trigger("hit", this, "top", "left");
           }
         }
 
@@ -462,8 +463,16 @@
                   topRightCharacter ? (topRightCharacter.get("y") + topRightCharacter.get("height")) : null
               ]);
           if (characterTopY != topY) {
-            if (topLeftCharacter) topLeftCharacter.trigger("hit", this, "left", "bottom");
-            if (topRightCharacter) topRightCharacter.trigger("hit", this, "right", "bottom");
+            var reaction = this.getHitReaction(topLeftCharacter || topRightCharacter, "top", topLeftCharacter ? "left": "right");
+            if (reaction == "block") {
+              attrs.yVelocity = yVelocity = 0;
+              heroTopY = characterTopY;
+              heroBottomY = characterTopY + heroHeight;
+              attrs.y = y = heroBottomY - tileHeight;
+            }
+
+            if (topLeftCharacter) topLeftCharacter.trigger("hit", this, "bottom", "left");
+            if (topRightCharacter) topRightCharacter.trigger("hit", this, "bottom", "right");
           }
         }
       } else if (cur.mov != "jump" && heroBottomY < bottomY) {
@@ -483,20 +492,27 @@
             leftX = _.maxNotNull([
               0,
               leftTopTile ? (leftTopTile.get("x") + leftTopTile.get("width")) : null,
-              leftBottomTile ? (leftBottomTile.get("x") + leftBottomTile.get("width")) : null,
-              leftBottomCharacter ? (leftBottomCharacter.get("x") + leftBottomCharacter.get("width")) : null
+              leftBottomTile ? (leftBottomTile.get("x") + leftBottomTile.get("width")) : null
             ]);
 
         if (heroLeftX <= leftX) {
-          if (!leftTopTile && !leftBottomTile && !leftBottomCharacter ||
-            leftTopTile ||
-            leftBottomTile ||
-            leftBottomCharacter && leftBottomCharacter.isBlocking(this)) {
-            attrs.velocity = velocity = 0;
-            attrs.x = x = leftX;
+          // Hit a tile or end of the world
+          attrs.velocity = velocity = 0;
+          attrs.x = x = leftX;
+
+        } else if (leftBottomCharacter) {
+          // Check for character hit
+          leftX = leftBottomCharacter.get("x") + leftBottomCharacter.get("width");
+          if (heroLeftX <= leftX) {
+            var reaction = this.getHitReaction(leftBottomCharacter, "left");
+            if (reaction == "block") {
+              attrs.velocity = velocity = 0;
+              attrs.x = x = leftX;
+            }
+            leftBottomCharacter.trigger("hit", this, "right");
           }
-          if (leftBottomCharacter) leftBottomCharacter.trigger("hit", this, "right");
         }
+
       }
 
       if (velocity >= 0) {
@@ -507,20 +523,27 @@
             rightX = _.minNotNull([
               this.world.width(),
               rightTopTile ? rightTopTile.get("x") : null,
-              rightBottomTile ? rightBottomTile.get("x") : null,
-              rightBottomCharacter ? rightBottomCharacter.get("x") : null
+              rightBottomTile ? rightBottomTile.get("x") : null
             ]);
 
         if (heroLeftX + heroWidth >= rightX) {
-          if (!rightTopTile && !rightBottomTile && !rightBottomCharacter ||
-              rightTopTile ||
-              rightBottomTile ||
-              rightBottomCharacter && rightBottomCharacter.isBlocking(this)) {
-            attrs.velocity = velocity = 0;
-            attrs.x = x = rightX - heroWidth;
+          // Hit a tile or end of the world
+          attrs.velocity = velocity = 0;
+          attrs.x = x = rightX - heroWidth;
+
+        } else if (rightBottomCharacter) {
+          // Check for character hit
+          rightX = rightBottomCharacter.get("x");
+          if (heroLeftX + heroWidth >= rightX) {
+            var reaction = this.getHitReaction(rightBottomCharacter, "right");
+            if (reaction == "block") {
+              attrs.velocity = velocity = 0;
+              attrs.x = x = rightX - heroWidth;
+            }
+            rightBottomCharacter.trigger("hit", this, "left");
           }
-          if (rightBottomCharacter) rightBottomCharacter.trigger("hit", this, "left");
         }
+
       }
 
       if (velocity) attrs.x = x = x + velocity * (dt/1000);
@@ -531,6 +554,16 @@
 
       // Call parent function
       return Backbone.Sprite.prototype.update.apply(this, arguments);
+    },
+    // Returns a reaction when hero hits a character.
+    // Return value may be:
+    //   - null: No reaction
+    //   - block: Stop moving in that direction
+    //   - bounce: Bounce back in the opposite direction
+    getHitReaction: function(character, dir, dir2) {
+      if (!character.isBlocking(this)) return null;
+      if (dir == "bottom") return "bounce";
+      return "block";
     }
   });
 

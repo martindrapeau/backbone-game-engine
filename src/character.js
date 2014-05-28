@@ -92,7 +92,7 @@
     isBlocking: function(sprite) {
       return true;
     },
-    hit: function(sprite, dir, yDir) {
+    hit: function(sprite, dir, dir2) {
     },
     update: function(dt) {
       // Movements are only possible inside a world

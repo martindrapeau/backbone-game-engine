@@ -161,6 +161,10 @@
       if (!_.isEmpty(attrs)) this.set(attrs);
 
       return result;
+    },
+    getHitReaction: function(character, dir, dir2) {
+      if (!character.isBlocking(this)) return null;
+      return "block";
     }
   });
 

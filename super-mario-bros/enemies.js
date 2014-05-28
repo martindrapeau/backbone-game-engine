@@ -47,9 +47,9 @@
       this.set({state: "squished-" + cur.dir, collision: false});
       return this;
     },
-    hit: function(sprite, dir, yDir) {
+    hit: function(sprite, dir, dir2) {
       if (sprite.get("name") != this.world.get("hero")) return this;
-      if (yDir == "top") return this.squish(sprite);
+      if (dir == "top") return this.squish(sprite);
     },
     // Overlap only on bottom half. Top of sprite is empty space.
     overlaps: function(x, y) {
@@ -91,12 +91,12 @@
       }
       sprite.trigger("bounce", this);
     },
-    hit: function(sprite, dir, yDir) {
+    hit: function(sprite, dir, dir2) {
       if (!sprite || sprite.get("name") != "mario") return;
 
-      if (yDir == "top") {
-        return this.squish(sprite, dir);
-      } else if (yDir == "bottom") {
+      if (dir == "top") {
+        return this.squish(sprite, dir2);
+      } else if (dir == "bottom") {
         return;
       }
 
