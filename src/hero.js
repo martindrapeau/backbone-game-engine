@@ -283,7 +283,8 @@
       if (!this.world) return true;
 
       // Update velocity and possibly state
-      var velocity = this.get("velocity") || 0,
+      var input = this.input,
+          velocity = this.get("velocity") || 0,
           yVelocity = this.get("yVelocity") || 0,
           yAcceleration = null,
           x = this.get("x"),
@@ -340,9 +341,9 @@
         case "idle-left":
           // TO DO: This should never happen - but seems to. Figure out why...
           if (velocity != 0) {
-            if (this.input.rightPressed())
+            if (input.rightPressed())
               this.toggleDirection("right");
-            else if (this.input.leftPressed())
+            else if (input.leftPressed())
               this.toggleDirection("left");
             else
               throw "Idle with velocity != 0 and no dir pressed!";
@@ -354,7 +355,7 @@
           // Update vertical velocity. Determine proper vertical acceleration.
           if (yVelocity < animation.yEndVelocity) {
             yAcceleration = yVelocity < 0 ? animation.yAscentAcceleration : animation.yDescentAcceleration;
-            if (yVelocity < 0 && this.input.buttonAPressed() && y > animation.minY)
+            if (yVelocity < 0 && input.buttonAPressed() && y > animation.minY)
               yAcceleration = animation.yHoldAscentAcceleration;
             yVelocity += yAcceleration * (dt/1000);
           }
@@ -363,10 +364,10 @@
           attrs.yVelocity = yVelocity;
 
           // Update horizontal velocity if trying to turnaround
-          if (this.input.leftPressed() && velocity > -Math.abs(animation.velocity)) {
+          if (input.leftPressed() && velocity > -Math.abs(animation.velocity)) {
             velocity -= Math.abs(animation.acceleration) * (dt/1000);
             attrs.velocity = velocity;
-          } else if (this.input.rightPressed() && velocity < Math.abs(animation.velocity)) {
+          } else if (input.rightPressed() && velocity < Math.abs(animation.velocity)) {
             velocity += Math.abs(animation.acceleration) * (dt/1000);
             attrs.velocity = velocity;
           }
@@ -400,9 +401,9 @@
           heroTopY = heroBottomY - heroHeight;
           attrs.state = nextState;
           if (nex.move == "walk" || nex.move == "run")
-            attrs.nextState = (this.input.buttonBPressed() ? "run-" : "walk-") + nex.dir;
+            attrs.nextState = (input.buttonBPressed() ? "run-" : "walk-") + nex.dir;
           if (nex.mov == "skid")
-            attrs.nextState = (this.input.buttonBPressed() ? "run-" : "walk-") + nex.opo;
+            attrs.nextState = (input.buttonBPressed() ? "run-" : "walk-") + nex.opo;
           else if(nex.mov == "release")
             attrs.nextState = "idle-" + nex.dir;
         }
