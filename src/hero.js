@@ -393,8 +393,7 @@
       if (cur.mov == "jump" && yVelocity > 0) {
         // Falling...
 
-        if (heroBottomY >= bottomY) {
-          // Stop falling if obstacle below
+        function land(bottomY) {
           attrs.yVelocity = yVelocity = 0;
           attrs.y = y = bottomY - tileHeight;
           heroBottomY = y + tileHeight;
@@ -406,6 +405,11 @@
             attrs.nextState = (this.input.buttonBPressed() ? "run-" : "walk-") + nex.opo;
           else if(nex.mov == "release")
             attrs.nextState = "idle-" + nex.dir;
+        }
+
+        if (heroBottomY >= bottomY) {
+          // Stop falling if obstacle below
+          land(bottomY);
         } else {
           // Enemie below?
           var bottomLeftCharacter = heroBottomY > 0 ? this.world.findAt(heroLeftX + heroWidth/4, heroBottomY, "character", this, true) : null,
@@ -417,13 +421,14 @@
               ]);
           if (characterBottomY != bottomY) {
             var reaction = this.getHitReaction(bottomLeftCharacter || bottomRightCharacter, "bottom", bottomLeftCharacter ? "left": "right");
-            if (reaction == "block" || reaction == "bounce") {
+            if (reaction == "block") {
+              land(characterBottomY);
+            } else if (reaction == "bounce") {
+              attrs.yVelocity = yVelocity = animation.yStartVelocity*1/4;
               attrs.y = y = characterBottomY - tileHeight;
               heroBottomY = y + tileHeight;
               heroTopY = heroBottomY - heroHeight;
             }
-            if (reaction == "block") attrs.yVelocity = yVelocity = 0;
-            if (reaction == "bounce") attrs.yVelocity = yVelocity = animation.yStartVelocity*1/4;
 
             if (bottomLeftCharacter)
               bottomLeftCharacter.trigger("hit", this, "top", "right");
