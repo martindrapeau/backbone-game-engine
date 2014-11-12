@@ -327,6 +327,9 @@ $(window).on("load", function() {
     engine: engine
   });
 
+  // Ensure the canvas is always visible and centered
+  adjustViewport(canvas, 960, 700);
+
 });
 </pre>
         </div>
@@ -1360,6 +1363,61 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
         </div>
       </div>
 
+      <div id="mobile-devices" class="row">
+        <div class="col-md-12">
+          <h1>Mobile Devices</h1>
+          <p>
+            Backbone Game Engine was built for mobile first.
+          </p>
+          <h3>Touch Events</h3>
+          <p>
+            <a href="#documentation-Input">Backbone.Input</a>, <a href="#documentation-Button">Backbone.Button</a> and <a href="#documentation-WorldEditor">Backbone.WorldEditor</a>support touch events. Either using third-party library <a href="http://hammerjs.github.io/" target="_blank">hammer.js</a> or through direct use of <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Touch_events" target="_blank">touch events</a>.
+          </p>
+          <h3>Viewport resizing and canvas centering</h3>
+          <p>
+            In addition, we provide global function <code>adjustViewport(canvas, width, height)</code> to dynamically adjust the viewport size and center the canvas when an orientation change occurs. This function can be found in <a href="https://github.com/martindrapeau/backbone-game-engine/blob/gh-pages/src/adjust-viewport.js" target="_blank">adjust-viewport.js</a> located in the <coce>src</coce> folder.
+          </p>
+          <p>
+            On mobile devices the orientation of the web page can change between protrait and landscape. Since we cannot lock the orientation, we must find a way to adjust the viewport width to ensure the canvas is always visible. We use the meta tag <a href="https://developer.apple.com/library/IOs/documentation/AppleApplications/Reference/SafariWebContent/UsingtheViewport/UsingtheViewport.html" target="_blank">viewport</a> for that purpose.
+          </p>
+          <p>
+            As an example, let's assume our canvas is 960x700 pixels; therefore in landscape. In order for it to be visible and maximized on any portrait screen, we must control the width of the viewport. In <code>index.html</code> we declare the viewport meta tag to be the width of the canvas:
+          </p>
+          <pre>&lt;meta name="viewport" content="width=960, user-scalable=no"/&gt;</pre>
+          <p>
+            When the device is rotated to landscape, we need to adjust so that the height of the canvas is used instead.
+            The natural solution would be to set <code>content="height=700, user-scalable=no"</code>.
+            However this is not supported (<a href="http://www.quirksmode.org/blog/archives/2013/10/viewport_resear.html#link2" target="_blank">as reported by Quirksmode</a>).
+            Instead, we must derive the width based on the viewport ratio using this formula:
+          </p>
+          <pre>700 * window.innerWidth / window.innerHeight</pre>
+          <p>
+            Since the mobile device orientation changes when we rotate it, we must recalculate and reset the viewport width dynamically. We can do so using the resize event. Finally, we are also able to center the canvas by adjusting its <code>left</code> position. Here is the final code:
+          </p>
+          <pre>
+function adjustViewport(canvas, width, height) {
+
+  var viewport = document.querySelector("meta[name=viewport]");
+
+  function onResize() {
+    if (window.innerWidth > window.innerHeight) {
+      // Landscape
+      canvas.style.left = _.max([0, (window.innerWidth - width) / 2]) + "px";
+      viewport.setAttribute("content", "width=" + Math.ceil(height * window.innerWidth / window.innerHeight) + ",user-scalable=no");
+    } else {
+      // Portrait
+      canvas.style.left = "0px";
+      viewport.setAttribute("content", "width=" + width + ",user-scalable=no");
+    }
+  }
+
+  window.addEventListener("resize", _.debounce(onResize, 300));
+  onResize();
+}
+</pre>
+        </div>
+      </div>
+
       <div id="going-offline" class="row">
         <div class="col-md-12">
           <h1>Going Offline</h1>
@@ -1538,6 +1596,7 @@ icons.png
           <li><a href="#documentation-Button">&nbsp;&nbsp;Backbone.Button</a></li>
           <li><a href="#documentation-DebugPanel">&nbsp;&nbsp;Backbone.DebugPanel</a></li>
           <li><a href="#documentation-Shapes">&nbsp;&nbsp;Shape functions</a></li>
+          <li><a href="#mobile-devices">Mobile Devices</a></li>
           <li><a href="#going-offline">Going Offline</a></li>
           <li><a href="#persistence">Persistence</a></li>
           <li><a href="#performance">Performance</a></li>
