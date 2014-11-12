@@ -8,6 +8,20 @@ $(window).on("load", function() {
    * https://github.com/martindrapeau/backbone-game-engine
    *
    */
+
+  // Adjust viewport size
+  function adjustViewport() {
+    if (window.innerWidth > window.innerHeight) {
+      // Landscape
+      $("#viewport").attr({content: "height=700"});
+    } else {
+      // Portrait
+      $("#viewport").attr({content: "width=960"});
+    }
+  }
+  $(window).on("resize", _.debounce(adjustViewport, 300));
+  adjustViewport();
+
   
   var canvas = document.getElementById("foreground"),
       context = canvas.getContext("2d");
