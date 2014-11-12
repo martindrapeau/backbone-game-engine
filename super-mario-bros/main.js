@@ -251,9 +251,11 @@ $(window).on("load", function() {
   function adjustViewport() {
     if (window.innerWidth > window.innerHeight) {
       // Landscape
-      $("#viewport").attr({content: "width=1500"});
+      canvas.style.left = _.max([0, Math.floor((window.innerWidth - 960) / 2)]) + "px";
+      $("#viewport").attr({content: "width=" + Math.ceil(700*window.innerWidth/window.innerHeight)});
     } else {
       // Portrait
+      canvas.style.left = 0;
       $("#viewport").attr({content: "width=960"});
     }
     controller.debugPanel.set({v: $("#viewport").attr("content")});
