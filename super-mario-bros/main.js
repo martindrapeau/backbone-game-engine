@@ -9,19 +9,6 @@ $(window).on("load", function() {
    *
    */
 
-  // Adjust viewport size
-  function adjustViewport() {
-    if (window.innerWidth > window.innerHeight) {
-      // Landscape
-      $("#viewport").attr({content: "height=700"});
-    } else {
-      // Portrait
-      $("#viewport").attr({content: "width=960"});
-    }
-  }
-  $(window).on("resize", _.debounce(adjustViewport, 300));
-  adjustViewport();
-
   
   var canvas = document.getElementById("foreground"),
       context = canvas.getContext("2d");
@@ -256,7 +243,22 @@ $(window).on("load", function() {
   _.extend(window, {
     canvas: canvas,
     context: context,
-    controller: controller
+    controller: controller,
   });
+
+
+  // Adjust viewport size
+  function adjustViewport() {
+    if (window.innerWidth > window.innerHeight) {
+      // Landscape
+      $("#viewport").attr({content: "height=700"});
+    } else {
+      // Portrait
+      $("#viewport").attr({content: "width=960"});
+    }
+    controller.debugPanel.set({v: $("#viewport").attr("content")});
+  }
+  $(window).on("resize", _.debounce(adjustViewport, 300));
+  adjustViewport();
 
 });
