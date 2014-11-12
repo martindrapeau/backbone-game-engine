@@ -138,8 +138,8 @@
 
       var editor = this,
           sp = this.toJSON(),
-          x = e.gesture.center.clientX + this.engine.canvas.scrollLeft,
-          y = e.gesture.center.clientY + this.engine.canvas.scrollTop;
+          x = e.gesture.center.clientX - this.engine.canvas.offsetLeft + this.engine.canvas.scrollLeft,
+          y = e.gesture.center.clientY - this.engine.canvas.offsetTop + this.engine.canvas.scrollTop;
 
       // Sprite selection?
       if (x >= sp.x && y >= sp.y && x <= sp.x + sp.width && y <= sp.y + sp.height) {
