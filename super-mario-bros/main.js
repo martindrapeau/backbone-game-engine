@@ -251,7 +251,7 @@ $(window).on("load", function() {
   function adjustViewport() {
     if (window.innerWidth > window.innerHeight) {
       // Landscape
-      $("#viewport").attr({content: "height=700"});
+      $("#viewport").attr({content: "height=800"});
     } else {
       // Portrait
       $("#viewport").attr({content: "width=960"});
