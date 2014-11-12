@@ -246,20 +246,7 @@ $(window).on("load", function() {
     controller: controller,
   });
 
-
-  // Adjust viewport size
-  function adjustViewport() {
-    if (window.innerWidth > window.innerHeight) {
-      // Landscape
-      canvas.style.left = _.max([0, Math.floor((window.innerWidth - 960) / 2)]) + "px";
-      $("#viewport").attr({content: "width=" + Math.ceil(700*window.innerWidth/window.innerHeight)});
-    } else {
-      // Portrait
-      canvas.style.left = 0;
-      $("#viewport").attr({content: "width=960"});
-    }
-  }
-  $(window).on("resize", _.debounce(adjustViewport, 300));
-  adjustViewport();
+  // Ensure the canvas is always visible and centered
+  adjustViewport(canvas, 960, 700);
 
 });

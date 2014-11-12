@@ -233,5 +233,8 @@ $(window).on("load", function() {
     context: context,
     controller: controller
   });
+  
+  // Ensure the canvas is always visible and centered
+  adjustViewport(canvas, 960, 700);
 
 });

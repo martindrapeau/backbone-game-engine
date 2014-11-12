@@ -1,11 +1,12 @@
 CACHE MANIFEST
-# Version 0.26 (c) 2014 Martin Drapeau
+# Version 0.27 (c) 2014 Martin Drapeau
 
 ../3rd/hammer.js
 ../3rd/underscore.js
 ../3rd/backbone.native.js
 ../3rd/backbone.js
 
+../src/adjust-viewport.js
 ../src/input.js
 ../src/shapes.js
 ../src/core.js
