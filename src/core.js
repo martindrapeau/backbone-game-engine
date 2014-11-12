@@ -403,8 +403,8 @@
     },
     onTap: function(e) {
       var b = this.toJSON(),
-          x = e.gesture.center.clientX + this.engine.canvas.scrollLeft,
-          y = e.gesture.center.clientY + this.engine.canvas.scrollTop;
+          x = e.gesture.center.clientX - this.engine.canvas.offsetLeft + this.engine.canvas.scrollLeft,
+          y = e.gesture.center.clientY - this.engine.canvas.offsetTop + this.engine.canvas.scrollTop;
       if (x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height)
         this.trigger("tap");
     },

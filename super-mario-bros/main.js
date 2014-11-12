@@ -258,7 +258,6 @@ $(window).on("load", function() {
       canvas.style.left = 0;
       $("#viewport").attr({content: "width=960"});
     }
-    controller.debugPanel.set({v: $("#viewport").attr("content")});
   }
   $(window).on("resize", _.debounce(adjustViewport, 300));
   adjustViewport();
