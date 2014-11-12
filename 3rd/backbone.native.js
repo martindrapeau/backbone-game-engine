@@ -277,46 +277,24 @@
          *
          * @return {$} This instance.
          */
-        attr: function(attr, value){
-            if (!this.length) return this;
-            if (typeof attr == "object") {
-                var attrs = attr;
-                Object.keys(attrs).forEach(function(attr){
-                    switch (attr){
-                        case 'html':
-                            this[0].innerHTML = attrs[attr];
-                            break;
-                        case 'text':
-                            this[0].textContent = attrs[attr];
-                            break;
-                        case 'class':
-                            this[0].className = attrs[attr];
-                            break;
-                        default:
-                            this[0].setAttribute(attr, attrs[attr]);
-                            break;
-                    }
-                }, this);
-                return this;
-            } else if (value !== undefined) {
+        attr: function(attrs){
+            Object.keys(attrs).forEach(function(attr){
                 switch (attr){
                     case 'html':
-                        this[0].innerHTML = value;
+                        this[0].innerHTML = attrs[attr];
                         break;
                     case 'text':
-                        this[0].textContent = value;
+                        this[0].textContent = attrs[attr];
                         break;
                     case 'class':
-                        this[0].className = value;
+                        this[0].className = attrs[attr];
                         break;
                     default:
-                        this[0].setAttribute(attr, value);
+                        this[0].setAttribute(attr, attrs[attr]);
                         break;
                 }
-                return this;
-            } else {
-                return this[0].getAttribute(attr);
-            }
+            }, this);
+            return this;
         },
 
         /**
@@ -419,6 +397,7 @@
         var type = options.type || 'GET';
         var url = options.url;
         var processData = options.processData === undefined ? true : !!options.processData;
+        var contentType = options.contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
 
         // Process the data for sending.
         var data = options.data;
@@ -438,7 +417,7 @@
         var xhr = new XMLHttpRequest();
         xhr.open(type, url, true);
 
-        if (options.contentType) xhr.setRequestHeader('Content-Type', options.contentType);
+        xhr.setRequestHeader('Content-Type', contentType);
         if (options.beforeSend) options.beforeSend(xhr);
 
         xhr.onload = function(){

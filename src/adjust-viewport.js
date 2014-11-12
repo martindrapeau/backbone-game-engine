@@ -10,23 +10,24 @@
   */
 
   // Ensures the canvas is always visible and centered by adjusting
-  // the viewport and its left position.
-  // Assumes the meta element viewport has an id called viewport.
+  // the viewport and the canvas left position.
   function adjustViewport(canvas, width, height) {
+
+    var viewport = document.querySelector("meta[name=viewport]");
 
     function onResize() {
       if (window.innerWidth > window.innerHeight) {
         // Landscape
         canvas.style.left = _.max([0, (window.innerWidth - width) / 2]) + "px";
-        $("#viewport").attr({content: "width=" + Math.ceil(height * window.innerWidth / window.innerHeight)});
+        viewport.setAttribute("content", "width=" + Math.ceil(height * window.innerWidth / window.innerHeight) + ",user-scalable=no");
       } else {
         // Portrait
         canvas.style.left = "0px";
-        $("#viewport").attr({content: "width=" + width});
+        viewport.setAttribute("content", "width=" + width + ",user-scalable=no");
       }
     }
 
-    $(window).on("resize", _.debounce(onResize, 300));
+    window.addEventListener("resize", _.debounce(onResize, 300));
     onResize();
   }
 
