@@ -1463,7 +1463,7 @@ Application Cache NoUpdate event
 &lt;html manifest="offline.appcache"&gt;
     &lt;head&gt;
 </pre>
-          Second, create the <code>manifest</code> file. It contains files that must be cached. For example here is the <code>offline.manifest</code>:
+          Second, create the <code>manifest</code> file. It contains files that must be cached. For example here is the <code>offline.appcache</code>:
         </p>
         <pre>
 CACHE MANIFEST
@@ -1509,7 +1509,7 @@ icons.png
         <div class="col-md-12">
           <h1>Persistence</h1>
           <p>
-            Backbone offers RESTful persistence via <a href="http://backbonejs.org/#Sync" target="_blank">Backbone.sync</a>. Models have methods <code>fetch</code> and <code>save</code> to send/retrieve the model/collection JSONified data to/from the server. As such, you can easily implement server-side persistence using well established RESTful standards.
+            Backbone offers RESTful persistence via <a href="http://backbonejs.org/#Sync" target="_blank">Backbone.sync</a>. Models have methods <code>fetch</code> and <code>save</code> to retrieve/send the model/collection JSONified data to/from the server. As such, you can easily implement server-side persistence using well established RESTful standards.
           </p>
           <p>
             In our Super Mario Bros example, we use <a href="https://developer.apple.com/library/safari/documentation/iPhone/Conceptual/SafariJSDatabaseGuide/Name-ValueStorage/Name-ValueStorage.html" target="_blank">local storage</a> instead. This is done by overriding <code>Backbone.World</code> methods <code>save</code> and <code>fetch</code>. See file <code>src/local-storage.js</code> for details.
