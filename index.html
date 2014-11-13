@@ -252,7 +252,7 @@ my-game/
             Some important notes:
           </p>
           <ul>
-            <li>HTML meta tags <code>viewport</code> and <code>apple-mobile-web-app-capable</code> ensure the canvas is properly sized on iPads and other mobile devices.  The width of specified there should be the same as the canvas elements.</li>
+            <li>HTML meta tags <code>viewport</code> and <code>apple-mobile-web-app-capable</code> ensure the canvas is properly sized on iPads and other mobile devices. The width specified there should be the same as the canvas elements. On <a href="#mobile-devices">mobile devices</a>, an orientation change will recalculate and change the width to fit the canvas in the viewport. </li>
             <li>Style <code>touch-action: none;</code> on the <code>HTML</code> tag disables touch behaviors, like pan and zoom for IE10.</li>
             <li>Elements must all have ids since we use the native <code>getElementById</code> Javascript function to retrieve the <code>Canvas</code> and <code>Image</code> objects from their respective DOM elements.</li>
             <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden. Its height is less than that of the <code>foreground</code> canvas since the bottom real-estate is taken by either a <a href="#documentation-Input">Backbone.Input</a> or <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> model.</li>
@@ -1371,14 +1371,14 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
           </p>
           <h3>Touch Events</h3>
           <p>
-            <a href="#documentation-Input">Backbone.Input</a>, <a href="#documentation-Button">Backbone.Button</a> and <a href="#documentation-WorldEditor">Backbone.WorldEditor</a>support touch events. Either using third-party library <a href="http://hammerjs.github.io/" target="_blank">hammer.js</a> or through direct use of <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Touch_events" target="_blank">touch events</a>.
+            <a href="#documentation-Input">Backbone.Input</a>, <a href="#documentation-Button">Backbone.Button</a> and <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> support touch events. Either using third-party library <a href="http://hammerjs.github.io/" target="_blank">hammer.js</a> or through direct use of <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Touch_events" target="_blank">touch events</a>.
           </p>
           <h3>Viewport resizing and canvas centering</h3>
           <p>
             In addition, we provide global function <code>adjustViewport(canvas, width, height)</code> to dynamically adjust the viewport size and center the canvas when an orientation change occurs. This function can be found in <a href="https://github.com/martindrapeau/backbone-game-engine/blob/gh-pages/src/adjust-viewport.js" target="_blank">adjust-viewport.js</a> located in the <coce>src</coce> folder.
           </p>
           <p>
-            On mobile devices the orientation of the web page can change between protrait and landscape. Since we cannot lock the orientation, we must find a way to adjust the viewport width to ensure the canvas is always visible. We use the meta tag <a href="https://developer.apple.com/library/IOs/documentation/AppleApplications/Reference/SafariWebContent/UsingtheViewport/UsingtheViewport.html" target="_blank">viewport</a> for that purpose.
+            On mobile devices the orientation of the web page can change between protrait and landscape. Since we <a href="http://stackoverflow.com/questions/5298467/prevent-orientation-change-in-ios-safari" target="_blank">cannot lock the orientation</a>, we must find a way to adjust the viewport width to ensure the canvas is always visible. We use the meta tag <a href="https://developer.apple.com/library/IOs/documentation/AppleApplications/Reference/SafariWebContent/UsingtheViewport/UsingtheViewport.html" target="_blank">viewport</a> for that purpose.
           </p>
           <p>
             As an example, let's assume our canvas is 960x700 pixels; therefore in landscape. In order for it to be visible and maximized on any portrait screen, we must control the width of the viewport. In <code>index.html</code> we declare the viewport meta tag to be the width of the canvas:
@@ -1392,7 +1392,7 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
           </p>
           <pre>700 * window.innerWidth / window.innerHeight</pre>
           <p>
-            Since the mobile device orientation changes when we rotate it, we must recalculate and reset the viewport width dynamically. We can do so using the resize event. Finally, we are also able to center the canvas by adjusting its <code>left</code> position. Here is the final code:
+            Since the mobile device orientation changes when we rotate it, we must recalculate and reset the viewport width dynamically. We can do so using the <code>resize</code> event. Finally, we are also able to center the canvas by adjusting its <code>left</code> position. Here is the final code:
           </p>
           <pre>
 function adjustViewport(canvas, width, height) {
