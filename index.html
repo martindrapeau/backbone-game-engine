@@ -1163,8 +1163,7 @@ if (heroLeftX + heroWidth >= rightX) {
           <ul>
             <li><code>update(dt)</code>: No-op. Simply returns false for no redraw.</li>
             <li><code>draw(context)</code>: No-op.</li>
-            <li><code>maybePanX()</code>: Called when the <code>x</code> position of the subject changes. Ensures the subject is within the specified window, otherwise pans the world.</li>
-            <li><code>maybePanY()</code>: To be implemented...</li>
+            <li><code>maybePan()</code>: Called when the <code>x</code> or <code>y</code> position of the subject changes. Ensures the subject is within the specified window, otherwise pans the world.</li>
           </ul>
           <h4>Events</h4>
           <ul>
@@ -1184,15 +1183,12 @@ var spriteSheets = new Backbone.SpriteSheetCollection({
 var mario = new Backbone.Mario();
 var world = new Backbone.World();
 var camera = new Backbone.Camera(
-  {left: 200, right: 600, top: 0, bottom: 800},
+  {left: 200, right: 600, top: 100, bottom: 50},
   {subject: mario, world: world}
 );
 world.add(mario);
 var engine = new Backbone.Engine([world, camera]);
 </pre>
-          <div class="alert alert-info">
-            Note: The camera implementation is currently limited to horizontal movements. Vertical monitoring and panning is not yet implemented.
-          </div>
         </div>
       </div>
 
