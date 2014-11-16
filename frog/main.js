@@ -60,7 +60,8 @@ $(window).on("load", function() {
       });
 
       // Our world
-      this.world = new Backbone.World(_.clone(window._world), {
+      this.world = new Backbone.World(
+        _.extend({viewportBottom: 156}, window._world), {
         input: this.input,
         camera: this.camera,
         hero: "frog"

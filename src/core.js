@@ -79,9 +79,39 @@
           scaleY = animation.scaleY && animation.scaleY != 1 ? animation.scaleY : null,
           x = this.get("x") + (options.offsetX || 0) + (sequence.x || 0),
           y = this.get("y") + (options.offsetY || 0) + (sequence.y || 0);
-
       if (sequence.scaleY && sequence.scaleX != 1) scaleX = sequence.scaleX;
       if (sequence.scaleY &&  sequence.scaleY != 1) scaleY = sequence.scaleY;
+
+      var destX = Math.round(x), destY = Math.round(y),
+          srcX = frame.x, srcY = frame.y,
+          imgWidth = frame.width, imgHeight = frame.height,
+          viewportLeft = options.viewportLeft || 0,
+          viewportRight = options.viewportRight || 0,
+          viewportTop = options.viewporTop || 0,
+          viewportBottom = options.viewportBottom || 0;
+
+      // Do not draw if outside of viewport
+      if (destX + imgWidth < viewportLeft ||
+          destX > context.canvas.width - viewportRight ||
+          destY + imgHeight < viewportTop ||
+          destY > context.canvas.height - viewportBottom)
+        return;
+
+      // Clip inside viewport
+      if (destX < viewportLeft && scaleX != -1) {
+        imgWidth -= viewportLeft - destX;
+        srcX += viewportLeft - destX;
+        destX = viewportLeft;
+      }
+      if (destX + imgWidth > context.canvas.width - viewportRight && scaleX != -1)
+        imgWidth =  context.canvas.width - viewportRight - destX;
+      if (destY < viewportTop) {
+        imgHeight -= viewportTop - destY;
+        srcY += viewportTop - destY;
+        destY = viewportTop;
+      }
+      if (destY + imgHeight > context.canvas.height - viewportBottom)
+        imgHeight = context.canvas.height - viewportBottom - destY;
 
       // Handle transformations (only scaling for now)
       if (_.isNumber(scaleX) || _.isNumber(scaleY)) {
@@ -94,8 +124,8 @@
 
       context.drawImage(
         this.spriteSheet.img,
-        frame.x, frame.y, frame.width, frame.height,
-        Math.round(x), Math.round(y), frame.width, frame.height
+        srcX, srcY, imgWidth, imgHeight,
+        destX, destY, imgWidth, imgHeight
       );
 
       if (_.isNumber(scaleX) || _.isNumber(scaleY)) context.restore();

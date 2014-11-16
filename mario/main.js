@@ -45,6 +45,7 @@ $(window).on("load", function() {
   var world = new Backbone.World({
   	width: 30, height: 17,
   	tileWidth: 32, tileHeight: 32,
+    viewportBottom: 156,
     backgroundColor: "rgba(66, 66, 255, 1)"
   });
   world.add(mario);

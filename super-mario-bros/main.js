@@ -68,7 +68,9 @@ $(window).on("load", function() {
       this.camera = new Backbone.Camera();
 
       // Our world
-      this.world = new Backbone.World(_.clone(window._world), {
+      // Reserve bottom of canvas for input and editor
+      this.world = new Backbone.World(
+        _.extend({viewportBottom: 156}, window._world), {
         input: this.input,
         camera: this.camera,
         hero: "mario"

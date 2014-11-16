@@ -252,7 +252,7 @@ my-game/
         &lt;canvas id="foreground" width="960" height="700"&gt;
             Your browser does not support canvas element.
         &lt;/canvas&gt;
-        &lt;canvas id="background" width="960" height="544" style="display:none;"&gt;
+        &lt;canvas id="background" width="960" height="700" style="display:none;"&gt;
             Your browser does not support canvas element.
         &lt;/canvas&gt;
     &lt;/body&gt;
@@ -266,7 +266,7 @@ my-game/
             <li>HTML meta tags <code>viewport</code> and <code>apple-mobile-web-app-capable</code> ensure the canvas is properly sized on iPads and other mobile devices. The width specified there should be the same as the canvas elements. On <a href="#mobile-devices">mobile devices</a>, an orientation change will recalculate and change the width to fit the canvas in the viewport. </li>
             <li>Style <code>touch-action: none;</code> on the <code>HTML</code> tag disables touch behaviors, like pan and zoom for IE10.</li>
             <li>Elements must all have ids since we use the native <code>getElementById</code> Javascript function to retrieve the <code>Canvas</code> and <code>Image</code> objects from their respective DOM elements.</li>
-            <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden. Its height is less than that of the <code>foreground</code> canvas since the bottom real-estate is taken by either a <a href="#documentation-Input">Backbone.Input</a> or <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> model.</li>
+            <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden.</li>
           </ul>
 
           <h3 id="documentation-main">main.js</h3>
@@ -318,7 +318,8 @@ $(window).on("load", function() {
   var world = new Backbone.World({
     width: 30, height: 18,
     tileWidth: 32, tileHeight: 32,
-    backgroundColor: "rgba(66, 66, 255, 1)"
+    backgroundColor: "rgba(66, 66, 255, 1)",
+    viewportBottom: 156
   });
   world.add(mario);
 
@@ -743,13 +744,14 @@ input.bind("change:left", function(input) {
           <h3>Backbone.World</h3>
           <pre>new Backbone.World([attributes], [options])</pre>
           <p>
-            <code>Backbone.World</code> is model which contains a collection of sprites that interact with each other. A world is an environment composed of tiles and characters. The world extends beyond the canvas. The visible portion is the viewport. <code>Backbone.World</code> is similar to a sprite; it implements the <code>update</code> and <code>draw</code> methods required by the <code>Backbone.Engine</code> collection.
+            <code>Backbone.World</code> is model which contains a collection of sprites that interact with each other. A world is an environment composed of tiles and characters. The world extends beyond the canvas however the viewport, the visible portion, is constrained within its prescribed limits. <code>Backbone.World</code> is similar to a sprite; it implements the <code>update</code> and <code>draw</code> methods required by the <code>Backbone.Engine</code> collection.
           </p>
           <h4>Attributes</h4>
           <ul>
             <li><code>x, y</code>: Origin of top-left corner in pixels.</li>
             <li><code>width, height</code>: Size of world in tiles.</li>
             <li><code>tileWidth, tileHeight</code>: Size of a tile in pixels.</li>
+            <li><code>viewportLeft, viewportRight, viewportTop, viewportBottom</code>: Defines an area in the canvas the world is constrained to. Each value provides gutter regions in pixels. Anything drawn by the world will be clipped in the area. Useful for drawing a menu bar or buttons on the same canvas. In provided demos for example, <code>viewportBottom</code> is set to 156 pixels to make room the the touchpad.</li>
             <li><code>hero</code>: Name of sprite character controlled by the user. Will be passed the input as option when instantiated.</li>
             <li><code>sprites</code>: Array of sprite models for persistence.</li>
             <li><code>backgroundColor</code>: Background color of the world.</li>

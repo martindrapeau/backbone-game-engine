@@ -20,14 +20,19 @@
       tileHeight: 32,
       width: 100,
       height: 19,
+      viewportTop: 0, viewportRight: 0, viewportBottom: 0, viewportLeft: 0,
       backgroundColor: "rgba(66, 66, 255, 1)",
       sprites: [], // Copy for persistence only. Use the direct member sprites which is a collection.
       state: "play", // edit or play
       hero: null
     },
-    shallowAttributes: ["x", "y", "width", "height", "tileWidth", "tileHeight", "backgroundColor", "hero"],
+    shallowAttributes: [
+      "x", "y", "width", "height", "tileWidth", "tileHeight", "backgroundColor", "hero",
+      "viewportLeft", "viewportRight", "viewportTop", "viewportBottom"
+    ],
     urlRoot: "/ludo/world",
     viewport: {x:0, y:0, width:0, height: 0},
+    updateViewport: {x:0, y: 0, width:0, height:0},
     spriteOptions: {offsetX:0, offsetY:0},
     initialize: function(attributes, options) {
       options || (options = {});
@@ -59,6 +64,8 @@
     },
     onAttach: function() {
       var engine = this.engine;
+      this.on("change:viewportLeft change:viewportRight change:viewportTop change:viewportBottom", this.updateViewport);
+      this.updateViewport();
       this.sprites.each(function(sprite) {
         sprite.engine = engine;
         sprite.trigger("attach", engine);
@@ -69,6 +76,15 @@
         sprite.engine = undefined;
         sprite.trigger("detach");
       });
+      this.off("change:viewportLeft change:viewportRight change:viewportTop change:viewportBottom", this.updateViewport);
+    },
+    updateViewport: function() {
+      this.viewport.width = this.engine.canvas.width - this.attributes.viewportLeft - this.attributes.viewportRight;
+      this.viewport.height= this.engine.canvas.height - this.attributes.viewportTop - this.attributes.viewportBottom;
+      this.spriteOptions.viewportLeft = this.attributes.viewportLeft;
+      this.spriteOptions.viewportRight = this.attributes.viewportRight;
+      this.spriteOptions.viewportTop = this.attributes.viewportTop;
+      this.spriteOptions.viewportBottom = this.attributes.viewportBottom;
     },
 
     // Split static sprites (background tiles) from dynamic ones (animated or moving).
@@ -226,14 +242,20 @@
           hero = this.get("hero"),
           tileWidth = this.get("tileWidth"),
           worldWidth = this.get("width") * tileWidth,
+          tileHeight = this.get("tileHeight"),
+          worldHeight = this.get("height") * tileHeight,
           minX = -Math.floor(x) - tileWidth*3,
-          maxX = minX + this.engine.canvas.width + tileWidth*6;
+          maxX = minX + this.viewport.width + tileWidth*6,
+          minY = -Math.floor(y) - tileHeight*3,
+          maxY = minY + this.viewport.height + tileHeight*6;
       if (minX < 0) minX = 0;
       if (maxX > worldWidth) maxX = worldWidth;
-      this.viewport.x = minX;
-      this.viewport.y = 0;
-      this.viewport.width = maxX - minX;
-      this.viewport.height= this.engine.canvas.height;
+      if (minY < 0) minY = 0;
+      if (maxY > worldHeight) maxY = worldHeight;
+      this.updateViewport.x = minX;
+      this.updateViewport.y = minY;
+      this.updateViewport.width = maxX - minX;
+      this.updateViewport.height= maxY - minY;
 
       // Background
       var minCol = this.getWorldCol(minX),
@@ -252,7 +274,7 @@
       var sprite;
       for (var i = 0; i < this.dynamicSprites.models.length; i++) {
         sprite = this.dynamicSprites.models[i];
-        if (sprite.attributes.name == hero || sprite.overlaps.call(sprite, this.viewport))
+        if (sprite.attributes.name == hero || sprite.overlaps.call(sprite, this.updateViewport))
           sprite._draw = sprite.update(dt);
       }
 
@@ -279,10 +301,6 @@
           w = this.toShallowJSON(),
           worldWidth = w.width * w.tileWidth,
           worldHeight = w.height * w.tileHeight;
-      this.viewport.x = Math.floor(-w.x);
-      this.viewport.y = Math.floor(-w.y);
-      this.viewport.width = context.canvas.width;
-      this.viewport.height= context.canvas.height;
       this.spriteOptions.offsetX = w.x;
       this.spriteOptions.offsetY = w.y;
 
@@ -290,8 +308,8 @@
         context,
         Math.floor(w.x > 0 ? w.x : 0),
         Math.floor(w.y > 0 ? w.y : 0),
-        worldWidth < this.viewport.width ? worldWidth : this.viewport.width,
-        worldHeight < this.viewport.height ? worldHeight : this.viewport.height,
+        worldWidth < context.canvas.width ? worldWidth : context.canvas.width,
+        worldHeight < context.canvas.height ? worldHeight : context.canvas.height,
         w.backgroundColor
       );
 
@@ -299,8 +317,8 @@
         var img = this.backgroundImage,
             ix = -w.x/2,
             iy = -w.y/2,
-            width = this.viewport.width < img.width ? this.viewport.width : img.width,
-            height = this.viewport.height < img.height ? this.viewport.height : img.height,
+            width = context.canvas.width < img.width ? context.canvas.width : img.width,
+            height = context.canvas.height < img.height ? context.canvas.height : img.height,
             flipAxis = 0;
         context.save();
         context.translate(flipAxis, 0);
@@ -337,7 +355,9 @@
       this.spriteOptions.offsetX = w.x;
       this.spriteOptions.offsetY = w.y;
 
-      context.drawImage(this.backgroundCanvas, 0, 0);
+      context.drawImage(this.backgroundCanvas,
+        this.attributes.viewportLeft, this.attributes.viewportTop, this.viewport.width, this.viewport.height,
+        this.attributes.viewportLeft, this.attributes.viewportTop, this.viewport.width, this.viewport.height);
 
       var spritesDrawn = 0,
           sprite;
