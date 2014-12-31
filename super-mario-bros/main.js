@@ -15,14 +15,16 @@ $(window).on("load", function() {
 
   var spriteNames = [
     "ground", "brick-top", "brick", "ground2", "block", "block2", "question-block", "pennie",
-    "tube1", "tube2", "tube1-ug", "tube2-ug", "bush1", "bush2", "bush3", "cloud1", "cloud2", "cloud3",
-    "cloud-happy1", "cloud-happy2", "cloud-happy3", "flag-pole1", "cloud-small", "ground-ug",  "brick-top-ug",
-    "brick-ug", "ground2-ug", "block-ug", "block2-ug", "question-block-ug", "pennie-ug", 
-    "tube3", "tube4", "tube3-ug", "tube4-ug", "bush4", "bush5", "bush6", "cloud4", "cloud5", "cloud6", 
-    "cloud-happy4", "cloud-happy5", "cloud-happy6", "flag-pole2", "brick-castle", "brick2-castle",
-    "brick3-castle", "brick4-castle", "brick5-castle", "brick6-castle", "brick7-castle", "bush7", "bush8", "bush9",
-    "mario", "mushroom", "turtle", "flying-turtle", "red-turtle", "red-flying-turtle", 
-    "beetle", "spike", "flying-pennie"
+    "tube1", "tube2", "tube3-mirror", "tube4-mirror", "bush1", "bush2", "bush3", "cloud1", "cloud2", "cloud3",
+    "cloud-happy1", "cloud-happy2", "cloud-happy3", "flag-pole1", "water-bridge",
+    "cloud-small", "ground-ug", "brick-top-ug", "brick-ug", "ground2-ug", "block-ug", "block2-ug",
+    "question-block-ug", "pennie-ug", "tube3", "tube4", "tube1-mirror", "tube2-mirror", "bush4", "bush5", "bush6",
+    "cloud4", "cloud5", "cloud6", "cloud-happy4", "cloud-happy5", "cloud-happy6", "flag-pole2", "railing",
+    "tube1-out", "tube2-out", "tube3-out", "tube1-out-mirror", "tube2-out-mirror", "tube3-out-mirror", "water1", "lava1",
+    "platform1", "platform2", "platform3",  "brick7-castle", "brick-castle", "brick2-castle", "brick3-castle",
+    "mario", "luigi", "mushroom", "turtle", "flying-turtle", "red-turtle", "red-flying-turtle", "beetle", "spike", "flying-pennie",
+    "tube4-out", "tube5-out", "tube6-out", "tube4-out-mirror", "tube5-out-mirror", "tube6-out-mirror", "water2", "lava2", 
+    "bush7", "bush8", "bush9", "platform-pole", "brick4-castle", "brick5-castle", "brick6-castle"
   ];
 
   Backbone.Controller = Backbone.Model.extend({
@@ -72,8 +74,7 @@ $(window).on("load", function() {
       this.world = new Backbone.World(
         _.extend({viewportBottom: 156}, window._world), {
         input: this.input,
-        camera: this.camera,
-        hero: "mario"
+        camera: this.camera
       });
 
       this.display = new Backbone.Display({}, {
@@ -93,13 +94,13 @@ $(window).on("load", function() {
       this.toggleButton.on("tap", this.toggleState, this);
 
       this.saveButton = new Backbone.Button({
-        x: 904, y: 548, width: 52, height: 52, borderRadius: 5,
+        x: 4, y: 548, width: 52, height: 52, borderRadius: 5,
         img: "#icons", imgX: 96, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
       });
       this.saveButton.on("tap", this.saveWorld, this);
 
       this.restartButton = new Backbone.Button({
-        x: 904, y: 608, width: 52, height: 52, borderRadius: 5,
+        x: 4, y: 608, width: 52, height: 52, borderRadius: 5,
         img: "#icons", imgX: 128, imgY: 0, imgWidth: 32, imgHeight: 32, imgMargin: 10
       });
       this.restartButton.on("tap", this.restartWorld, this);
@@ -135,7 +136,7 @@ $(window).on("load", function() {
         if (e.keyCode == 66 || e.keyCode == 98)
           controller.engine.toggle(); // b to break the animation
         else if (e.keyCode == 80 || e.keyCode == 112)
-          controller.toggleState(); // p to pause and edit
+          controller.toggleState(); // p to pause and pause
       });
 
       this.listenTo(this.world, "change:state", this.onChangeState);
@@ -146,12 +147,12 @@ $(window).on("load", function() {
     },
     toggleState: function(e) {
       var state = this.world.get("state");
-      this.world.set("state", state == "edit" ? "play" : "edit");
+      this.world.set("state", state == "pause" ? "play" : "pause");
       if (!this.engine.isRunning()) this.engine.start();
     },
     onChangeState: function() {
       var state = this.world.get("state");
-      if (state == "edit") {
+      if (state == "pause") {
         // Edit
         context.clearRect(0, 0, canvas.width, canvas.height);
         this.engine.remove(this.input);
@@ -249,6 +250,6 @@ $(window).on("load", function() {
   });
 
   // Ensure the canvas is always visible and centered
-  adjustViewport(canvas, 960, 700);
+  adjustViewport(canvas, canvas.width, canvas.height);
 
 });

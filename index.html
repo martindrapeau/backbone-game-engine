@@ -53,9 +53,10 @@
             An elementary HTML5 Canvas game engine built on Backbone. Examples:
           </p>
           <ul>
-            <li>Elementary: <a href="ball/index.html" target="_blank">Bouncing ball</a></li>  
-            <li>Basic: <a href="mario/index.html" target="_blank">Mario in an empty world</a></li>       
+            <li>Elementary: <a href="ball/index.html" target="_blank">Bouncing ball</a></li>
+            <li>Basic: <a href="mario/index.html" target="_blank">Mario in an empty world</a></li>
             <li>Advanced: <a href="super-mario-bros/index.html" target="_blank">Super Mario Bros, level 1-1</a></li>
+            <li>Real game: <a href="http://www.mariocraft.club" target="_blank">Mariocraft</a></li>
           </ul>
           <p>
             These examples are on <a href="https://github.com/martindrapeau/backbone-game-engine">Github</a>.
@@ -220,6 +221,8 @@ my-game/
 
         &lt;meta name="viewport" content="width=960, user-scalable=no"/&gt;
         &lt;meta name="apple-mobile-web-app-capable" content="yes" /&gt;
+        &lt;meta name="mobile-web-app-capable" content="yes" /&gt;
+        &lt;meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/&gt;
 
         &lt;script src="../3rd/underscore.js" type="text/javascript"&gt;&lt;/script&gt;
         &lt;script src="../3rd/backbone.native.js" type="text/javascript"&gt;&lt;/script&gt;
@@ -252,9 +255,6 @@ my-game/
         &lt;canvas id="foreground" width="960" height="700"&gt;
             Your browser does not support canvas element.
         &lt;/canvas&gt;
-        &lt;canvas id="background" width="960" height="700" style="display:none;"&gt;
-            Your browser does not support canvas element.
-        &lt;/canvas&gt;
     &lt;/body&gt;
 
 &lt;/html&gt;
@@ -263,10 +263,9 @@ my-game/
             Some important notes:
           </p>
           <ul>
-            <li>HTML meta tags <code>viewport</code> and <code>apple-mobile-web-app-capable</code> ensure the canvas is properly sized on iPads and other mobile devices. The width specified there should be the same as the canvas elements. On <a href="#mobile-devices">mobile devices</a>, an orientation change will recalculate and change the width to fit the canvas in the viewport. </li>
+            <li>HTML meta tags <code>viewport</code>, <code>apple-mobile-web-app-capable</code>, <code>mobile-web-app-capable</code> and <code>apple-mobile-web-app-status-bar-style</code> ensure the canvas is properly sized and styled on iPads and other mobile devices. The width specified there should be the same as the canvas elements. On <a href="#mobile-devices">mobile devices</a>, an orientation change will recalculate and change the width to fit the canvas in the viewport. </li>
             <li>Style <code>touch-action: none;</code> on the <code>HTML</code> tag disables touch behaviors, like pan and zoom for IE10.</li>
             <li>Elements must all have ids since we use the native <code>getElementById</code> Javascript function to retrieve the <code>Canvas</code> and <code>Image</code> objects from their respective DOM elements.</li>
-            <li>Canvas ided <code>background</code> is used as a secondary buffer in <a href="#documentaiton-World">Backbone.World</a> (to draw the background). It must remain hidden.</li>
           </ul>
 
           <h3 id="documentation-main">main.js</h3>
@@ -340,7 +339,7 @@ $(window).on("load", function() {
   });
 
   // Ensure the canvas is always visible and centered
-  adjustViewport(canvas, 960, 700);
+  adjustViewport(canvas, canvas.width, canvas.height);
 
 });
 </pre>
@@ -752,7 +751,6 @@ input.bind("change:left", function(input) {
             <li><code>width, height</code>: Size of world in tiles.</li>
             <li><code>tileWidth, tileHeight</code>: Size of a tile in pixels.</li>
             <li><code>viewportLeft, viewportRight, viewportTop, viewportBottom</code>: Defines an area in the canvas the world is constrained to. Each value provides gutter regions in pixels. Anything drawn by the world will be clipped in the area. Useful for drawing a menu bar or buttons on the same canvas. In provided demos for example, <code>viewportBottom</code> is set to 156 pixels to make room the the touchpad.</li>
-            <li><code>hero</code>: Name of sprite character controlled by the user. Will be passed the input as option when instantiated.</li>
             <li><code>sprites</code>: Array of sprite models for persistence.</li>
             <li><code>backgroundColor</code>: Background color of the world.</li>
             <li><code>state</code>: Persisted state either play or edit.</li>
@@ -783,9 +781,9 @@ input.bind("change:left", function(input) {
             <li><code>width(), height()</code>: Return the size of the world in pixels.</li>
             <li><code>getWorldIndex(object)</code>: Calculates the index position of a tile based on coordinates. Argument <code>object</code> must contain <code>x</code> and <code>y</code>, or be a model with those attributes. The index is calculated with formula <code>height * x/tileWidth + y/tileHeight</code>. This method is used to set the <code>id</code> of tile sprites.</li>
             <li><code>getWorldCol(x), getWorldRow(y)</code>: Returns the tile position in columns or rows of a coordinate.</li>
-            <li><code>findCollidingAt(x, y)</code>: Finds the first sprite at the specified coordinate, which has the <code>collision</code> attribute set to true. Uses fast index lookup for static sprites.</li>
-            <li><code>findAt(x, y, [type], [exclude], [collision])</code>: Finds the first sprite at the specified coordinate. Usage and arguments are described further below.</li>
-            <li><code>filterAt(x, y, [type], [exclude], [collision])</code>: Finds a list of sprites at the specified coordinate.  Usage and arguments are described further below.</li>
+            <li><code>findAt(x, y, [type], [exclude], [collision])</code>: Finds the first sprite at the specified coordinate. Use for collision detection.. Optional arguments allow you to filter what to look for. Set <code>type</code> to <code>character</code> to find moving sprites, or <code>tile</code> to find tiles. Set <code>exclude</code> to the id of the sprite you want to exclude from the search. In a collision detection scheme, this is usually the id of the sprite you are checking against. Set <code>collision</code> to true to find only tiles that have their <code>collision</code> flag set.</li>
+            <li><code>filterAt(x, y, [type], [exclude], [collision])</code>: Same as <code>findAt</code> but returns the list of all matching sprites instead of the first.</li>
+            <li><code>findCollidingAt(x, y)</code>: Finds a colliding tile. Just like calling <code>findAt(x, y, "tile", null, true)</code>.</li>
           </ul>
           <h4>Events</h4>
           <ul>
@@ -800,8 +798,8 @@ input.bind("change:left", function(input) {
             Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
           </p>
           <ul>
-            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to true will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a pair of x/y coordinates. In addition, these sprites are only drawn when required (i.e. world is panned). Use method <code>findCollidingAt</code> for quick lookup.</li>
-            <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to false to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup has an order of N. Keep the number of sprites here to a minimum. Use methods <code>findAt</code> and <code>filterAt</code> to find collisions with other sprites.</li>
+            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to <code>true</code> will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a pair of x/y coordinates. In addition, these sprites are only drawn when required (i.e. world is panned).</li>
+            <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to <code>false</code> to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup has an order of N. Keep the number of sprites here to a minimum.</li>
           </ul>
           <p>
             A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the size in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned consequently changing the viewport.
@@ -820,7 +818,7 @@ input.bind("change:left", function(input) {
             You can add sprites with method <code>add</code> which delegates to the <code>sprites</code> collection's <code>add</code> method. It takes care of passing the <code>world</code> as option.
           </p>
           <p>
-            You can also use method <code>cloneAtPosition(sprite, x, y)</code>. It takes as argument an existing sprite, and coordinates. It will clone the sprite and place it at the specified coordinates passing <code>world</code> as option. If the sprite name matches that of the world attribute <code>hero</code> it will also pass option <code>input</code>, and if a <code>Backbone.Camera</code> exists, it will be tied to it. Backbone.WorldEditor</code> uses this function for instance.
+            You can also use method <code>cloneAtPosition(sprite, x, y)</code>. It takes as argument an existing sprite, and coordinates. It will clone the sprite and place it at the specified coordinates passing <code>world</code> and <code>input</code> as options. If the sprite has its <code>hero</code> attribute set to <code>ture</code>, and if a <code>Backbone.Camera</code> exists, it will be tied to it. Backbone.WorldEditor</code> uses this function for instance.
           </p>
           <p>
             Methods <code>getWorldIndex</code>, <code>getWorldCol</code> and <code>getWorldRow</code> can be used to find the position of a sprite. A sprite's <code>x</code> and <code>y</code> attributes determine their position relative to the world origin.
@@ -837,8 +835,8 @@ input.bind("change:left", function(input) {
             Characters are sprites that interact with their environment. <a href="#documentation-Character">Backbone.Character</a> and <a href="#documentation-Hero">Backbone.Hero</a> are character sprites. Character sprite models must have a <code>type</code> attribute set to <code>character</code>. Method <code>findAt(x, y, [type], [exclude], [collision])</code> will return the top-most sprite at a specific coordinate. Method <code>filterAt(x, y, [type], [exclude], [collision])</code> will return all sprites at a specific coordinate. Optional arguments allow filtering:
           </p>
           <ul>
-            <li><code>type</code>: Optional. If set, will only lookup sprites matching that type.</li>
-            <li><code>exlcude</code>: Optional. The sprite model to exclude in lookup.</li>
+            <li><code>type</code>: Optional. If set, will only lookup sprites matching that type. Typical values are <code>character</code> or <code>tile</code>.</li>
+            <li><code>exlcude</code>: Optional. The sprite model's <code>id</code> to exclude in lookup.</li>
             <li><code>collision</code>: Optional. Boolean indicating whether to only include sprites that have the <code>collision</code> attribute explicitly set to <code>true</code>.
           </ul>
           <p>
@@ -920,7 +918,7 @@ input.bind("change:left", function(input) {
           <h3>Backbone.Character</h3>
           <pre>new Backbone.Character([attributes], [options])</pre>
           <p>
-            The <code>Backbone.Character</code> is a sub-classed <code>Backbone.Sprite</code> which implements an animated character with elementary AI (artificial intelligence) and physics. AI is limited to move left and right. Direction changes occur with collisions against an obstacle; either a tile or another character.
+            The <code>Backbone.Character</code> is a sub-classed <code>Backbone.Sprite</code> which implements an animated character with elementary AI (artificial intelligence) and physics. AI is limited to moving left, right and jumping. Direction changes occur with collisions against an obstacle; either a tile or another character.
           </p>
           <div class="alert alert-info">
             A <code>Backbone.Character</code> must live inside a <code>Backbone.World</code>.
@@ -944,9 +942,19 @@ input.bind("change:left", function(input) {
           <ul>
             <li><code>getStateInfo([state])</code>: Decomposes <code>state</code> into move and direction. For example <code>walk-left</code> would be decomposed into <code>{mov:"walk", dir:"left", opo:"right"}</code>. If argument <code>state</code> is omitted, the attribute is used instead. See <a href="#documentation-Hero">Backbone.Hero</a> for a more detailed description.</li>
             <li><code>update(dt)</code>: Handles the character movements and AI.</li>
+            <li><code>updateSequenceIndex(dt)</code>: Returns the new <code>sequenceIndex</code> (animation frame). Called by <code>update</code>.</li>
             <li><code>toggleDirection(dirIntent)</code>: Invokes a <code>left</code> or <code>right</code> direction change.</li>
             <li><code>isBlocking()</code>: Returns a Boolean indicating whether a collision is blocking, or passthrough.</li>
             <li><code>hit(sprite, [dir], [dir2])</code>: Function invoked usually by a <code>hit</code> event. Implement this to determine what happens when another <code>sprite</code> hits the character. Argument <code>dir</code> is the primary direction of the hit (<code>left</code>, <code>right</code>, <code>top</code> or <code>bottom</code>). Argument <code>dir2</code> is the secondary direction. In top-left for example, it would be left.</li>
+            <li>
+              <code>getHitReaction(sprite)</code>: Function invoked by update when the character detects a collision with another character. Returns how to handle the collision. Possible return values are:
+              <ul>
+                <li><code>null</code>: Ignore the collision.</li>
+                <li><code>reverse</code>: Change direction.</li>
+                <li><code>ko</code>: Knock out from the world.</li>
+              </ul>
+            </li>
+            <li><code>knockout(sprite, dir)</code>: Function invoked when the sprite gets knocked out of the world. The sprite is litterally knocked out updside down.</li>
           </ul>
           <h4>Events</h4>
           <ul>
@@ -956,7 +964,7 @@ input.bind("change:left", function(input) {
           </ul>
           <h4>Example</h4>
           <p>
-            In the Super Mario Bros example, look at file <code>enemies.js</code>. There are implementations for basic characters in that game. The <code>hit</code> method implements the action when Mario lands on a character. In the case of a Mushroom, it gets <em>squished</em> and collision detection gets turned off.
+            In the Super Mario Bros example, look at file <code>enemies.js</code>. There are implementations for basic characters in that game. The <code>hit</code> method implements the action when Mario lands on a character. In the case of a Mushroom, it gets <em>squished</em>. Collision detection gets turned off and the sprite is eventually removed.
           </p>
           <pre>
 ...
@@ -967,6 +975,9 @@ squish: function(sprite) {
 hit: function(sprite, dir, dir2) {
   if (sprite.get("name") != this.world.get("hero")) return;
   if (dir == "top") return this.squish(sprite);
+  this.world.setTimeout(function() {
+    self.world.remove(self);
+  }, 2000);
 },
 ...
 </pre>
@@ -1011,6 +1022,7 @@ hit: function(sprite, dir, dir2) {
                 <li><code>null</code>: No reaction. Hero passes through the character.</li>
                 <li><code>block</code>: Character is blocking. Hero stops moving in the direction <code>dir</code>.</li>
                 <li><code>bounce</code>: Character is blocking but pushes back. Hero bounces back in the opposite direction <code>dir</code>. For example when Mario lands on top of a turtle, he bounces back.</li>
+                <li><code>ko</code>: Knock out from the world. When the character dies.</li>
               </ul>
               Argument <code>dir2</code> is optional. If specified it is the secondary direction. For example if hit from the top-left, <code>dir</code> would be <code>top</code> and <code>dir2</code> would be <code>left</code>.
             </li>
@@ -1583,6 +1595,15 @@ icons.png
           <h4>0.11 - 2014-11-12</h4>
           <p>
             Adjust viewport on orientation change, and center canvas.
+          </p>
+          <h4>0.20 - 2014-12-31</h4>
+          <p>
+            Major improvements including:
+            <ul>
+              <li>Efficient collision detection.</li>
+              <li>Character and hero knockout and dying.</li>
+              <li>Performance improvements.</li>
+              <li>Bug fixes.</li>
           </p>
         </div>
       </div>

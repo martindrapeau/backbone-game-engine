@@ -14,9 +14,9 @@ window._world = {
   tileWidth: 32,
   tileHeight: 32,
   width: 212,
-  height: 20,
+  height: 17,
   backgroundColor: "rgba(66, 66, 255, 1)",
-  hero: "mario",
+  name: "level_1-1",
   sprites: [
     {
       "name": "ground",

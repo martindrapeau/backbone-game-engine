@@ -77,55 +77,25 @@
           frame = this.spriteSheet.frames[frameIndex],
           scaleX = animation.scaleX && animation.scaleX != 1 ? animation.scaleX : null,
           scaleY = animation.scaleY && animation.scaleY != 1 ? animation.scaleY : null,
-          x = this.get("x") + (options.offsetX || 0) + (sequence.x || 0),
-          y = this.get("y") + (options.offsetY || 0) + (sequence.y || 0);
+          x = Math.round(this.get("x") + (options.offsetX || 0) + (sequence.x || 0)),
+          y = Math.round(this.get("y") + (options.offsetY || 0) + (sequence.y || 0));
       if (sequence.scaleY && sequence.scaleX != 1) scaleX = sequence.scaleX;
       if (sequence.scaleY &&  sequence.scaleY != 1) scaleY = sequence.scaleY;
-
-      var destX = Math.round(x), destY = Math.round(y),
-          srcX = frame.x, srcY = frame.y,
-          imgWidth = frame.width, imgHeight = frame.height,
-          viewportLeft = options.viewportLeft || 0,
-          viewportRight = options.viewportRight || 0,
-          viewportTop = options.viewporTop || 0,
-          viewportBottom = options.viewportBottom || 0;
-
-      // Do not draw if outside of viewport
-      if (destX + imgWidth < viewportLeft ||
-          destX > context.canvas.width - viewportRight ||
-          destY + imgHeight < viewportTop ||
-          destY > context.canvas.height - viewportBottom)
-        return;
-
-      // Clip inside viewport
-      if (destX < viewportLeft && scaleX != -1) {
-        imgWidth -= viewportLeft - destX;
-        srcX += viewportLeft - destX;
-        destX = viewportLeft;
-      }
-      if (destX + imgWidth > context.canvas.width - viewportRight && scaleX != -1)
-        imgWidth =  context.canvas.width - viewportRight - destX;
-      if (destY < viewportTop) {
-        imgHeight -= viewportTop - destY;
-        srcY += viewportTop - destY;
-        destY = viewportTop;
-      }
-      if (destY + imgHeight > context.canvas.height - viewportBottom)
-        imgHeight = context.canvas.height - viewportBottom - destY;
 
       // Handle transformations (only scaling for now)
       if (_.isNumber(scaleX) || _.isNumber(scaleY)) {
         context.save();
-        var flipAxis = x + frame.width / 2;
-        context.translate(flipAxis, 0);
+        var flipX = scaleX && scaleX != 1 ? x + frame.width / 2 : 0;
+        var flipY = scaleY && scaleY != 1 ? y + frame.height / 2 : 0;
+        context.translate(flipX, flipY);
         context.scale(scaleX || 1, scaleY || 1);
-        context.translate(-flipAxis, 0);
+        context.translate(-flipX, -flipY);
       }
 
       context.drawImage(
         this.spriteSheet.img,
-        srcX, srcY, imgWidth, imgHeight,
-        destX, destY, imgWidth, imgHeight
+        frame.x, frame.y, frame.width, frame.height,
+        x, y, frame.width, frame.height
       );
 
       if (_.isNumber(scaleX) || _.isNumber(scaleY)) context.restore();
@@ -238,7 +208,7 @@
   // and draw methods. Will draw them on an HTML5 canvas.
   Backbone.Engine = Backbone.Collection.extend({
     defaults: {
-      version: 0.1,
+      version: 0.20,
       canvas: undefined,
       debugPanel: null,
       input: null,
@@ -401,13 +371,13 @@
     },
     initialize: function() {
       _.bindAll(this, "onTap");
-      this.spawnImg();
       this.on("attach", this.onAttach);
       this.on("detach", this.onDetach);
     },
     onAttach: function() {
       if (!this.hammertime) this.hammertime = Hammer(document);
       this.onDetach();
+      if (!this.img && this.attributes.img) this.spawnImg();
       this.hammertime.on("tap", this.onTap);
     },
     onDetach: function() {

@@ -9,8 +9,6 @@
    *
    */
 
-  Backbone.IndexedCollection = Backbone.Collection.extend({comparator: "id"});
-
   // Backbone.World is Backbone model which contains a collection of sprites.
   Backbone.World = Backbone.Model.extend({
     defaults: {
@@ -18,21 +16,18 @@
       y: 0,
       tileWidth: 32,
       tileHeight: 32,
-      width: 100,
-      height: 19,
+      width: 30,
+      height: 17,
       viewportTop: 0, viewportRight: 0, viewportBottom: 0, viewportLeft: 0,
       backgroundColor: "rgba(66, 66, 255, 1)",
       sprites: [], // Copy for persistence only. Use the direct member sprites which is a collection.
-      state: "play", // edit or play
-      hero: null
+      state: "play" // play or pause
     },
     shallowAttributes: [
-      "x", "y", "width", "height", "tileWidth", "tileHeight", "backgroundColor", "hero",
+      "x", "y", "width", "height", "tileWidth", "tileHeight", "backgroundColor",
       "viewportLeft", "viewportRight", "viewportTop", "viewportBottom"
     ],
-    urlRoot: "/ludo/world",
     viewport: {x:0, y:0, width:0, height: 0},
-    updateViewport: {x:0, y: 0, width:0, height:0},
     spriteOptions: {offsetX:0, offsetY:0},
     initialize: function(attributes, options) {
       options || (options = {});
@@ -43,11 +38,12 @@
       
       _.bindAll(this,
         "save", "getWorldIndex", "getWorldCol", "getWorldRow", "cloneAtPosition",
-        "findAt", "filterAt", "spawnSprites", "height", "width", "add", "remove"
+        "findAt", "filterAt", "spawnSprites", "height", "width", "add", "remove",
+        "setTimeout", "clearTimeout"
       );
 
       this.sprites = new Backbone.Collection();
-      this.setupBackground();
+      this.setupSpriteLayers();
       this.spawnSprites();
 
       this.on("attach", this.onAttach, this);
@@ -80,56 +76,107 @@
     },
     updateViewport: function() {
       this.viewport.width = this.engine.canvas.width - this.attributes.viewportLeft - this.attributes.viewportRight;
-      this.viewport.height= this.engine.canvas.height - this.attributes.viewportTop - this.attributes.viewportBottom;
+      this.viewport.height = this.engine.canvas.height - this.attributes.viewportTop - this.attributes.viewportBottom;
       this.spriteOptions.viewportLeft = this.attributes.viewportLeft;
       this.spriteOptions.viewportRight = this.attributes.viewportRight;
       this.spriteOptions.viewportTop = this.attributes.viewportTop;
       this.spriteOptions.viewportBottom = this.attributes.viewportBottom;
+      this.backgroundCanvas.width = this.engine.canvas.width;
+      this.backgroundCanvas.height = this.engine.canvas.height;
     },
 
     // Split static sprites (background tiles) from dynamic ones (animated or moving).
     // Draw static on a background and seldomly redraw.
     // Dynamic ones are redrawn every animation frame.
     // Maintain shadow collections to quickly access the two types.
-    setupBackground: function() {
+    setupSpriteLayers: function() {
       var world = this,
-          staticSprites = this.staticSprites = new Backbone.IndexedCollection(),
+          staticSprites = this.staticSprites = new Backbone.Collection(),
           dynamicSprites = this.dynamicSprites = new Backbone.Collection();
       staticSprites.lookup = {};
+      dynamicSprites.lookup = {};
+
+      function add(sprite, collection) {
+        collection.add(sprite);
+        index = world.getWorldIndex(sprite);
+        collection.lookup[index] || (collection.lookup[index] = []);
+        collection.lookup[index].push(sprite);
+        sprite.set("lookupIndex", index);
+      }
+
+      function update(sprite, collection) {
+        var oldIndex = sprite.attributes.lookupIndex,
+            newIndex = world.getWorldIndex(sprite);
+        if (oldIndex == newIndex) return;
+        if (oldIndex !== undefined && collection.lookup[oldIndex]) {
+          var pos = _.indexOf(collection.lookup[oldIndex], sprite);
+          if (pos >= 0) collection.lookup[oldIndex].splice(pos, 1);
+        }
+        collection.lookup[newIndex] || (collection.lookup[newIndex] = []);
+        collection.lookup[newIndex].push(sprite);
+        sprite.set("lookupIndex", newIndex);
+      }
+
+      function remove(sprite, collection) {
+        var oldIndex = sprite.attributes.lookupIndex;
+        if (oldIndex !== undefined && collection.lookup[oldIndex]) {
+          var pos = _.indexOf(collection.lookup[oldIndex], sprite);
+          if (pos >= 0) collection.lookup[oldIndex].splice(pos, 1);
+        }
+        sprite.unset("lookupIndex");
+        collection.remove(sprite);
+      }
+
+      this.listenTo(this.dynamicSprites, "change:x change:y", function(sprite) {
+        update(sprite, dynamicSprites);
+      });
 
       this.listenTo(this.sprites, "add", function(sprite) {
-        if (sprite.get("static")) {
-          staticSprites.add(sprite);
-          world.updateStaticColumLookup();
-        } else {
-          dynamicSprites.add(sprite);
-        }
+        if (sprite.get("static"))
+          add(sprite, staticSprites);
+        else
+          add(sprite, dynamicSprites);
+        world.requestBackgroundRedraw = true;
       });
 
       this.listenTo(this.sprites, "reset", function(sprites) {
         staticSprites.reset();
         dynamicSprites.reset();
+        staticSprites.lookup = {};
+        dynamicSprites.lookup = {};
+
         sprites.each(function(sprite) {
-          if (sprite.get("static"))
-            staticSprites.add(sprite);
-          else
-            dynamicSprites.add(sprite);
+        if (sprite.get("static"))
+          add(sprite, staticSprites);
+        else
+          add(sprite, dynamicSprites);
         });
-        world.updateStaticColumLookup();
+        world.requestBackgroundRedraw = true;
       });
 
       this.listenTo(this.sprites, "remove", function(sprite) {
-        if (sprite.get("static")) {
-          staticSprites.remove(sprite);
-          world.updateStaticColumLookup();
-        } else {
-          dynamicSprites.remove(sprite);
-        }
+        if (sprite.get("static"))
+          remove(sprite, staticSprites);
+        else
+          remove(sprite, dynamicSprites);
+        world.requestBackgroundRedraw = true;
       });
 
-      this.backgroundCanvas = document.getElementById("background");
+      this.backgroundCanvas = document.createElement("canvas");
+      this.backgroundCanvas.style.display = "none";
+      document.body.appendChild(this.backgroundCanvas);
       this.backgroundContext = this.backgroundCanvas.getContext("2d");
-      drawRect(this.backgroundContext, 0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height, "#000");
+
+      this.previewCanvas = document.createElement("canvas");
+      this.previewCanvas.style.display = "none";
+      this.previewCanvas.width = 300;
+      this.previewCanvas.height = 180;
+      document.body.appendChild(this.previewCanvas);
+      this.previewContext = this.previewCanvas.getContext("2d");
+      drawRect(this.previewContext,
+        0, 0, this.previewCanvas.width, this.previewCanvas.height,
+        this.attributes.backgroundColor
+      );
 
       this.on("change", function() {
         this.requestBackgroundRedraw = true;
@@ -137,42 +184,14 @@
       return this;
     },
 
-    updateStaticColumLookup: function() {
-      var lookup = this.staticSprites.lookup = {};
-
-      // Map each column with the first top-most tile
-      this.staticSprites.each(function(sprite, index) {
-        var id = sprite.id,
-            col = sprite.get("col"),
-            row = sprite.get("row");
-        if (!lookup[col] || row < lookup[col].row)
-          lookup[col] = {
-            id: id,
-            row: row,
-            index: index
-          }
-      });
-
-      // Ensure each column that has no tiles, points to
-      // the next tile in the chain
-      var maxCol = this.get("width"),
-          tile = null;
-      for (var col = maxCol; col >= 0; col--)
-        if (lookup[col]) {
-          tile = lookup[col];
-        } else {
-          lookup[col] = tile;
-        }
-
-      this.requestBackgroundRedraw = true;
-
-      return this;
-    },
-
     spawnSprites: function() {
       var world = this,
           w = this.toShallowJSON(),
-          _sprites = this.get("sprites");
+          _sprites = this.get("sprites"),
+          options = {
+            world: this,
+            input: this.input
+          };
 
       this.sprites.reset();
 
@@ -190,10 +209,7 @@
         var s = sprite.attributes ? sprite.attributes : sprite,
             cls = _.classify(s.name),
             col = world.getWorldCol(s.x),
-            row = world.getWorldRow(s.y),
-            options = {world: world};
-
-        if (s.name == w.hero) options.input = world.input;
+            row = world.getWorldRow(s.y);
 
         var id = Backbone[cls].prototype.defaults.type == "character" ? buildId(s.name) : col * w.height + row;
         var newSprite = new Backbone[cls](_.extend(s,
@@ -205,7 +221,7 @@
         ), options);
         sprites.push(newSprite);
         
-        if (s.name == w.hero)
+        if (newSprite.get("hero"))
           world.camera.setOptions({world: world, subject: newSprite});
 
         return sprites;
@@ -224,68 +240,119 @@
         return sprite.toSave.apply(sprite);
       });
 
-      this.set({
-        state: "play",
-        sprites: sprites,
-        savedOn: new Date().toJSON()
-      }, {silent: true});
+      // Save a screenshot of 30x15 tiles, skipping the two top first rows
+      if (this.engine && this.viewport && this.viewport.width) {
+        var x = this.attributes.viewportLeft + this.attributes.tileWidth*2,
+            y = this.attributes.viewportTop + this.attributes.tileHeight*2,
+            width = this.viewport.width - this.attributes.tileWidth*5,
+            height = this.viewport.height - this.attributes.tileHeight*2;
+
+        this.previewContext.drawImage(
+          this.engine.canvas,
+          x, y, width, height,
+          0, 0, this.previewCanvas.width, this.previewCanvas.height
+        );
+
+      }
+
+      this.set({sprites: sprites, preview: this.previewCanvas.toDataURL()}, {silent: true});
 
       return Backbone.Model.prototype.save.apply(this, arguments);
+    },
+
+    // Resize the world
+    resize: function(width, height) {
+      var deltaY = (height - this.attributes.height) * this.attributes.tileHeight;
+
+      if (deltaY == 0) {
+        this.set({width: width});
+        return;
+      }
+
+      // When resizing height, add/remove tiles above requiring translation.
+      var sprites = this.sprites.map(function(sprite) {
+        var s = sprite.toSave.apply(sprite);
+        s.y += deltaY;
+        return s;
+      });
+
+      this.set({
+        y: this.attributes.y - deltaY,
+        width: width,
+        height: height,
+        sprites: sprites
+      }, {silent: true});
+
+      this.spawnSprites();
+
+      return this;
+    },
+
+    timeouts: {},
+    setTimeout: function(callback, delay) {
+      var timerId = _.uniqueId();
+      this.timeouts[timerId] = {
+        expires: Date.now() + delay,
+        callback: callback
+      };
+      return timerId;
+    },
+    clearTimeout: function(timerId) {
+      if (this.timeouts[timerId] != undefined)
+        delete this.timeouts[timerId];
+    },
+    handleTimeouts: function() {
+      var now = Date.now(),
+          timerIds = _.keys(this.timeouts),
+          timerId, timeout;
+      for (var i=0; i<timerIds.length; i++) {
+        timerId = timerIds[i];
+        timeout = this.timeouts[timerId];
+        if (now > timeout.expires) {
+          timeout.callback();
+          delete this.timeouts[timerId];
+        }
+      }
     },
 
     update: function(dt) {
       if (!this.engine) return false;
 
       var start =_.now(),
-          x = this.get("x"),
-          y = this.get("y"),
-          hero = this.get("hero"),
-          tileWidth = this.get("tileWidth"),
-          worldWidth = this.get("width") * tileWidth,
-          tileHeight = this.get("tileHeight"),
-          worldHeight = this.get("height") * tileHeight,
-          minX = -Math.floor(x) - tileWidth*3,
-          maxX = minX + this.viewport.width + tileWidth*6,
-          minY = -Math.floor(y) - tileHeight*3,
-          maxY = minY + this.viewport.height + tileHeight*6;
-      if (minX < 0) minX = 0;
-      if (maxX > worldWidth) maxX = worldWidth;
-      if (minY < 0) minY = 0;
-      if (maxY > worldHeight) maxY = worldHeight;
-      this.updateViewport.x = minX;
-      this.updateViewport.y = minY;
-      this.updateViewport.width = maxX - minX;
-      this.updateViewport.height= maxY - minY;
+          sprite, count = 0,
+          minX = -this.attributes.x + this.attributes.viewportLeft - this.attributes.tileWidth*3,
+          maxX = -this.attributes.x + this.engine.canvas.width - this.attributes.viewportRight + this.attributes.tileWidth*3,
+          minY = -this.attributes.y + this.attributes.viewportTop - this.attributes.tileHeight*3,
+          maxY = -this.attributes.y + this.engine.canvas.height - this.attributes.viewportBottom + this.attributes.tileHeight*3;
 
       // Background
-      var minCol = this.getWorldCol(minX),
-          maxCol = this.getWorldCol(maxX),
-          first = this.staticSprites.lookup[minCol],
-          last = this.staticSprites.lookup[maxCol];
-      this.staticSprites._drawFrom = first ? first.index : 0;
-      this.staticSprites._drawTo = last ? last.index : this.staticSprites.size() - 1;
-
       if (this.requestBackgroundRedraw) {
         this.requestBackgroundRedraw = false;
         this.drawBackground = true;
       }
 
       // Foreground
-      var sprite;
       for (var i = 0; i < this.dynamicSprites.models.length; i++) {
-        sprite = this.dynamicSprites.models[i];
-        if (sprite.attributes.name == hero || sprite.overlaps.call(sprite, this.updateViewport))
+        var  sprite = this.dynamicSprites.models[i];
+        if (sprite.attributes.x + sprite.attributes.width >= minX && sprite.attributes.x <= maxX &&
+            sprite.attributes.y + sprite.attributes.height >= minY && sprite.attributes.y <= maxY) {
           sprite._draw = sprite.update(dt);
+          count++;
+        }
       }
 
       if (this.debugPanel)
         this.debugPanel.set({
-          updateTime: _.now()-start,
-          ui: {minX:minX, maxX:maxX, from:from, to:to, first:first, last:last}
+          drawBackground: this.drawBackground,
+          updateCount: count,
+          updateTime: _.now()-start
         });
 
-      this.drawBackground = this.drawBackground || this.lastX != x || this.lastY || y;
-      this.lastX = x; this.lastY = y;
+      this.drawBackground = this.drawBackground || this.lastX != this.attributes.x || this.lastY || this.attributes.y;
+      this.lastX = this.attributes.x; this.lastY = this.attributes.y;
+
+      if (this.attributes.state == "play") this.handleTimeouts();
+
       return true;
     },
     draw: function(context) {
@@ -298,25 +365,24 @@
     },
     drawStaticSprites: function(context) {
       var start =_.now(),
-          w = this.toShallowJSON(),
-          worldWidth = w.width * w.tileWidth,
-          worldHeight = w.height * w.tileHeight;
-      this.spriteOptions.offsetX = w.x;
-      this.spriteOptions.offsetY = w.y;
+          sprite, index, count = 0,
+          tileX1 = this.getWorldCol(-this.attributes.x + this.attributes.viewportLeft),
+          tileX2 = this.getWorldCol(-this.attributes.x + context.canvas.width - this.attributes.viewportRight),
+          tileY1 = this.getWorldRow(-this.attributes.y + this.attributes.viewportTop),
+          tileY2 = this.getWorldRow(-this.attributes.y + context.canvas.height - this.attributes.viewportBottom);
+      this.spriteOptions.offsetX = this.attributes.x;
+      this.spriteOptions.offsetY = this.attributes.y;
 
       drawRect(
         context,
-        Math.floor(w.x > 0 ? w.x : 0),
-        Math.floor(w.y > 0 ? w.y : 0),
-        worldWidth < context.canvas.width ? worldWidth : context.canvas.width,
-        worldHeight < context.canvas.height ? worldHeight : context.canvas.height,
-        w.backgroundColor
+        0, 0, context.canvas.width, context.canvas.height,
+        this.attributes.backgroundColor
       );
 
       if (this.backgroundImage) {
         var img = this.backgroundImage,
-            ix = -w.x/2,
-            iy = -w.y/2,
+            ix = -this.attributes.x/2,
+            iy = -this.attributes.y/2,
             width = context.canvas.width < img.width ? context.canvas.width : img.width,
             height = context.canvas.height < img.height ? context.canvas.height : img.height,
             flipAxis = 0;
@@ -332,16 +398,19 @@
         context.restore();
       }
 
-      var sprite,
-          to = this.staticSprites._drawTo;
-      if (to >= this.staticSprites.length) to = this.staticSprites.length-1;
-      for (var i = this.staticSprites._drawFrom; i <= to; i++) {
-        sprite = this.staticSprites.models[i];
-        sprite.draw.call(sprite, context, this.spriteOptions);
-      }
+      for (var col = tileX1; col <= tileX2; col++)
+        for (var row = tileY1; row <= tileY2; row++) {
+          index = col * this.attributes.height + row;
+          if (this.staticSprites.lookup[index])
+            for (var s = 0; s < this.staticSprites.lookup[index].length; s++) {
+              sprite = this.staticSprites.lookup[index][s];
+              sprite.draw.call(sprite, context, this.spriteOptions);
+              count++;
+            }
+        }
 
       if (this.debugPanel) this.debugPanel.set({
-        tilesDrawn: this.staticSprites.toDraw.length,
+        staticDrwan: count,
         staticDrawTime: _.now()-start
       });
 
@@ -349,31 +418,46 @@
     },
     drawDynamicSprites: function(context) {
       var start =_.now(),
-          w = this.toShallowJSON(),
-          worldWidth = w.width * w.tileWidth,
-          worldHeight = w.height * w.tileHeight;
-      this.spriteOptions.offsetX = w.x;
-      this.spriteOptions.offsetY = w.y;
+          sprite, index, count = 0,
+          tileX1 = this.getWorldCol(-this.attributes.x + this.attributes.viewportLeft),
+          tileX2 = this.getWorldCol(-this.attributes.x + context.canvas.width - this.attributes.viewportRight),
+          tileY1 = this.getWorldRow(-this.attributes.y + this.attributes.viewportTop),
+          tileY2 = this.getWorldRow(-this.attributes.y + context.canvas.height - this.attributes.viewportBottom);
+      this.spriteOptions.offsetX = this.attributes.x;
+      this.spriteOptions.offsetY = this.attributes.y;
+
+      context.save();
+      context.rect(
+        this.attributes.viewportLeft,
+        this.attributes.viewportTop,
+        context.canvas.width - this.attributes.viewportRight,
+        context.canvas.height - this.attributes.viewportBottom);
+      context.clip();
 
       context.drawImage(this.backgroundCanvas,
         this.attributes.viewportLeft, this.attributes.viewportTop, this.viewport.width, this.viewport.height,
         this.attributes.viewportLeft, this.attributes.viewportTop, this.viewport.width, this.viewport.height);
 
-      var spritesDrawn = 0,
-          sprite;
-      for (var i = 0; i < this.dynamicSprites.models.length; i++) {
-        sprite = this.dynamicSprites.models[i];
-        if (sprite._draw) {
-          sprite.draw.call(sprite, context, this.spriteOptions);
-          spritesDrawn += 1;
+      for (var col = tileX1; col <= tileX2; col++)
+        for (var row = tileY1; row <= tileY2; row++) {
+          index = col * this.attributes.height + row;
+          if (this.dynamicSprites.lookup[index])
+            for (var s = 0; s < this.dynamicSprites.lookup[index].length; s++) {
+              sprite = this.dynamicSprites.lookup[index][s];
+              if (sprite._draw) {
+                sprite.draw.call(sprite, context, this.spriteOptions);
+                count++;
+              }
+            }
         }
-      }
+
+      context.restore();
 
       if (this.debugPanel) this.debugPanel.set({
-        spritesDrawn: spritesDrawn,
+        dynamicDrawn: count,
         dynamicDrawTime: _.now()-start
       });
-
+      
       return this;
     },
 
@@ -386,6 +470,12 @@
           col = Math.floor(x / this.get("tileWidth")),
           row = Math.floor(y / this.get("tileHeight"));
       return col * this.get("height") + row;
+    },
+    isWorldIndexInBoundingBox: function(index, topLeft, bottomRight) {
+      if (index < topLeft || index > bottomRight) return false;
+      if (index % this.attributes.height < topLeft % this.attributes.height) return false;
+      if (index % this.attributes.height > bottomRight % this.attributes.height) return false;
+      return true;
     },
     getWorldCol: function(x) {
       return Math.floor(x / this.get("tileWidth"));
@@ -400,38 +490,137 @@
       return this._findOrFilter("filter", x, y, type, exclude, collision);
     },
     _findOrFilter: function(fn, x, y, type, exclude, collision) {
-      var collection = this.sprites,
-          id = exclude && exclude.id ? exclude.id : null,
-          result;
+      var id = exclude && exclude.id ? exclude.id : null,
+          col = this.getWorldCol(x),
+          row = this.getWorldRow(y),
+          index, c, r, s,
+          result = [];
 
-      function doIt(sprite) {
+      function test(sprite) {
         return (sprite.id && sprite.id != id) &&
           (!type || sprite.get("type") == type) &&
           (!collision || sprite.get("collision")) &&
           sprite.overlaps.call(sprite, x, y);
       }
 
-      // Look in dynamic sprites first
-      result = this.dynamicSprites[fn](doIt);
-      if ((fn == "find" && !_.isEmpty(result)) || type == "character") return result;
+      if (type == "tile") {
+        var index = this.getWorldIndex({x: x, y: y}),
+            sprite = index ? this.sprites.get(index) : null;
+        if (sprite && test(sprite))
+          return fn == "find" ? sprite : [sprite];
+        return fn == "find" ? null : result;
+      }
+
+      // Look in dynamic sprites first (lookup by index)
+      for (c = col-1; c <= col+1; c++)
+        for (r = row-1; r <= row+1; r++) {
+          index = c * this.attributes.height + r;
+          if (this.dynamicSprites.lookup[index])
+            for (s = 0; s < this.dynamicSprites.lookup[index].length; s++)
+              if (test(this.dynamicSprites.lookup[index][s]))
+                if (fn == "find")
+                  return this.dynamicSprites.lookup[index][s];
+                else
+                  result.push(this.dynamicSprites.lookup[index][s]);
+        }
+      if (type == "character") return fn == "find" ? null: result;
 
       // Finally in static ones
-      return fn == "find" ? this.staticSprites[fn](doIt) : _.union(result, this.staticSprites[fn](doIt));
+      index = col * this.attributes.height + row;
+      if (this.staticSprites.lookup[index])
+        for (s = 0; s < this.staticSprites.lookup[index].length; s++)
+          if (test(this.staticSprites.lookup[index][s]))
+            if (fn == "find")
+              return this.staticSprites.lookup[index][s];
+            else
+              result.push(this.staticSprites.lookup[index][s]);
+
+      return fn == "find" ? null : result;
     },
+    // Detects collisions on sprites for a set of named coordinates. Works on moving
+    // and static sprites.
+    // Map is a map of objects describing the locations to look at, and the result.
+    // Each map item is an object with:
+    //  - x, y: The lookup coordinate.
+    //  - sprites: array of detected colliding sprites. Reset/initialized to [] every call.
+    //  - sprite: the first detected sprite or null if none.
+    // Returns the number of found collisions.
+    findCollisions: function(map, type, exclude, collision) {
+      if (_.size(map) == 0) return 0;
+
+      var id = exclude && exclude.id ? exclude.id : null,
+          minX, minY, maxX,maxY,
+          m, c, r, index, s,
+          count = 0;
+
+      for (m in map)
+        if (map.hasOwnProperty(m)) {
+          if (minX == undefined || map[m].x < minX) minX = map[m].x;
+          else if (maxX == undefined || map[m].x > maxX) maxX = map[m].x;
+          if (minY == undefined || map[m].y < minY) minY = map[m].y;
+          else if (maxY == undefined || map[m].y > maxY) maxY = map[m].y;
+          map[m].sprites = [];
+          map[m].sprite = null;
+        }
+
+      var minCol = this.getWorldCol(minX) - 1,
+          minRow = this.getWorldRow(minY) - 1,
+          maxCol = this.getWorldCol(maxX),
+          maxRow = this.getWorldRow(maxY);
+
+      function doIt(sprite) {
+        if (sprite.id && sprite.id != id &&
+            (!type || sprite.attributes.type == type) &&
+            (!collision || sprite.attributes.collision))
+          for (m in map)
+            if (map.hasOwnProperty(m) &&
+                sprite.overlaps.call(sprite, map[m].x, map[m].y)) {
+              map[m].sprites.push(sprite);
+              if (!map[m].sprite) map[m].sprite = sprite;
+              count++;
+            }
+      }
+
+      // Look in dynamic sprites first (lookup by index)
+      for (c = minCol; c <= maxCol; c++)
+        for (r = minRow; r <= maxRow; r++) {
+          index = c * this.attributes.height + r;
+          if (this.dynamicSprites.lookup[index])
+            for (s = 0; s < this.dynamicSprites.lookup[index].length; s++)
+              doIt(this.dynamicSprites.lookup[index][s]);
+        }
+      if (type == "character") return count;
+
+      // Finally in static ones
+      for (c = minCol; c <= maxCol; c++)
+        for (r = minRow; r <= maxRow; r++) {
+          index = c * this.attributes.height + r;
+          if (this.staticSprites.lookup[index])
+            for (s = 0; s < this.staticSprites.lookup[index].length; s++)
+              doIt(this.staticSprites.lookup[index][s]);
+        }
+
+      return count;
+    },
+    // Static tiles lookup.
+    // Note: Will not detect moving sprites!
+    // DEPRECATED: Use findAt instead
     findCollidingAt:function(x, y) {
-      var id = this.getWorldIndex({x: x, y: y}),
-          sprite = id ? this.sprites.get(id) : null;
-      return sprite && sprite.get("collision") ? sprite : null;
+      return this.findAt(x, y, "tile", null, true);
     },
     add: function(models, options) {
       options || (options = {});
       options.world = this;
       models = this.sprites.add.call(this.sprites, models, options);
       if (_.isArray(models))
-        for (var i = 0; i < models.length; i++)
+        for (var i = 0; i < models.length; i++) {
           models[i].world = this;
-      else
+          models[i].set({id: this.buildId(models[i])});
+        }
+      else {
         models.world = this;
+        models.set({id: this.buildId(models)});
+      }
       return models;
     },
     remove: function(models, options) {
@@ -446,6 +635,7 @@
     cloneAtPosition: function(sprite, x, y, options) {
       options || (options = {});
       options.world = this;
+      options.input = this.input;
 
       var w = this.toShallowJSON(),
           existing = this.findAt(x, y),
@@ -460,9 +650,13 @@
       
       if (existing) {
         if (spriteName == existingName) {
+          if (!existing.getStateInfo) {
+            this.sprites.remove(existing);
+            return null;
+          }
           // Toggle if same sprite - either turn around or remove
           var cur = existing.getStateInfo(),
-              removeOnDir = existingName == w.hero ? "left" : "right";
+              removeOnDir = sprite.get("hero") ? "left" : "right";
           if (!cur.dir || cur.dir == removeOnDir) {
             this.remove(existing);
             return null;
@@ -476,28 +670,25 @@
         }
       }
 
-      // Mario is a singleton - remove if anywhere else
-      if (spriteName == w.hero) {
-        var hero = this.sprites.findWhere({name: w.hero});
-        if (hero) this.remove(hero);
-        options.input = this.input;
+      var col = this.getWorldCol(x),
+          row = this.getWorldRow(y - sprite.get("height") + w.tileHeight),
+          cls = _.classify(spriteName);
+
+      var newSprite = new Backbone[cls](_.extend({}, sprite.toJSON(), {
+        x: col * w.tileWidth,
+        y: row * w.tileHeight
+      }), options);
+
+      // A hero is a singleton
+      var isHero = newSprite.get("hero");
+      if (isHero) {
+        var oldHeros = this.sprites.where({hero: true});
+        if (oldHeros.length) this.sprites.remove(oldHeros);
       }
 
-      var spriteHeight = sprite.get("height"),
-          col = this.getWorldCol(x),
-          row = this.getWorldRow(y - spriteHeight + w.tileHeight),
-          id = sprite.get("type") == "character" ? this.buildId(sprite) : col * w.height + row,
-          cls = _.classify(spriteName);
-      var newSprite = new Backbone[cls](_.extend({}, sprite.toJSON(), {
-        id: id,
-        x: col * w.tileWidth,
-        y: row * w.tileHeight,
-        col: col,
-        row: row
-      }), options);
       this.add(newSprite, options);
 
-      if (spriteName == w.hero && this.camera)
+      if (isHero && this.camera)
         this.camera.setOptions({world: this, subject: newSprite});
 
       newSprite.engine = this.engine;
@@ -505,15 +696,40 @@
 
       return newSprite;
     },
-    buildId: function(sprite) {
-      var name = sprite.get("name");
-          re = new RegExp("^" + name + "\\." + "\\d+$"),
+    buildIdFromName: function(name) {
+      var re = new RegExp("^" + name + "\\." + "\\d+$"),
           numbers = this.dynamicSprites.reduce(function(numbers, sprite) {
-            if (sprite.id.length && sprite.id.match(re))
+            if (sprite.id && sprite.id.length && sprite.id.match(re))
               numbers.push(parseInt(sprite.id.replace(name + ".", "")));
             return numbers;
           }, [0]);
       return name + "." + (_.max(numbers) + 1);
+    },
+    buildId: function(sprite) {
+      if (sprite.attributes.type == "character")
+        return this.buildIdFromName(sprite.attributes.name);
+
+      return this.getWorldCol(sprite.attributes.x) * this.attributes.height +
+        this.getWorldRow(sprite.attributes.y - sprite.attributes.height + this.attributes.tileHeight);
+    },
+    clearBeyondWorldBoundaries: function() {
+      var minX = 0,
+          minY = 0,
+          maxX = this.attributes.width * this.attributes.tileWidth,
+          maxY = this.attributes.height * this.attributes.tileHeight,
+          toRemove = this.sprites.reduce(function(result, sprite) {
+            if (sprite.attributes.x + sprite.attributes.width < minX ||
+                sprite.attributes.y + sprite.attributes.height < minY ||
+                sprite.attributes.x > maxX ||
+                sprite.attributes.y > maxY)
+              result.push(sprite);
+            return result;
+          });
+
+      console.log(toRemove.length);
+      this.sprites.remove(toRemove);
+
+      return this;
     }
   });
 

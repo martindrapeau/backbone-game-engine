@@ -20,7 +20,7 @@
       this.pennieSprite = new Backbone.AnimatedTile({
         name: "pennie",
         type: "character",
-        x: 300,
+        x: 150,
         y: 4,
         width: 32,
         height: 32,
@@ -43,6 +43,7 @@
       this.pennieSprite.engine = this.engine;
       this.pennieSprite.trigger("attach");
       this.listenTo(this.world.dynamicSprites, "remove", this.onPennieRemoved);
+      this.pennieSprite.set({x: context.canvas.width/2 - 30});
     },
     onDetach: function() {
       this.pennieSprite.trigger("detach");
@@ -54,15 +55,19 @@
     },
     draw: function(context) {
 
-      var pennies = this.get("pennies"),
-          text = " × " + (pennies < 10 ? "0" : "") + pennies;
+      var text = "×" + (this.attributes.pennies < 10 ? "0" : "") + this.attributes.pennies;
       context.fillStyle = "#fff";
-      context.font = "24px courier-new bold";
-      context.textAlign = "left";
+      context.font = "20px arcade, Verdana, Arial, Sans-Serif";
       context.textBaseline = "top";
-      context.fillText(text, 324, 4);
+      context.fontWeight = "normal";
+      
+      context.textAlign = "left";
+      context.fillText(text, context.canvas.width/2 - 100, 12);
 
       this.pennieSprite.draw.call(this.pennieSprite, context);
+
+      context.textAlign = "right";
+      context.fillText(this.world.attributes.name.replace(/_/g, " "), context.canvas.width - 100, 12);
 
       return this;
     },

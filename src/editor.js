@@ -13,14 +13,14 @@
   // Allows the user to place tiles and characters in the World.
   Backbone.WorldEditor = Backbone.Model.extend({
     defaults: {
-      x: 0,
+      x: 136,
       y: 690-(34*4+4),
-      width: 34*23+4,
+      width: 34*24+4,
       height: 34*4+4,
       tileWidth: 32,
       tileHeight: 32,
       padding: 1,
-      backgroundColor: "#000",
+      backgroundColor: "#333",
       selectColor: "#f00",
       selected: undefined,
       spriteNames: []
@@ -52,6 +52,11 @@
           engine = this.engine;
       if (!this.hammertime) this.hammertime = Hammer(document);
       this.onDetach();
+
+      this.set({
+        width: engine.canvas.width - 140,
+        y: engine.canvas.height - 10 - (34*4+4)
+      });
 
       // Handle tap on touch device, or click with mouse
       this.hammertime.on("tap", this.onTap);
@@ -98,7 +103,7 @@
           sprite.set({x: x, y: y});
           sprite.update(dt);
           x += sprite.attributes.width + 2*sp.padding;
-          if (x >= sp.width-2) {
+          if (x >= sp.x + sp.width - 2) {
             y += sp.tileHeight + 2*sp.padding;
             x = sp.x + 2*sp.padding;
           }
@@ -167,6 +172,7 @@
     onDragStart: function(e) {
       var world = this.world;
       if (e.target != world.engine.canvas) {
+        e.stopPropagation();
         return false;
       }
       world.startDragWorldX = world.get("x");
@@ -174,7 +180,8 @@
     },
     onDrag: function (e) {
       var world = this.world;
-      if (!_.isNumber(world.startDragWorldX) || !_.isNumber(world.startDragWorldX)) return false;
+      if (!_.isNumber(world.startDragWorldX) || !_.isNumber(world.startDragWorldX) ||
+          !e.gesture || !_.isNumber(e.gesture.deltaX) || !_.isNumber(e.gesture.deltaY)) return false;
       var x = world.startDragWorldX + e.gesture.deltaX,
           y = world.startDragWorldY + e.gesture.deltaY;
       if (x > 0) {

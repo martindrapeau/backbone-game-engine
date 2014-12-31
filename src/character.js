@@ -68,6 +68,22 @@
         yAcceleration: fallAcceleration,
         scaleX: -1,
         scaleY: 1
+      },
+      "ko-left": {
+        sequences: [0],
+        velocity: -walkVelocity,
+        yVelocity: fallVelocity,
+        yAcceleration: fallAcceleration,
+        scaleX: 1,
+        scaleY: -1
+      },
+      "ko-right": {
+        sequences: [0],
+        velocity: walkVelocity,
+        yVelocity: fallVelocity,
+        yAcceleration: fallAcceleration,
+        scaleX: -1,
+        scaleY: -1
       }
     },
     initialize: function(attributes, options) {
@@ -92,35 +108,54 @@
     isBlocking: function(sprite) {
       return true;
     },
+    knockout: function(sprite, dir) {
+      this.set({
+        state: "ko-" + dir,
+        velocity: this.animations["ko-left"].velocity,
+        yVelocity: -this.animations["ko-left"].yVelocity/2,
+        collision: false
+      });
+      return this;
+    },
     hit: function(sprite, dir, dir2) {
+      return this;
+    },
+    updateSequenceIndex: function(dt) {
+      var sequenceIndex = this.get("sequenceIndex"),
+          animation = this.getAnimation(),
+          delay = animation.delay || 0,
+          now = _.now();
+
+      if (!animation.sequences || sequenceIndex >= animation.sequences.length) {
+        sequenceIndex = 0;
+        this.lastSequenceChangeTime = now;
+      } else if (delay && now > this.lastSequenceChangeTime + delay) {
+        sequenceIndex = sequenceIndex < animation.sequences.length-1 ? sequenceIndex + 1 : 0;
+        this.lastSequenceChangeTime = now;
+      }
+
+      return sequenceIndex;
     },
     update: function(dt) {
       // Movements are only possible inside a world
       if (!this.world) return true;
 
-      var velocity = this.get("velocity") || 0,
+      // Velocity and state
+      var self = this,
+          velocity = this.get("velocity") || 0,
           yVelocity = this.get("yVelocity") || 0,
           x = this.get("x"),
           y = this.get("y"),
           state = this.get("state"),
           cur = this.getStateInfo(),
           animation = this.getAnimation(),
-          sequenceIndex = this.get("sequenceIndex"),
-          delay = animation.delay || 0,
-          now = _.now(),
           attrs = {};
 
-      if (!animation.sequences || sequenceIndex >= animation.sequences.length) {
-        attrs.sequenceIndex = 0;
-        this.lastSequenceChangeTime = now;
-      } else if (delay && now > this.lastSequenceChangeTime + delay) {
-        attrs.sequenceIndex = sequenceIndex < animation.sequences.length-1 ? sequenceIndex + 1 : 0;
-        this.lastSequenceChangeTime = now;
-      }
+      attrs.sequenceIndex = this.updateSequenceIndex();
+
       if (velocity != animation.velocity) velocity = animation.velocity;
 
-      // If falling, update vertical velocity
-      if (cur.mov == "fall") {
+      if (cur.mov == "fall" || cur.mov == "ko") {
         if (yVelocity < animation.yVelocity)
           yVelocity += animation.yAcceleration * (dt/1000);
 
@@ -129,78 +164,135 @@
         attrs.yVelocity = yVelocity;
       }
 
-      // Collisions
+      // Collision detection
       var collision = this.get("collision"),
           charWidth = this.get("width"),
-          charHeight = this.get("height"),
-          charTopY = Math.round(y + yVelocity * (dt/1000)),
-          charBottomY = charTopY + charHeight,
+          tileHeight = this.get("height"),
+          charHeight = tileHeight / 2,
+          charBottomY = Math.round(y + yVelocity * (dt/1000)) + tileHeight,
+          charTopY = charBottomY - charHeight,
           charLeftX = Math.round(x + velocity * (dt/1000)),
           charRightX = charLeftX + charWidth,
-          bottomTile = this.world.findCollidingAt(charLeftX + charWidth/2, charBottomY),
+          bottomTile = cur.mov != "ko" ? this.world.findAt(charLeftX + charWidth/2, charBottomY, "tile", this, true) : null,
+          bottomWorld = this.world.height() + tileHeight,
           bottomY = _.minNotNull([
-            this.world.height(),
+            bottomWorld,
             bottomTile ? bottomTile.get("y") : null
           ]);
 
-      // Gravity
-      if (charBottomY >= bottomY) {
-        // Stop falling if obstacle below
-        attrs.yVelocity = yVelocity = 0;
-        attrs.y = y = bottomY - charHeight;
-        if (cur.mov == "fall")
-          attrs.state = "walk-" + cur.dir;
-      } else if (cur.mov != "fall" && charBottomY < bottomY) {
-        // Start falling if no obstacle below
-        attrs.state = "fall-" + cur.dir;
-      }
-
-      // Walls and other obstacles
-      if (velocity <= 0 && collision) {
-        // Turn around if obstacle left
-        var leftTile = this.world.findCollidingAt(charLeftX, charTopY + charHeight*3/4),
-            leftCharacter = this.world.findAt(charLeftX, charTopY + charHeight*3/4, "character", this, true),
-            leftX = _.maxNotNull([
-              0,
-              leftTile ? (leftTile.get("x") + leftTile.get("width")) : null,
-              leftCharacter ? (leftCharacter.get("x") + leftCharacter.get("width")) : null
-            ]);
-
-        if (charLeftX <= leftX) {
-          attrs.state = cur.mov + "-right";
-          attrs.velocity = velocity * -1;
-          attrs.x = x = leftX;
-        }
-      }
-
-      if (velocity >= 0 && collision) {
-        // Turn around if obstacle to the right
-        var rightTile = this.world.findCollidingAt(charRightX, charTopY + charHeight*3/4),
-            rightCharacter = this.world.findAt(charRightX, charTopY + charHeight*3/4, "character", this, true),
-            rightX = _.minNotNull([
-              this.world.width(),
-              rightTile ? rightTile.get("x") : null,
-              rightCharacter ? rightCharacter.get("x") : null
-            ]);
-
-        if (charRightX >= rightX) {
-          attrs.state = cur.mov + "-left";
-          attrs.velocity = velocity * -1;
-          attrs.x = x = rightX - charWidth;
+      if (yVelocity >= 0) {
+        // Walking or Falling...
+        if (charBottomY >= bottomY) {
+          if (charBottomY >= bottomWorld) {
+            this.world.remove(this);
+            return false;
           }
+
+          // Knock-out if bouncing tile below
+          var reaction = this.getHitReaction(bottomTile, "bottom");
+          if (reaction == "ko") return this.knockout(bottomTile, cur.dir);
+
+          // Stop falling because obstacle below
+          attrs.yVelocity = yVelocity = 0;
+          attrs.y = y = bottomY - tileHeight;
+          if (cur.mov == "fall")
+            attrs.state = "walk-" + cur.dir;
+        } else if (cur.mov != "fall" && cur.mov != "ko" && charBottomY < bottomY) {
+          // Start falling if no obstacle below
+          attrs.state = "fall-" + cur.dir;
+        }
+
+      } else if (cur.mov == "fall" && yVelocity < 0) {
+        // Jumping
+        var topTile = cur.mov != "ko" ? this.world.findAt(charLeftX + charWidth/2, charTopY, "tile", this, true) : null,
+            topY = _.maxNotNull([
+              -400,
+              topTile ? (topTile.get("y") + topTile.get("height")) : null
+            ]);
+        if (charTopY < topY) {
+          attrs.yVelocity = yVelocity = 0;
+          charTopY = topY;
+          charBottomY = topY + charHeight;
+          attrs.y = y = charBottomY - tileHeight;
+        }
+
       }
 
-      // In edit mode, do not allow horizontal displacements or animations
-      if (this.world.get("state") == "edit") {
+      // When not in play mode, do not allow horizontal displacements or animations
+      if (this.world.get("state") != "play") {
         velocity = 0;
         attrs.sequenceIndex = 0;
+
+      } else {
+        
+        // Walls and other obstacles
+        if (velocity <= 0 && collision) {
+          // Turn around if obstacle left
+          var leftTile = cur.mov != "ko" ? this.world.findAt(charLeftX, charTopY, "tile", this, true) : null,
+              leftCharacter = cur.mov != "ko" ? this.world.findAt(charLeftX + charWidth/4, charTopY, "character", this, true) : null,
+              worldLeft = -charWidth,
+              leftX = _.maxNotNull([
+                worldLeft,
+                leftTile ? (leftTile.get("x") + leftTile.get("width")) : null
+              ]);
+
+          if (charLeftX <= leftX) {
+            if (charLeftX <= worldLeft) {
+              this.world.remove(this);
+              return false;
+            }
+            velocity = velocity * -1;
+            attrs.state = cur.mov + "-" + cur.opo;
+            attrs.x = x = leftX;
+          } else if (leftCharacter) {
+            leftX = leftCharacter.get("x") + leftCharacter.get("width");
+            if (charLeftX <= leftX) {
+              var reaction = this.getHitReaction(leftCharacter, "left");
+              if (reaction == "reverse") {
+                velocity = velocity * -1;
+                attrs.state = cur.mov + "-" + cur.opo;
+                attrs.x = x = leftX;
+              }
+              leftCharacter.trigger("hit", this, "right");
+            }
+          }
+        }
+
+        if (velocity >= 0 && collision) {
+          // Turn around if obstacle to the right
+          var rightTile = cur.mov != "ko" ? this.world.findAt(charRightX, charTopY, "tile", this, true) : null,
+              rightCharacter = cur.mov != "ko" ? this.world.findAt(charRightX - charWidth/4, charTopY, "character", this, true) : null,
+              worldRight = this.world.width(),
+              rightX = _.minNotNull([
+                worldRight,
+                rightTile ? rightTile.get("x") : null
+              ]);
+
+          if (charRightX >= rightX) {
+            if (charRightX >= worldRight) {
+              this.world.remove(this);
+              return false;
+            }
+            velocity = velocity * -1;
+            attrs.state = cur.mov + "-" + cur.opo;
+            attrs.x = x = rightX - charWidth;
+          } else if (rightCharacter) {
+            rightX = rightCharacter.get("x");
+            if (charRightX + charWidth >= rightX) {
+              var reaction = this.getHitReaction(rightCharacter, "right");
+              if (reaction == "reverse") {
+                velocity = velocity * -1;
+                attrs.state = cur.mov + "-" + cur.opo;
+                attrs.x = x = rightX - charWidth;
+              }
+              rightCharacter.trigger("hit", this, "left");
+            }
+          }
+        }
       }
 
       if (velocity) attrs.x = x = x + velocity * (dt/1000);
       if (yVelocity) attrs.y = y = y + yVelocity * (dt/1000);
-
-      attrs.col = this.world.getWorldCol(x + charWidth/2);
-      attrs.row = this.world.getWorldRow(y + charHeight/4);
 
       // Set modified attributes
       if (!_.isEmpty(attrs)) this.set(attrs);
@@ -226,6 +318,15 @@
         dir: pieces[1], // right or left
         opo: pieces[1] == "right" ? "left" : "right" // oposite direction
       };
+    },
+    // Returns a reaction when the character hits another sprite.
+    // Return value may be:
+    //   - null: No reaction
+    //   - reverse: Change direction
+    //   - ko: Knock-out and die
+    getHitReaction: function(sprite, dir, dir2) {
+      if (dir == "left" || dir =="right") return "reverse";
+      return null;
     }
   });
 

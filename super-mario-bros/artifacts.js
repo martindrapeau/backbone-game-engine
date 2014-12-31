@@ -35,7 +35,7 @@
       return false;
     },
     hit: function(sprite, position) {
-      if (sprite.get("name") == "mario")
+      if (sprite.get("hero"))
         _.defer(this.world.remove, this);
     }
   });
@@ -47,6 +47,17 @@
     animations: _.deepClone(Backbone.Pennie.prototype.animations)
   });
   Backbone.PennieUg.prototype.animations.idle.sequences = [168, 168, 169, 170, 169, 168];
+
+  Backbone.Lever = Backbone.Pennie.extend({
+    defaults: _.extend(_.deepClone(Backbone.Pennie.prototype.defaults), {
+      name: "lever"
+    }),
+    animations: _.deepClone(Backbone.Pennie.prototype.animations),
+    hit: function(sprite, position) {
+      
+    }
+  });
+  Backbone.Lever.prototype.animations.idle.sequences = [55, 55, 56, 57, 56, 55];
 
 	Backbone.FlyingPennie = Backbone.Sprite.extend({
     defaults: {

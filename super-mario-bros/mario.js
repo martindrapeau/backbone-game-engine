@@ -15,5 +15,21 @@
       spriteSheet: "mario"
     })
   });
+  
+  Backbone.Luigi = Backbone.Hero.extend({
+    defaults: _.extend({}, Backbone.Hero.prototype.defaults, {
+      name: "luigi",
+      spriteSheet: "mario"
+    }),
+    animations: _.reduce(Backbone.Hero.prototype.animations, function(animations, anim, name) {
+      var clone = _.clone(anim);
+      clone.sequences = _.map(anim.sequences, function(index) {
+        return index + 42;
+      });
+      animations[name] = clone;
+      return animations;
+    }, {})
+  });
+
 
 }).call(this);

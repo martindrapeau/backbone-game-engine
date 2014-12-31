@@ -11,6 +11,7 @@
 
   // Ensures the canvas is always visible and centered by adjusting
   // the viewport and the canvas left position.
+  var resizeCount = 0;
   function adjustViewport(canvas, width, height) {
 
     var viewport = document.querySelector("meta[name=viewport]");
@@ -28,7 +29,7 @@
     }
 
     window.addEventListener("resize", _.debounce(onResize, 300));
-    onResize();
+    setTimeout(onResize, 10);
   }
 
   _.extend(window, {
