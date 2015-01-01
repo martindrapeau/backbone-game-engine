@@ -504,8 +504,8 @@
       }
 
       if (type == "tile") {
-        var index = this.getWorldIndex({x: x, y: y}),
-            sprite = index ? this.sprites.get(index) : null;
+        index = this.getWorldIndex({x: x, y: y});
+        var sprite = index ? this.sprites.get(index) : null;
         if (sprite && test(sprite))
           return fn == "find" ? sprite : [sprite];
         return fn == "find" ? null : result;
@@ -611,16 +611,31 @@
     add: function(models, options) {
       options || (options = {});
       options.world = this;
+      
+      if (_.isArray(models))
+        for (var i = 0; i < models.length; i++) {
+          if (models[i].attributes)
+            models[i].set("id", this.buildId(models[i]));
+          else
+            models[i].id = this.buildId(models[i]);
+        }
+      else {
+        if (models.attributes)
+          models.set("id", this.buildId(models));
+        else
+          models.id = this.buildId(models);
+      }
+
       models = this.sprites.add.call(this.sprites, models, options);
+
       if (_.isArray(models))
         for (var i = 0; i < models.length; i++) {
           models[i].world = this;
-          models[i].set({id: this.buildId(models[i])});
         }
       else {
         models.world = this;
-        models.set({id: this.buildId(models)});
       }
+
       return models;
     },
     remove: function(models, options) {
@@ -706,11 +721,12 @@
       return name + "." + (_.max(numbers) + 1);
     },
     buildId: function(sprite) {
-      if (sprite.attributes.type == "character")
-        return this.buildIdFromName(sprite.attributes.name);
+      var attributes = sprite.attributes || sprite;
+      if (attributes.type == "character")
+        return this.buildIdFromName(attributes.name);
 
-      return this.getWorldCol(sprite.attributes.x) * this.attributes.height +
-        this.getWorldRow(sprite.attributes.y - sprite.attributes.height + this.attributes.tileHeight);
+      return this.getWorldCol(attributes.x) * this.attributes.height +
+        this.getWorldRow(attributes.y - attributes.height + this.attributes.tileHeight);
     },
     clearBeyondWorldBoundaries: function() {
       var minX = 0,
