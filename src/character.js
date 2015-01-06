@@ -327,6 +327,7 @@
     //   - reverse: Change direction
     //   - ko: Knock-out and die
     getHitReaction: function(sprite, dir, dir2) {
+      if (sprite.get("name").indexOf("pennie") != -1) return null;
       if (dir == "left" || dir =="right") return "reverse";
       return null;
     }
