@@ -37,7 +37,7 @@ $(window).on("load", function() {
   });
 
   var mario = new Backbone.Mario({
-  	x: 400, y: 400
+  	x: 400, y: 400, floor: 500
   }, {
   	input: input
   });

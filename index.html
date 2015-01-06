@@ -309,7 +309,7 @@ $(window).on("load", function() {
   });
 
   var mario = new Backbone.Mario({
-    x: 400, y: 400
+    x: 400, y: 400, floor: 500
   }, {
     input: input
   });
@@ -853,7 +853,7 @@ input.bind("change:left", function(input) {
           <h4>Usage</h4>
           <pre>
   var mario = new Backbone.Mario({
-    x: 400, y: 400
+    x: 400, y: 400, floor: 500
   });
 
   var world = new Backbone.World({
@@ -926,6 +926,7 @@ input.bind("change:left", function(input) {
           <h4>Attributes</h4>
           <ul>
             <li><code>x, y</code>: Position of the sprite.</li>
+            <li><code>floor</code>: Set this value to prevent the character to fall outisde of the world due to gravity. By default it is null meaning the character will be removed from the world if it falls below the bottom of the world.
             <li><code>width, height</code>: Size of the sprite in pixels. Defaults to  32 x 32.</li>
             <li><code>name</code>: Name of the sprite.</li>
             <li><code>type</code>: Type of sprite. Defaults to character.</li>

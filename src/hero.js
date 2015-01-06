@@ -450,6 +450,7 @@
           bottomRightTile = cur.mov != "ko" ? this.world.findAt(heroLeftX + heroWidth*3/4, heroBottomY, "tile", this, true) : null,
           bottomWorld = this.world.height() + heroHeight,
           bottomY = _.minNotNull([
+            this.get("floor"),
             bottomWorld,
             bottomLeftTile ? bottomLeftTile.get("y") : null,
             bottomRightTile ? bottomRightTile.get("y") : null

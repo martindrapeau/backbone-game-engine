@@ -24,7 +24,8 @@
       state: "idle-right",
       velocity: 0,
       yVelocity: 0,
-      collision: true
+      collision: true,
+      floor: null
     }),
     animations: {
       "idle-left": {
@@ -176,6 +177,7 @@
           bottomTile = cur.mov != "ko" ? this.world.findAt(charLeftX + charWidth/2, charBottomY, "tile", this, true) : null,
           bottomWorld = this.world.height() + tileHeight,
           bottomY = _.minNotNull([
+            this.get("floor"),
             bottomWorld,
             bottomTile ? bottomTile.get("y") : null
           ]);
