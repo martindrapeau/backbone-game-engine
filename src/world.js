@@ -211,7 +211,7 @@
             col = world.getWorldCol(s.x),
             row = world.getWorldRow(s.y);
 
-        var id = Backbone[cls].prototype.defaults.type == "character" ? buildId(s.name) : col * w.height + row;
+        var id = Backbone[cls].prototype.defaults.type != "tile" ? buildId(s.name) : col * w.height + row;
         var newSprite = new Backbone[cls](_.extend(s,
           {
             id: id,
@@ -722,7 +722,7 @@
     },
     buildId: function(sprite) {
       var attributes = sprite.attributes || sprite;
-      if (attributes.type == "character")
+      if (attributes.type != "tile")
         return this.buildIdFromName(attributes.name);
 
       return this.getWorldCol(attributes.x) * this.attributes.height +
