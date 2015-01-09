@@ -22,6 +22,7 @@
       type: "character",
       width: 32,
       height: 64,
+      paddingTop: 32,
       spriteSheet: "enemies",
       state: "idle-left",
       velocity: 0,
@@ -62,23 +63,6 @@
         if (dir == "left") return this.knockout(sprite, "right");
         if (dir == "right") return this.knockout(sprite, "left");
       }
-    },
-    // Overlap only on bottom half. Top of sprite is empty space.
-    overlaps: function(x, y) {
-      var sw = this.get("width"),
-          sh = this.get("height"),
-          sx = this.get("x"),
-          sy = this.get("y") + sh/2;
-      if (y === undefined) {
-        var o = x;
-        return !(
-          sx > o.x + o.width ||
-          sx + sw < o.x ||
-          sy > o.y + o.height ||
-          sy + sh < o.y
-        );
-      }
-      return (x >= sx && y >= sy && x <= sx + sw && y <= sy + sh);
     },
     getHitReaction: function(sprite, dir, dir2) {
       var type = sprite.get("type"),
