@@ -20,6 +20,10 @@
       y: 0,
       width: 0,
       height: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
       state: "idle",
 
       // Sprite sheet id
@@ -106,20 +110,20 @@
       return this.animations[state || this.attributes.state];
     },
     overlaps: function(x, y) {
-      var sx = this.get("x"),
-          sy = this.get("y"),
-          sw = this.get("width"),
-          sh = this.get("height");
+      var sx1 = this.attributes.x + (this.attributes.paddingLeft || 0),
+          sy1 = this.attributes.y + (this.attributes.paddingTop || 0),
+          sx2 = sx1 + this.attributes.width - (this.attributes.paddingRight || 0),
+          sy2 = sy1 + this.attributes.height - (this.attributes.paddingBottom || 0);
       if (y === undefined) {
         var o = x;
         return !(
-          sx > o.x + o.width ||
-          sx + sw < o.x ||
-          sy > o.y + o.height ||
-          sy + sh < o.y
+          sx1 > o.x + o.width ||
+          sx2 < o.x ||
+          sy1 > o.y + o.height ||
+          sy2 < o.y
         );
       }
-      return (x >= sx && y >= sy && x <= sx + sw && y <= sy + sh);
+      return (x >= sx1 && y >= sy1 && x <= sx2 && y <= sy2);
     }
   });
 
@@ -208,7 +212,7 @@
   // and draw methods. Will draw them on an HTML5 canvas.
   Backbone.Engine = Backbone.Collection.extend({
     defaults: {
-      version: 0.20,
+      version: 0.2,
       canvas: undefined,
       debugPanel: null,
       input: null,
