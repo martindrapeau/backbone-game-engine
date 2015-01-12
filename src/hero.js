@@ -196,13 +196,8 @@
     },
     hit: function(sprite, dir, dir2) {
       if (sprite.get("type") == "character") {
-        var name = sprite.get("name"),
-            cur = sprite.getStateInfo ? sprite.getStateInfo() : null;
-
-        if (cur == null) return this;
-        if (cur.mov == "squished" || cur.mov == "wake") return this;
-        if (dir == "top" && name != "spike") return this;
-
+        var cur = sprite.getStateInfo ? sprite.getStateInfo() : null;
+        if (cur == null || dir == "top") return this;
         return this.knockout(sprite, "left");
       }
       return this;
@@ -646,9 +641,6 @@
     //   - ko: Knock-out and die
     getHitReaction: function(character, dir, dir2) {
       if (!character.isBlocking(this)) return null;
-      var name = character.get("name");
-      if ((dir == "left" || dir == "right") && name.indexOf("turtle") == -1) return "ko";
-      if (dir == "bottom" && name == "spike") return "ko";
       if (dir == "bottom") return "bounce";
       return "block";
     }
