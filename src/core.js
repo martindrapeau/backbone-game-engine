@@ -31,9 +31,12 @@
 
       // Animations
       sequenceIndex: 0,
+      zIndex: 0,
 
       static: false,
-      collision: false
+      collision: false,
+
+      persist: true
     },
     animations: {
       idle: {
@@ -47,9 +50,33 @@
     saveAttributes: ["name", "state", "sequenceIndex", "x", "y"],
     initialize: function(attributes, options) {
       this.lastSequenceChangeTime = 0;
+      this.bbox = {x1: 0, y1: 0, y1: 0, y2: 0};
+      this.on("attach", this.onAttach, this);
+      this.on("detach", this.onDetach, this);
     },
+    onAttach: function() {},
+    onDetach: function() {},
     toSave: function() {
-      return _.pick(this.toJSON(), this.saveAttributes);
+      return this.get("persist") ? _.pick(this.toJSON(), this.saveAttributes) : null;
+    },
+    getLeft: function(withPadding) {
+      return this.attributes.x + (withPadding && this.attributes.paddingLeft ? this.attributes.paddingLeft : 0);
+    },
+    getRight: function(withPadding) {
+      return this.attributes.x + this.attributes.width - (withPadding && this.attributes.paddingRight ? this.attributes.paddingRight : 0);
+    },
+    getTop: function(withPadding) {
+      return this.attributes.y + (withPadding && this.attributes.paddingTop ? this.attributes.paddingTop : 0);
+    },
+    getBottom: function(withPadding) {
+      return this.attributes.y + this.attributes.height - (withPadding && this.attributes.paddingBottom ? this.attributes.paddingBottom : 0);
+    },
+    getBbox: function(withPadding) {
+      this.bbox.x1 = this.getLeft(withPadding);
+      this.bbox.x2 = this.getRight(withPadding);
+      this.bbox.y1 = this.getTop(withPadding);
+      this.bbox.y2 = this.getBottom(withPadding);
+      return this.bbox;
     },
     update: function(dt) {
       // Fetch animation and change sequence if need be
@@ -112,14 +139,14 @@
     overlaps: function(x, y) {
       var sx1 = this.attributes.x + (this.attributes.paddingLeft || 0),
           sy1 = this.attributes.y + (this.attributes.paddingTop || 0),
-          sx2 = sx1 + this.attributes.width - (this.attributes.paddingRight || 0),
-          sy2 = sy1 + this.attributes.height - (this.attributes.paddingBottom || 0);
+          sx2 = this.attributes.x + this.attributes.width - (this.attributes.paddingRight || 0),
+          sy2 = this.attributes.y + this.attributes.height - (this.attributes.paddingBottom || 0);
       if (y === undefined) {
         var o = x;
         return !(
-          sx1 > o.x + o.width ||
+          sx1 > o.x + (o.width || 0) ||
           sx2 < o.x ||
-          sy1 > o.y + o.height ||
+          sy1 > o.y + (o.height || 0) ||
           sy2 < o.y
         );
       }
@@ -142,6 +169,8 @@
   // frames used for animation.
   Backbone.SpriteSheet = Backbone.Model.extend({
     defaults: {
+      x: 0,
+      y: 0,
       img: undefined, // Element id to find image in DOM
       tileWidth: undefined,
       tileHeight: undefined,
@@ -162,8 +191,8 @@
       for (var row = 0; row < sheet.tileRows; row++) {
         for (var col = 0; col < sheet.tileColumns; col++)
           this.frames.push({
-            x: col * sheet.tileWidth,
-            y: row * sheet.tileHeight,
+            x: sheet.x + col * sheet.tileWidth,
+            y: sheet.y + row * sheet.tileHeight,
             width: sheet.tileWidth,
             height: sheet.tileHeight
           });
@@ -199,7 +228,7 @@
       _.each(Backbone, function(cls) {
         if (_.isFunction(cls) && cls.prototype instanceof Backbone.Sprite &&
             cls.prototype.defaults && cls.prototype.defaults.spriteSheet &&
-            !cls.prototype.spriteSheet) {
+            (!cls.prototype.spriteSheet || cls.prototype.spriteSheet.attributes.name != cls.prototype.defaults.spriteSheet)) {
           var spriteSheet = spriteSheets.get(cls.prototype.defaults.spriteSheet);
           if (spriteSheet) cls.prototype.spriteSheet = spriteSheet;
         }
@@ -385,7 +414,7 @@
       this.hammertime.on("tap", this.onTap);
     },
     onDetach: function() {
-      this.hammertime.off("tap", this.onTap);
+      if (this.hammertime) this.hammertime.off("tap", this.onTap);
     },
     update: function(dt) {
       return true;
@@ -476,7 +505,7 @@
     },
     draw: function(context) {
       var text = JSON.stringify(this.toJSON());
-      context.fillStyle = this.get("color");
+      context.fillStyle = this.color;
       context.font = "12px arial";
       context.textAlign = "left";
       context.textBaseline = "middle";

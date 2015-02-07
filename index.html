@@ -55,6 +55,7 @@
           <ul>
             <li>Elementary: <a href="ball/index.html" target="_blank">Bouncing ball</a></li>
             <li>Basic: <a href="mario/index.html" target="_blank">Mario in an empty world</a></li>
+            <li>Basic: <a href="frog/index.html" target="_blank">Hoppy frog</a></li>
             <li>Advanced: <a href="super-mario-bros/index.html" target="_blank">Super Mario Bros, level 1-1</a></li>
             <li>Real game: <a href="http://www.mariocraft.club" target="_blank">Mariocraft</a></li>
           </ul>
@@ -506,12 +507,17 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
           <ul>
             <li><code>x, y</code>: The coordinates in pixels.</li>
             <li><code>width, height</code>: Size of the sprite in pixels.</li>
+            <li><code>paddingLeft, paddingRight, paddingTop, paddingBottom</code>: Optional. Internal padding to account for empty space inside the tile of a sprite. Useful to specify empty zones for collision detection.</li>
             <li><code>state</code>: The current animation.</li>
             <li><code>sequenceIndex</code>: The current animation sequence frame. Automatically set.</li>
             <li><code>spriteSheet</code>: Sprite sheet id. </li>
             <li><code>collision</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
             <li><code>static</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
+            <li><code>zIndex</code>: Optional. Specifies the drawing order. Higher value is drawn above sprites with lower values. Default is 0.</li>
           </ul>
+          <div class="alert alert-info">
+            Note: <code>zIndex</code> is only used in <code>Backbone.World</code>. Currently, it is partially implemented - only 0 and 1 values are recognized.
+          </div>
           <h4>Properties</h4>
           <ul>
             <li><code>animations</code>: Hash of animations of the sprite. Described further below.</li>
@@ -525,6 +531,8 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <li><code>draw(contexT)</code>: Called by the engine after <code>update</code>, if a redraw was asked. Takes care of rendering the sprite, and its proper animation at the correct position.</li>
             <li><code>getAnimation([state])</code>: Returns the current animation based on argument <code>state</code>. If argument <code>state</code> is omitted, the attribute is used instead.</li>
             <li><code>overlaps(x, y):</code>: Checks to see if the sprite overlaps with the passed coordinates. Returns a Boolean.</li>
+            <li><code>getLeft(withPadding), getRight(withPadding), getTop(withPadding), getBotttom(withPadding)</code>: Returns the left, right, top or bottom-most position of a sprite. Argument withPadding is a boolean specifying whether to include the padding or not. Defaults to false.</li>
+            <li><code>bbox(withPadding)</code>: Returns the bounding box of the sprite as an object <code>{x1, y1, x2, y2}</code>. Argument withPadding is a boolean specifying whether to include the padding or not. Defaults to false.</li>
           </ul>
           <h4>Events</h4>
           <ul>
@@ -753,7 +761,8 @@ input.bind("change:left", function(input) {
             <li><code>viewportLeft, viewportRight, viewportTop, viewportBottom</code>: Defines an area in the canvas the world is constrained to. Each value provides gutter regions in pixels. Anything drawn by the world will be clipped in the area. Useful for drawing a menu bar or buttons on the same canvas. In provided demos for example, <code>viewportBottom</code> is set to 156 pixels to make room the the touchpad.</li>
             <li><code>sprites</code>: Array of sprite models for persistence.</li>
             <li><code>backgroundColor</code>: Background color of the world.</li>
-            <li><code>state</code>: Persisted state either play or edit.</li>
+            <li><code>backgroundImage</code>: Id attribute of an image element in the DOM to show as background.</li>
+            <li><code>state</code>: Persisted state either play or pause.</li>
           </ul>
           <h4>Options</h4>
           <ul>
@@ -789,6 +798,8 @@ input.bind("change:left", function(input) {
           <ul>
             <li><code>attach</code>: Triggered when the sprite is attached to the engine. Will trigger the <code>attach</code> method of all sprites in the world.</li>
             <li><code>detach</code>: Triggered when the sprite is detached to the engine. Will trigger the <code>detach</code> event of all sprites in the world.</li>
+            <li><code>tap</code>: If the <code>Hammertime</code> library is included, the <code>tap</code> event will get triggered when the user taps (or clicks) on the screen. The event callback will be passed the hammer event containing <code>{x, y}</code> the current world position of the tap.</li>
+            <li><code>key</code>: Triggered on a keyup event. The event callback will be passed the event as argument.</li>
           </ul>
           <h4>How it works</h4>
           <p>
@@ -878,7 +889,7 @@ input.bind("change:left", function(input) {
           <h3>Backbone.WorldEditor</h3>
           <pre>new Backbone.WorldEditor([attributes], [options])</pre>
           <p>
-            <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. An editor is usually drawn at the bottom of the world replacing the <a href="#documentation-Input">Backbone.Input</a>. It must be attached to a <code>Backbone.Engine</code> model.
+            <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. An editor is usually drawn at the bottom of the world replacing the <a href="#documentation-Input">Backbone.Input</a>. It must be attached to a <code>Backbone.Engine</code> model. The palette will page automatically if there are too many sprites.
           </p>
           <p>
             <img src="docs/world-editor.png" class="img-responsive" alt="Backbone.Input" />

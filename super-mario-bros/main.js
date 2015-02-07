@@ -22,7 +22,7 @@ $(window).on("load", function() {
     "cloud4", "cloud5", "cloud6", "cloud-happy4", "cloud-happy5", "cloud-happy6", "flag-pole2", "railing",
     "tube1-out", "tube2-out", "tube3-out", "tube1-out-mirror", "tube2-out-mirror", "tube3-out-mirror", "water1", "lava1",
     "platform1", "platform2", "platform3",  "brick7-castle", "brick-castle", "brick2-castle", "brick3-castle",
-    "mario", "luigi", "mushroom", "turtle", "flying-turtle", "red-turtle", "red-flying-turtle", "beetle", "spike", "flying-pennie",
+    "mario", "luigi", "mushroom", "turtle", "flying-turtle", "red-turtle", "red-flying-turtle", "beetle", "spike",
     "tube4-out", "tube5-out", "tube6-out", "tube4-out-mirror", "tube5-out-mirror", "tube6-out-mirror", "water2", "lava2", 
     "bush7", "bush8", "bush9", "platform-pole", "brick4-castle", "brick5-castle", "brick6-castle"
   ];

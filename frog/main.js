@@ -56,15 +56,13 @@ $(window).on("load", function() {
 
       // Camera
       this.camera = new Backbone.Camera({
-        left: 200, right: 500
       });
 
       // Our world
       this.world = new Backbone.World(
         _.extend({viewportBottom: 156}, window._world), {
         input: this.input,
-        camera: this.camera,
-        hero: "frog"
+        camera: this.camera
       });
 
       // Message

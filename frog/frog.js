@@ -29,7 +29,8 @@
       acceleration: 0,
       yVelocity: 0,
       yAcceleration: 0,
-      collision: true
+      collision: true,
+      hero: true
     }),
     animations: {
       "idle-right": {

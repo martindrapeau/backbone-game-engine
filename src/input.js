@@ -43,14 +43,12 @@
       x: left, y: bottom-100,
       width: 120,  height: 150,
       draw: function(context, pressed) {
-        context.clearRect(35, context.canvas.height-40-90, 70, 80);
-        var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
         context.moveTo(100, context.canvas.height-40-90);
         context.lineTo(40, context.canvas.height-40-50);
         context.lineTo(100, context.canvas.height-40-10);
-        context.fillStyle = ("rgba(0, 255, 0, {0})").replace("{0}", opacity);
+        context.fillStyle = pressed ? "#00FF00" : "#009900";
         context.fill();
         context.restore();
       }
@@ -59,14 +57,12 @@
       x: 120, y: bottom-100,
       width: 120,  height: 100,
       draw: function(context, pressed) {
-        context.clearRect(135, context.canvas.height-40-90, 70, 80);
-        var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
         context.moveTo(140, context.canvas.height-40-90);
         context.lineTo(200, context.canvas.height-40-50);
         context.lineTo(140, context.canvas.height-40-10);
-        context.fillStyle = ("rgba(0, 255, 0, {0})").replace("{0}", opacity);
+        context.fillStyle = pressed ? "#00FF00" : "#009900";
         context.fill();
         context.restore();
       }
@@ -75,12 +71,10 @@
       x: right-240, y: bottom-100,
       width: 150,  height: 150,
       draw: function(context, pressed) {
-        context.clearRect(context.canvas.width-60-185, context.canvas.height-40-92, 90, 84);
-        var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
         context.arc(context.canvas.width-60-140, context.canvas.height-40-50, 40, 0, 2*Math.PI, false);
-        context.fillStyle = ("rgba(255, 0, 0, {0})").replace("{0}", opacity);
+        context.fillStyle = pressed ? "#FF0000" : "#990000";
         context.fill();
         drawButtonLabel(context, "B", context.canvas.width-60-140, context.canvas.height-40-50);
         context.restore();
@@ -90,12 +84,10 @@
       x: right-90, y: bottom-100,
       width: 150,  height: 150,
       draw: function(context, pressed) {
-        context.clearRect(context.canvas.width-60-85, context.canvas.height-40-92, 90, 84);
-        var opacity = pressed ? 1 : 0.5;
         context.save();
         context.beginPath();
         context.arc(context.canvas.width-60-40, context.canvas.height-40-50, 40, 0, 2*Math.PI, false);
-        context.fillStyle = ("rgba(0, 0, 255, {0})").replace("{0}", opacity);
+        context.fillStyle = pressed ? "#0000FF" : "#000099";
         context.fill();
         drawButtonLabel(context, "A", context.canvas.width-60-40, context.canvas.height-40-50);
         context.restore();
@@ -105,9 +97,7 @@
       x: (right-left)/2 - 90, y: bottom-80,
       width: 180, height: 80,
       draw: function(context, pressed) {
-        context.clearRect((context.canvas.width-60)/2 - 90, context.canvas.height-40-80, 180, 60);
-        var opacity = pressed ? 1 : 0.5,
-            fillStyle = ("rgba(128, 128, 128, {0})").replace("{0}", opacity);
+        var fillStyle = pressed ? "#999" : "#666";
         drawRoundRect(context, (context.canvas.width-60)/2 - 90, context.canvas.height-40-80, 180, 60, 5, fillStyle);
         drawButtonLabel(context, "PAUSE", (context.canvas.width-60)/2, context.canvas.height-40-50);
       }

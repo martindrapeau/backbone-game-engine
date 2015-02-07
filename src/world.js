@@ -31,7 +31,6 @@
     spriteOptions: {offsetX:0, offsetY:0},
     initialize: function(attributes, options) {
       options || (options = {});
-      this.backgroundImage = options.backgroundImage;
       this.input = options.input;
       this.camera = options.camera;
       this.debugPanel = options.debugPanel;
@@ -39,12 +38,15 @@
       _.bindAll(this,
         "save", "getWorldIndex", "getWorldCol", "getWorldRow", "cloneAtPosition",
         "findAt", "filterAt", "spawnSprites", "height", "width", "add", "remove",
-        "setTimeout", "clearTimeout"
+        "setTimeout", "clearTimeout", "onTap", "onKey"
       );
 
       this.sprites = new Backbone.Collection();
       this.setupSpriteLayers();
       this.spawnSprites();
+
+      this.on("change:backgroundImage", this.spawnBackgroundImage);
+      this.spawnBackgroundImage();
 
       this.on("attach", this.onAttach, this);
       this.on("detach", this.onDetach, this);
@@ -66,8 +68,15 @@
         sprite.engine = engine;
         sprite.trigger("attach", engine);
       });
+      if (window.Hammer) {
+        if (!this.hammertime) this.hammertime = Hammer(document);
+        this.hammertime.on("tap", this.onTap);
+      }
+      $(document).on("keyup.world", this.onKey);
     },
     onDetach: function() {
+      $(document).off("keyup.world", this.onKey);
+      if (this.hammertime) this.hammertime.off("tap", this.onTap);
       this.sprites.each(function(sprite) {
         sprite.engine = undefined;
         sprite.trigger("detach");
@@ -84,6 +93,16 @@
       this.backgroundCanvas.width = this.engine.canvas.width;
       this.backgroundCanvas.height = this.engine.canvas.height;
     },
+    onTap: function(e) {
+      if (this.attributes.state != "play") return;
+      var x = e.gesture.center.clientX - this.engine.canvas.offsetLeft + this.engine.canvas.scrollLeft - this.attributes.x,
+          y = e.gesture.center.clientY - this.engine.canvas.offsetTop + this.engine.canvas.scrollTop - this.attributes.y;
+      this.trigger("tap", _.extend(e, {x: x, y: y}));
+    },
+    onKey: function(e) {
+      if (this.attributes.state != "play") return;
+      this.trigger("key", e);
+    },
 
     // Split static sprites (background tiles) from dynamic ones (animated or moving).
     // Draw static on a background and seldomly redraw.
@@ -94,7 +113,9 @@
           staticSprites = this.staticSprites = new Backbone.Collection(),
           dynamicSprites = this.dynamicSprites = new Backbone.Collection();
       staticSprites.lookup = {};
+      staticSprites.maxSpriteWidth = staticSprites.maxSpriteHeight = 0;
       dynamicSprites.lookup = {};
+      dynamicSprites.maxSpriteWidth = dynamicSprites.maxSpriteHeight = 0;
 
       function add(sprite, collection) {
         collection.add(sprite);
@@ -102,6 +123,8 @@
         collection.lookup[index] || (collection.lookup[index] = []);
         collection.lookup[index].push(sprite);
         sprite.set("lookupIndex", index);
+        collection.maxSpriteWidth = Math.max(collection.maxSpriteWidth, sprite.attributes.width);
+        collection.maxSpriteHeight = Math.max(collection.maxSpriteHeight, sprite.attributes.width);
       }
 
       function update(sprite, collection) {
@@ -115,6 +138,8 @@
         collection.lookup[newIndex] || (collection.lookup[newIndex] = []);
         collection.lookup[newIndex].push(sprite);
         sprite.set("lookupIndex", newIndex);
+        collection.maxSpriteWidth = Math.max(collection.maxSpriteWidth, sprite.attributes.width);
+        collection.maxSpriteHeight = Math.max(collection.maxSpriteHeight, sprite.attributes.width);
       }
 
       function remove(sprite, collection) {
@@ -184,6 +209,20 @@
       return this;
     },
 
+    spawnBackgroundImage: function() {
+      this.backgroundImage = undefined;
+      var id = this.get("backgroundImage");
+      if (!id) return;
+
+      id = id.replace("#", "");
+      var img = document.getElementById(id);
+
+      if (!img)
+        throw "Invalid img #" + id + " for world backgroundImage. Cannot find element by id.";
+
+      this.backgroundImage = img;
+      return this;
+    },
     spawnSprites: function() {
       var world = this,
           w = this.toShallowJSON(),
@@ -236,9 +275,11 @@
 
     // When saving, persist the sprite collection in the model attribute sprites.
     save: function() {
-      var sprites = this.sprites.map(function(sprite) {
-        return sprite.toSave.apply(sprite);
-      });
+      var sprites = this.sprites.reduce(function(sprites, sprite) {
+        var s = sprite.toSave.apply(sprite);
+        if (s) sprites.push(s);
+        return s;
+      }, []);
 
       // Save a screenshot of 30x15 tiles, skipping the two top first rows
       if (this.engine && this.viewport && this.viewport.width) {
@@ -366,10 +407,10 @@
     drawStaticSprites: function(context) {
       var start =_.now(),
           sprite, index, count = 0,
-          tileX1 = this.getWorldCol(-this.attributes.x + this.attributes.viewportLeft),
-          tileX2 = this.getWorldCol(-this.attributes.x + context.canvas.width - this.attributes.viewportRight),
-          tileY1 = this.getWorldRow(-this.attributes.y + this.attributes.viewportTop),
-          tileY2 = this.getWorldRow(-this.attributes.y + context.canvas.height - this.attributes.viewportBottom);
+          tileX1 = this.getWorldCol(-this.attributes.x + this.attributes.viewportLeft - this.staticSprites.maxSpriteWidth/2),
+          tileX2 = this.getWorldCol(-this.attributes.x + context.canvas.width - this.attributes.viewportRight + this.staticSprites.maxSpriteWidth/2),
+          tileY1 = this.getWorldRow(-this.attributes.y + this.attributes.viewportTop - this.staticSprites.maxSpriteHeight/2),
+          tileY2 = this.getWorldRow(-this.attributes.y + context.canvas.height - this.attributes.viewportBottom + this.staticSprites.maxSpriteHeight/2);
       this.spriteOptions.offsetX = this.attributes.x;
       this.spriteOptions.offsetY = this.attributes.y;
 
@@ -381,33 +422,34 @@
 
       if (this.backgroundImage) {
         var img = this.backgroundImage,
-            ix = -this.attributes.x/2,
-            iy = -this.attributes.y/2,
             width = context.canvas.width < img.width ? context.canvas.width : img.width,
-            height = context.canvas.height < img.height ? context.canvas.height : img.height,
-            flipAxis = 0;
-        context.save();
-        context.translate(flipAxis, 0);
-        context.scale(2, 2);
-        context.translate(-flipAxis, 0);
+            height = context.canvas.height < img.height ? context.canvas.height : img.height;
         context.drawImage(
           img,
-          ix, iy, width, height,
-          0, 40, width, height
+          0, 0, width, height,
+          0, 0, width, height
         );
-        context.restore();
       }
 
+      var secondPass = [];
       for (var col = tileX1; col <= tileX2; col++)
         for (var row = tileY1; row <= tileY2; row++) {
           index = col * this.attributes.height + row;
           if (this.staticSprites.lookup[index])
             for (var s = 0; s < this.staticSprites.lookup[index].length; s++) {
               sprite = this.staticSprites.lookup[index][s];
-              sprite.draw.call(sprite, context, this.spriteOptions);
-              count++;
+              if (!sprite.attributes.zIndex) {
+                sprite.draw.call(sprite, context, this.spriteOptions);
+                count++;
+              }  else {
+                secondPass.push(sprite);
+              }
             }
         }
+      for (var s = 0; s < secondPass.length; s++) {
+        sprite = secondPass[s];
+        sprite.draw.call(sprite, context, this.spriteOptions);
+      }
 
       if (this.debugPanel) this.debugPanel.set({
         staticDrwan: count,
@@ -419,10 +461,10 @@
     drawDynamicSprites: function(context) {
       var start =_.now(),
           sprite, index, count = 0,
-          tileX1 = this.getWorldCol(-this.attributes.x + this.attributes.viewportLeft - this.attributes.tileWidth),
-          tileX2 = this.getWorldCol(-this.attributes.x + context.canvas.width - this.attributes.viewportRight + this.attributes.tileWidth),
-          tileY1 = this.getWorldRow(-this.attributes.y + this.attributes.viewportTop - this.attributes.tileHeight),
-          tileY2 = this.getWorldRow(-this.attributes.y + context.canvas.height - this.attributes.viewportBottom + this.attributes.tileHeight);
+          tileX1 = this.getWorldCol(-this.attributes.x + this.attributes.viewportLeft - this.attributes.tileWidth*3),
+          tileX2 = this.getWorldCol(-this.attributes.x + context.canvas.width - this.attributes.viewportRight + this.attributes.tileWidth*3),
+          tileY1 = this.getWorldRow(-this.attributes.y + this.attributes.viewportTop - this.attributes.tileHeight*3),
+          tileY2 = this.getWorldRow(-this.attributes.y + context.canvas.height - this.attributes.viewportBottom + this.attributes.tileHeight*3);
       this.spriteOptions.offsetX = this.attributes.x;
       this.spriteOptions.offsetY = this.attributes.y;
 
@@ -438,6 +480,7 @@
         this.attributes.viewportLeft, this.attributes.viewportTop, this.viewport.width, this.viewport.height,
         this.attributes.viewportLeft, this.attributes.viewportTop, this.viewport.width, this.viewport.height);
 
+      var secondPass = [];
       for (var col = tileX1; col <= tileX2; col++)
         for (var row = tileY1; row <= tileY2; row++) {
           index = col * this.attributes.height + row;
@@ -445,11 +488,20 @@
             for (var s = 0; s < this.dynamicSprites.lookup[index].length; s++) {
               sprite = this.dynamicSprites.lookup[index][s];
               if (sprite._draw) {
-                sprite.draw.call(sprite, context, this.spriteOptions);
-                count++;
+                if (!sprite.attributes.zIndex) {
+                  sprite.draw.call(sprite, context, this.spriteOptions);
+                  count++;
+                }  else {
+                  secondPass.push(sprite);
+                }
               }
             }
         }
+      for (var s = 0; s < secondPass.length; s++) {
+        sprite = secondPass[s];
+        if (sprite._draw)
+          sprite.draw.call(sprite, context, this.spriteOptions);
+      }
 
       context.restore();
 
@@ -465,8 +517,8 @@
     // fast column drawing without lookup.
     getWorldIndex: function(object) {
       if (!_.isObject(object)) return null;
-      var x = object.attributes ? object.get("x") : object.x || 0,
-          y = object.attributes ? object.get("y") : object.y || 0,
+      var x = object.attributes ? (object.get("x") + object.get("width")/2) : (object.x || 0),
+          y = object.attributes ? (object.get("y") + object.get("height")/2) : (object.y || 0),
           col = Math.floor(x / this.get("tileWidth")),
           row = Math.floor(y / this.get("tileHeight"));
       return col * this.get("height") + row;
@@ -499,7 +551,7 @@
       function test(sprite) {
         return (sprite.id && sprite.id != id) &&
           (!type || sprite.get("type") == type) &&
-          (!collision || sprite.get("collision")) &&
+          (collision === undefined || sprite.attributes.collision === collision) &&
           sprite.overlaps.call(sprite, x, y);
       }
 
@@ -512,8 +564,8 @@
       }
 
       // Look in dynamic sprites first (lookup by index)
-      for (c = col-1; c <= col+1; c++)
-        for (r = row-1; r <= row+1; r++) {
+      for (c = col-2; c <= col+2; c++)
+        for (r = row-2; r <= row+2; r++) {
           index = c * this.attributes.height + r;
           if (this.dynamicSprites.lookup[index])
             for (s = 0; s < this.dynamicSprites.lookup[index].length; s++)
@@ -542,8 +594,9 @@
     // Map is a map of objects describing the locations to look at, and the result.
     // Each map item is an object with:
     //  - x, y: The lookup coordinate.
+    //  - dir: The lookout direction; top, right, bottom or left.
     //  - sprites: array of detected colliding sprites. Reset/initialized to [] every call.
-    //  - sprite: the first detected sprite or null if none.
+    //  - sprite: The closest sprite based on the lookout direction.
     // Returns the number of found collisions.
     findCollisions: function(map, type, exclude, collision) {
       if (_.size(map) == 0) return 0;
@@ -563,15 +616,15 @@
           map[m].sprite = null;
         }
 
-      var minCol = this.getWorldCol(minX) - 1,
-          minRow = this.getWorldRow(minY) - 1,
-          maxCol = this.getWorldCol(maxX),
-          maxRow = this.getWorldRow(maxY);
+      var minCol = this.getWorldCol(minX) - 2,
+          minRow = this.getWorldRow(minY) - 2,
+          maxCol = this.getWorldCol(maxX) + 2,
+          maxRow = this.getWorldRow(maxY) + 2;
 
       function doIt(sprite) {
         if (sprite.id && sprite.id != id &&
             (!type || sprite.attributes.type == type) &&
-            (!collision || sprite.attributes.collision))
+            (collision === undefined || sprite.attributes.collision === collision))
           for (m in map)
             if (map.hasOwnProperty(m) &&
                 sprite.overlaps.call(sprite, map[m].x, map[m].y)) {
@@ -579,6 +632,33 @@
               if (!map[m].sprite) map[m].sprite = sprite;
               count++;
             }
+      }
+
+      function findClosestSprites() {
+        for (m in map)
+          if (map.hasOwnProperty(m) && map[m].sprites.length > 0)
+            if (map[m].sprites.length == 1)
+              map[m].sprite = map[m].sprites[0];
+            else
+              for (s = 0; s < map[m].sprites.length; s++)
+                switch (map[m].dir) {
+                  case "left":
+                    c = map[m].sprites[s].getLeft(true);
+                    if (c > map[m].x) map[m].sprite = map[m].sprites[s];
+                    break;
+                  case "right":
+                    c = map[m].sprites[s].getRight(true);
+                    if (c < map[m].x) map[m].sprite = map[m].sprites[s];
+                    break;
+                  case "top":
+                    c = map[m].sprites[s].getTop(true);
+                    if (c > map[m].y) map[m].sprite = map[m].sprites[s];
+                    break;
+                  case "bottom":
+                    c = map[m].sprites[s].getBottom(true);
+                    if (c < map[m].y) map[m].sprite = map[m].sprites[s];
+                    break;
+                }
       }
 
       // Look in dynamic sprites first (lookup by index)
@@ -589,8 +669,10 @@
             for (s = 0; s < this.dynamicSprites.lookup[index].length; s++)
               doIt(this.dynamicSprites.lookup[index][s]);
         }
-      if (type == "character") return count;
-
+      if (type == "character") {
+        findClosestSprites();
+        return count;
+      }
       // Finally in static ones
       for (c = minCol; c <= maxCol; c++)
         for (r = minRow; r <= maxRow; r++) {
@@ -600,6 +682,7 @@
               doIt(this.staticSprites.lookup[index][s]);
         }
 
+      findClosestSprites();
       return count;
     },
     // Static tiles lookup.
