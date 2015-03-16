@@ -203,14 +203,20 @@
         }
       return this;
     },
-    // Fetches the Image object from the DOM element (id selector) and
-    // sets property img.
+    // Sets the img property by looking at attribute img.
+    // If a string, we assume it is the id of a DOM element and fetch appropriately.
     spawnImg: function() {
-      var id = this.get("img").replace("#", ""),
-          img = document.getElementById(id);
+      var img = this.get("img");
 
-      if (!img)
-        throw "Invalid img #" + id + " for " + this.get("name") + ". Cannot find element by id.";
+      if (typeof img == "string") {
+        var id = img.replace("#", "");
+        img = document.getElementById(id);
+        if (!img)
+          throw "Invalid img #" + id + " for " + this.get("name") + ". Cannot find element by id.";
+      }
+
+      if (typeof img != "object" || !img.src)
+        throw "Invalid img attribute for " + this.get("name") + ". Not a valid Image object.";
 
       this.img = img;
       return this;
@@ -249,7 +255,7 @@
     defaults: {
       version: 0.2,
       clearOnDraw: false,
-      tapDetectionDelay: 100 // in ms
+      tapDetectionDelay: 50 // in ms
     },
     initialize: function(attributes, options) {
       options || (options = {});
@@ -309,9 +315,10 @@
       });
 
       // Touch (triggers tap event)
-      this.touchStarted = false;
-      this.currX = this.cachedX = 0;
-      this.currY = this.cachedY = 0;
+      this._gesture = undefined;
+      this._touchStartTime = undefined;
+      this._currX = this._startX = 0;
+      this._currY = this._startY = 0;
       $(document).on("touchstart.engine", this.onTouchStart);
       $(document).on("mousedown.engine", this.onTouchStart);
       $(document).on("touchend.engine", this.onTouchEnd);
@@ -413,33 +420,51 @@
       return e.targetTouches ? e.targetTouches[0] : e;
     },
     onTouchStart: function(e) {
-      e.preventDefault(); 
+      e.preventDefault();
       var pointer = this.getPointerEvent(e);
-      this.cachedX = this.currX = pointer.pageX;
-      this.cachedY = this.currY = pointer.pageY;
-
-      touchStarted = true;
-
-      var engine = this;
-      setTimeout(function() {
-        if ((engine.cachedX === engine.currX) && !engine.touchStarted && (engine.cachedY === engine.currY)) {
-          e.canvas = engine.canvas;
-          e.canvasX = pointer.pageX - engine.canvas.offsetLeft + engine.canvas.scrollLeft;
-          e.canvasY = pointer.pageY - engine.canvas.offsetTop + engine.canvas.scrollTop;
-          engine.trigger("tap", e);
-        }
-      }, this.attributes.tapDetectionDelay);
+      this._startX = this._currX = pointer.pageX;
+      this._startY = this._currY = pointer.pageY;
+      this._gesture = "tap";
+      this._touchStartTime = _.now();
     },
     onTouchEnd: function(e) {
+      if (!this._touchStartTime) return;
       e.preventDefault();
-      this.touchStarted = false;
+
+      var now = _.now(),
+          pointer = this.getPointerEvent(e);
+      e.canvas = this.canvas;
+      e.canvasX = pointer.pageX - this.canvas.offsetLeft + this.canvas.scrollLeft;
+      e.canvasY = pointer.pageY - this.canvas.offsetTop + this.canvas.scrollTop;
+
+      if (this._gesture == "tap" && now - this._touchStartTime > this.get("tapDetectionDelay")) {
+        this.trigger("tap", e);
+      } else if (this._gesture == "drag") {
+        this.trigger("dragend", e);
+      }
+      this._gesture = undefined;
+      this._touchStartTime = undefined;
     },
     onTouchMove: function(e) {
-      if (!this.touchStarted) return;
+      if (!this._touchStartTime) return;
       e.preventDefault();
+
       var pointer = this.getPointerEvent(e);
-      this.currX = pointer.pageX;
-      this.currY = pointer.pageY;
+      this._currX = pointer.pageX;
+      this._currY = pointer.pageY;
+
+      e.canvas = this.canvas;
+      e.canvasX = pointer.pageX - this.canvas.offsetLeft + this.canvas.scrollLeft;
+      e.canvasY = pointer.pageY - this.canvas.offsetTop + this.canvas.scrollTop;
+      e.canvasDeltaX = this._currX - this._startX;
+      e.canvasDeltaY = this._currY - this._startY;
+
+      if (this._gesture == "drag") {
+        this.trigger("dragmove", e);
+      } else if (e.canvasDeltaX != 0 || e.canvasDeltaY != 0) {
+        this._gesture = "drag";
+        this.trigger("dragstart", e);
+      }
     },
 
     // Handle keyboard and trigger key event

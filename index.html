@@ -143,7 +143,7 @@
         <div class="col-md-12">
           <h3>Backbone</h3>
           <p>
-            The engine is based on Backbone so it is essential to understand its core structure: a <a href="http://backbonejs.org/#Model" target="_blank">Backbone.Model</a>. A model has hash of <code>attributes</code> that are changed via getter and setter methods <code>get</code> and <code>set</code>. These attributes should only contain state information as it is those attributes which get saved and restored. A model is a Javascript object. Hence behaviour can be stored as properties and methods directly on the object. For example a sprite sheet points to an image. Attribute <code>img</code> contains the DOM selector (by id) for retrieving the Image object. Property <code>img</code> contains reference to the Image object. It is automatically set when the sprite sheet model is initialized.
+            The engine is based on Backbone so it is essential to understand its core structure: a <a href="http://backbonejs.org/#Model" target="_blank">Backbone.Model</a>. A model has hash of <code>attributes</code> that are changed via getter and setter methods <code>get</code> and <code>set</code>. These attributes should only contain state information as it is those attributes which get saved and restored. A model is a Javascript object. Hence behaviour can be stored as properties and methods directly on the object. For example a sprite sheet points to an image. Attribute <code>img</code> contains the <code>Image</code> object or DOM selector (by id) for retrieving the Image object. Property <code>img</code> contains reference to the Image object. It is automatically set when the sprite sheet model is initialized.
             <pre>
 var spriteSheet = new Backbone.SpriteSheet({
   id: "mario",
@@ -393,11 +393,12 @@ $(window).on("load", function() {
           </ul>
           <h4>Events</h4>
           <ul>
-            <li><code>tap</code>: Trigerred when the user clicks or taps on the canvas. The event callback function is passed the DOM event object, with these extra properties attached: <code>canvas</code>, <code>canvasX</code> and <code>canvasY</code>.</li>
+            <li><code>tap</code>: Trigerred when the user clicks or taps on the canvas. A tap is defined when the user presses/clicks on a position without moving for more than <code>tapDetectionDelay</code> ms. The event callback function is passed the DOM event object, with these extra properties attached: <code>canvas</code>, <code>canvasX</code> and <code>canvasY</code>.</li>
             <li><code>key</code>: Trigerred when the user types in a key. The event callback function is passed the DOM event object, with additional property <code>canvas</code>.</li>
+            <li><code>dragstart</code>, <code>dragmove</code> and <code>dragend</code>: Trigerred when a drag gesture occurs. This happens when the user presses/clicks and holds and moves. When these events are trigerred, the <code>tap</code> event does not get trigerred.</li>
           </ul>
           <div class="alert alert-info">
-            Note: The <code>tap</code> event is broadcasted to whomever is listening. There is no concept of event bubbling, and no possibility to stop propagation. It is the listener's responsibility to verify that the tap event is relevant. For example, a Backbone.Button verifies that the user tap/click is within the bounds of the button.
+            Note: The <code>tap</code> and <code>drag*</code> events are broadcasted to whomever is listening. There is no concept of event bubbling, and no possibility to stop propagation. It is the listener's responsibility to verify that the event is relevant. For example, a Backbone.Button verifies that the user tap/click is within the bounds of the button.
           </div>
           <h4>How it works</h4>
           <p>During every animation frame, the engine performs these things:</p>
@@ -455,7 +456,7 @@ $(window).on("load", function() {
           </p>
           <h4>Attributes</h4>
           <ul>
-            <li><code>img</code>: The element id selector of the image to find in the DOM. A pointer to the Image object is then stored in property <code>img</code>.</li>
+            <li><code>img</code>: The <code>Image</code> object or element id selector of the image to find in the DOM (i.e. <code>#icons</code>). A pointer to the Image object is then stored in property <code>img</code>.</li>
             <li><code>tileWidth, tileHeight</code>: Size of tiles in pixels.</li>
             <li><code>tileColumns, tileRows</code>: Number of tiles in the image.</li>
           </ul>
@@ -509,7 +510,7 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <img src="docs/super-mario-sprite.png" class="img-responsive" alt="Backbone.Input" />
           </p>
           <p>
-            Here two sprite sheets are created <code>mario</code> and <code>tiles</code>. Their graphics are in <code>Image</code> objects found in the DOM. The attribute <code>img</code> is the selector to retrieve them. Note that only id selector is supported.
+            Here two sprite sheets are created <code>mario</code> and <code>tiles</code>. Their graphics are in <code>Image</code> objects found in the DOM. The attribute <code>img</code> is the selector to retrieve them.
           </p>
           <p>
             Calling method <code>attachToSpriteClasses</code> will attach the sprite sheets to each sprite class found in the <code>Backbone</code> namespace.
@@ -1353,7 +1354,7 @@ Backbone.AnimatedTile = Backbone.Tile.extend({
             <li><code>width, height</code>: Size of button.</li>
             <li><code>backgroundColor</code>: Fill style of the button. Set to <code>transparent</code> to see thru.</li>
             <li><code>borderRadius</code>: Border radius in pixels for rounded corners.</li>
-            <li><code>img</code>: Id selector of DOM element containing the source image (i.e. #buttons). When the button is initialized, will be used to find the Image object, and set property img to point to it.</li>
+            <li><code>img</code>: The <code>Image</code> object or element id selector of the image to find in the DOM (i.e. <code>#icons</code>). A pointer to the Image object is then stored in property <code>img</code></li>
             <li><code>imgX, imgY, imgWidth, imgHeight</code>: Bounding box of image location in source image.</li>
             <li><code>imgMargin</code>: Offset in pixels to apply when drawing the image inside the button.</li>
             <li><code>text</code>: Text to draw. If empty, not text is drawn.</li>

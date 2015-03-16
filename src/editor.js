@@ -9,6 +9,9 @@
    *
    */
 
+  var pageImg  = new Image();
+  pageImg.src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABYSURBVEhLYxheoB6I1SFM0gFIsycQ/wdikg1B1kyWISDFyJpHDRk1BBugqiGpUJosQ2CaQIbsh/JBNFGAIm+Mah7VTBSguFQGAYo0wwBFmkGAIs1kAgYGANR+XZBqOruRAAAAAElFTkSuQmCC";
+
   var drawSpriteFn = function(context, options) {
     options || (options = {});
     var animation = this.getAnimation(),
@@ -81,9 +84,9 @@
       if (!this.world && !_.isFunction(this.world.add))
         throw "Missing or invalid world option.";
 
-      this.changePageButton = new Backbone.Element({
-        x: 68, y: 646, width: 32, height: 50, borderRadius: 2,
-        img: "#icons", imgX: 394, imgY: 0, imgWidth: 22, imgHeight: 32, imgMargin: 10
+      this.changePageButton = new Backbone.Button({
+        width: 32, height: 50, borderRadius: 2,
+        img: pageImg, imgX: 0, imgY: 0, imgWidth: 16, imgHeight: 32, imgMargin: 10
       });
       this.changePageButton.on("tap", this.changePage, this);
 
@@ -105,17 +108,12 @@
     onAttach: function() {
       var world = this.world,
           engine = this.engine;
-      if (!this.hammertime) this.hammertime = Hammer(document);
       this.onDetach();
 
-      // Handle tap on touch device, or click with mouse
-      this.hammertime.on("tap", this.onTap);
-
-      // Allow panning of the world
-      this.hammertime
-        .on("dragstart", this.onDragStart)
-        .on("drag", this.onDrag)
-        .on("dragend", this.onDragEnd);
+      this.listenTo(this.engine, "tap", this.onTap);
+      this.listenTo(this.engine, "dragstart", this.onDragStart);
+      this.listenTo(this.engine, "dragmove", this.onDrag);
+      this.listenTo(this.engine, "dragend", this.onDragEnd);
 
       $(document).on("mousemove.Edit", this.onMouseMove);
 
@@ -134,12 +132,7 @@
       this.positionSprites();
     },
     onDetach: function() {
-      this.hammertime
-        .off("tap", this.onTap)
-        .off("dragstart", this.onDragStart)
-        .off("drag", this.onDrag)
-        .off("dragend", this.onDragEnd);
-
+      this.stopListening(this.engine);
       $(document).off(".Edit");
 
       this.sprites.each(function(sprite) {
@@ -178,10 +171,11 @@
         }
       });
 
-      this.changePageButton.set({
-        x: sp.x + sp.width - this.changePageButton.get("width"),
-        y: sp.y + sp.height - this.changePageButton.get("height")
-      });
+      if (this.get("pages") > 1)
+        this.changePageButton.set({
+          x: sp.x + sp.width - this.changePageButton.get("width"),
+          y: sp.y + sp.height - this.changePageButton.get("height")
+        });
 
       return this;
     },
@@ -235,8 +229,9 @@
 
         context.restore();
       }
-
-      this.changePageButton.draw(context);
+      
+      if (this.get("pages") > 1)
+        this.changePageButton.draw(context);
     },
 
     getSelectedSprite: function() {
@@ -249,8 +244,8 @@
 
       var editor = this,
           sp = this.toJSON(),
-          x = e.gesture.center.clientX - this.engine.canvas.offsetLeft + this.engine.canvas.scrollLeft,
-          y = e.gesture.center.clientY - this.engine.canvas.offsetTop + this.engine.canvas.scrollTop;
+          x = e.canvasX,
+          y = e.canvasY;
 
       // Sprite selection?
       if (x >= sp.x && y >= sp.y && x <= sp.x + sp.width && y <= sp.y + sp.height) {
@@ -276,20 +271,19 @@
 
     // Pan the world
     onDragStart: function(e) {
-      var world = this.world;
-      if (e.target != world.engine.canvas) {
-        e.stopPropagation();
-        return false;
-      }
+      var world = this.world,
+          sp = this.toJSON(),
+          x = e.canvasX,
+          y = e.canvasY;
+      if (x >= sp.x && y >= sp.y && x <= sp.x + sp.width && y <= sp.y + sp.height) return;
       world.startDragWorldX = world.get("x");
       world.startDragWorldY = world.get("y");
     },
     onDrag: function (e) {
       var world = this.world;
-      if (!_.isNumber(world.startDragWorldX) || !_.isNumber(world.startDragWorldX) ||
-          !e.gesture || !_.isNumber(e.gesture.deltaX) || !_.isNumber(e.gesture.deltaY)) return false;
-      var x = world.startDragWorldX + e.gesture.deltaX,
-          y = world.startDragWorldY + e.gesture.deltaY;
+      if (!_.isNumber(world.startDragWorldX) || !_.isNumber(world.startDragWorldX)) return false;
+      var x = world.startDragWorldX + e.canvasDeltaX,
+          y = world.startDragWorldY + e.canvasDeltaY;
       if (x > 0) {
         x = 0;
       } else {
