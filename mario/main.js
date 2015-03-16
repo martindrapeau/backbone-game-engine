@@ -50,15 +50,16 @@ $(window).on("load", function() {
   });
   world.add(mario);
 
-  var engine = new Backbone.Engine([
-  	world,
-  	input,
-    debugPanel
-  ], {
+  var engine = new Backbone.Engine({}, {
     canvas: canvas,
     debugPanel: debugPanel,
     input: input
   });
+  engine.add([
+    world,
+    input,
+    debugPanel
+  ]);
 
   // Expose things as globals - easier to debug
   _.extend(window, {

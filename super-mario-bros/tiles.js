@@ -216,7 +216,7 @@
       if (!this.engine) return;
       this.onDetach();
 
-      this.clock = this.engine.findWhere({name: "animatedTileClock"});
+      this.clock = this.engine.sprites.findWhere({name: "animatedTileClock"});
 
       if (!this.clock)
         this.clock = this.engine.add(new Backbone.Clock({name: "animatedTileClock", delay: 200}));

@@ -101,7 +101,7 @@
             <li><a href="http://underscorejs.org/" target="_blank">Underscore</a> </li>
             <li><a href="http://backbonejs.org/" target="_blank">Backbone</a> </li>
             <li><a href="https://github.com/inkling/backbone.native/" target="_blank">backbone.native</a>. To drop jQuery.</li>
-            <li><a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a>. To handle touch events.</li>
+            <li><a href="https://github.com/asaarinen/qtree/" target="_blank">simple-quadtree</a></li>
           </ul>
           <p>
             All included in the <code>3rd</code> folder.  That and nothing else.
@@ -323,15 +323,16 @@ $(window).on("load", function() {
   });
   world.add(mario);
 
-  var engine = new Backbone.Engine([
-    world,
-    input,
-    debugPanel
-  ], {
+  var engine = new Backbone.Engine({}, {
     canvas: canvas,
     debugPanel: this.debugPanel,
     input: input
   });
+  engine.add[
+    world,
+    input,
+    debugPanel
+  ]);
 
   // Expose things as globals - easier to debug
   _.extend(window, {
@@ -359,10 +360,19 @@ $(window).on("load", function() {
       <div id="documentation-Engine" class="row">
         <div class="col-md-12">
           <h3>Backbone.Engine</h3>
-          <pre>new Backbone.Engine([models], [options])</pre>
+          <pre>new Backbone.Engine([attributes], [options])</pre>
           <p>
-            The core object to run everything is the <em>engine</em>, a Backbone collection of sprites (Backbone models).
+            <code>Backbone.Engine</code> is a Backbone model that holds a <a href="http://backbonejs.org/#Collection" target="_blank">Backbone collection</a> of sprite models.
+            It uses HTML5's <a href="https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame" target="_blank">requestAnimationFrame</a> to provide a 60 frames per second game loop.
           </p>
+          <p>
+            The sprite collection is stored in property <code>sprites</code>. You may directly access it however for convenience, methods <code>add</code>, <code>remove</code> and <code>reset</code> exist as proxy the engine.
+          </p>
+          <h4>Attributes</h4>
+          <ul>
+            <li><code>clearOnDraw</code>: Optional. Boolean to ask for a clear of the canvas before redraw. Defaults to false. Note that this is an expensive call. Better to only clear the area that changed.</li>
+            <li><code>tapDetectionDelay</code>: Optional. The delay in ms before a tap is detected. Defaults to 100ms</li>
+          </ul>
           <h4>Options</h4>
           <p>
             Upon instantiation, these options can be passed. They will be stored as properties on the <code>Backbone.Engine</code> model instance.
@@ -370,18 +380,27 @@ $(window).on("load", function() {
           <ul>
             <li><code>canvas</code>: The canvas to draw upon. Drawing is on its 2d context.</li>
             <li><code>input</code>: Optional. The user control input instance. If passed and the pause button is enabled, will stop/start then engine when pressed.</li>
-            <li><code>clearOnDraw</code>: Optional. Boolean to ask for a clear of the canvas before redraw. Defaults to false. Note that this is an expensive call. Better to only clear the area that changed.</li>
             <li><code>debugPanel</code>: Optional. A <a href="#documentation-DebugPanel">Backbone.DebugPanel</a> instance. If passed <code>fps</code> and <code>cycleTime</code> are output.</li>
           </ul>
           <h4>Methods</h4>
           <ul>
+            <li><code>add()</code>: Adds one or multiple models delegating to the sprite collection's <code>add</code> method.</li>
+            <li><code>remove()</code>: Removes one or multiple models delegating to the sprite collection's <code>remove</code> method.</li>
+            <li><code>reset()</code>: Clears or sets the sprites collection delegating to the <code>reset</code> method.</li>
             <li><code>isRunning()</code>: Returns true if the engine is running, or false if not.</li>
             <li><code>start(), stop()</code>: Starts or stops the engine.</li>
             <li><code>toggle()</code>: Toggle start/stop the engine.</li>
           </ul>
-          <p>
-            The <code>Backbone.Engine</code> class is a <a href="http://backbonejs.org/#Collection" target="_blank">Backbone.Collection</a> that uses HTML5's <a href="https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame" target="_blank">requestAnimationFrame</a> to provide a 60 frames per second game loop. Every frame, the engine performs these things:
-          </p>
+          <h4>Events</h4>
+          <ul>
+            <li><code>tap</code>: Trigerred when the user clicks or taps on the canvas. The event callback function is passed the DOM event object, with these extra properties attached: <code>canvas</code>, <code>canvasX</code> and <code>canvasY</code>.</li>
+            <li><code>key</code>: Trigerred when the user types in a key. The event callback function is passed the DOM event object, with additional property <code>canvas</code>.</li>
+          </ul>
+          <div class="alert alert-info">
+            Note: The <code>tap</code> event is broadcasted to whomever is listening. There is no concept of event bubbling, and no possibility to stop propagation. It is the listener's responsibility to verify that the tap event is relevant. For example, a Backbone.Button verifies that the user tap/click is within the bounds of the button.
+          </div>
+          <h4>How it works</h4>
+          <p>During every animation frame, the engine performs these things:</p>
           <ul>
             <li>Loop through models (in order), and calls their <code>update</code> method. Passing <code>dt</code>, the time in milliseconds since the last call to update. The update method must return <code>true</code> to ask for a redraw, or <code>false</code> not to.</li>
             <li>Loop through all models that requested a redraw, and call their <code>draw</code> method passing <code>context</code>, the canvas 2d context. Perform whatever magic you like in the draw method.</li>
@@ -410,14 +429,16 @@ $(window).on("load", function() {
     x: 100, y: 100, color: "blue"
   });
 
-  var engine = new Backbone.Engine([
+  var engine = new Backbone.Engine({
+    clearOnDraw: true
+  }, {
+    canvas: canvas,
+    debugPanel: debugPanel
+  });
+  engine.add([
     ball,
     debugPanel
-  ], {
-    canvas: canvas,
-    debugPanel: debugPanel,
-    clearOnDraw: true
-  });
+  ]);
 </pre>
           <p>
             Taken from the <a href="ball/index.html" target="_blank">Bouncing Ball</a> example. Draws two models: the debug panel and a bouncing ball.
@@ -513,6 +534,7 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <li><code>spriteSheet</code>: Sprite sheet id. </li>
             <li><code>collision</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
             <li><code>static</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
+            <li><code>visible</code>: Optional boolean. If true, the sprite is not drawn. Default is false.</li>
             <li><code>zIndex</code>: Optional. Specifies the drawing order. Higher value is drawn above sprites with lower values. Default is 0.</li>
           </ul>
           <div class="alert alert-info">
@@ -528,7 +550,9 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
           <ul>
             <li><code>toSave()</code>: Serializes attributes for persistence. Attributes to be serialized are specified in the <code>saveAttributes</code> property.</li>
             <li><code>update(dt)</code>: Called by then engine 60 times a second. Updates sprite attribues and implements behavior. Returns true to ask for a redraw, or false for none.</li>
-            <li><code>draw(contexT)</code>: Called by the engine after <code>update</code>, if a redraw was asked. Takes care of rendering the sprite, and its proper animation at the correct position.</li>
+            <li><code>onUpdate(dt)</code>: Not defined by default. If you define it, it is called at the end of <code>update</code>. Useful for extending the behavior of a sprite without having to overload metod <code>update</code>. Note that <code>draw</code> will delegate to this method to decide whether to draw or not. It must therefore return <code>true</code> to perform a draw, or <code>false</code> not to.</li>
+            <li><code>draw(context, options)</code>: Called by the engine after <code>update</code>, if a redraw was asked. Takes care of rendering the sprite, and its proper animation at the correct position. Argument <code>options</code> can be used by a model serving as proxy. For example it is passed when drawn by a <code>Backbone.World</code>instance. It will contain <code>offsetX</code> and <code>offsetY</code> to transform <code>x</code> and <code>y</code> from world coordinates to canvas coordinates.</li>
+            <li><code>onDraw(context, options)</code>: Not defined by default. If defined, it is called at the end of <code>draw</code>. Useful for extending the rendering of a sprite without having to overload metod <code>draw</code>.</li>
             <li><code>getAnimation([state])</code>: Returns the current animation based on argument <code>state</code>. If argument <code>state</code> is omitted, the attribute is used instead.</li>
             <li><code>overlaps(x, y):</code>: Checks to see if the sprite overlaps with the passed coordinates. Returns a Boolean.</li>
             <li><code>getLeft(withPadding), getRight(withPadding), getTop(withPadding), getBotttom(withPadding)</code>: Returns the left, right, top or bottom-most position of a sprite. Argument withPadding is a boolean specifying whether to include the padding or not. Defaults to false.</li>
@@ -575,7 +599,7 @@ mario.spriteSheet;
           </p>
           <pre>
 Backbone.MySprite = Backbone.Sprite.extend({
-  defaults: {
+  defaults: _.extend(_.deepClone(Backbone.Sprite.prototype.defaults), {
     x: 400,
     y: 400,
     spriteSheet: "mario",
@@ -583,7 +607,7 @@ Backbone.MySprite = Backbone.Sprite.extend({
     sequenceIndex: 0,
     static: false,
     collision: true
-  },
+  }),
   animations: {
     idle: {
       sequences: [0]
@@ -602,7 +626,7 @@ Backbone.MySprite = Backbone.Sprite.extend({
 </pre>
 
           <p>
-            Above, the <code>Backbone.Sprite</code> was sub-classed using <code>extend</code> method. <code>defaults</code> are the default attributes to give any new <code>Backbone.MySprite</code> instance. Same thing for <code>animations</code>.
+            Above, the <code>Backbone.Sprite</code> was sub-classed using <code>extend</code> method. <code>defaults</code> are the default attributes to give any new <code>Backbone.MySprite</code> instance. They extend the Sprite class' defaults.
           </p>
           <p>
             If you want to reuse parts of <code>defaults</code> or <code>animations</code> from a parent class, make sure to make a copy. You can use the helper function <code>_.deepClone</code> for that purpose (<code>_.clone</code> only goes one level deep). Otherwise you may change the parent class behavior. For example the <code>Backbone.PennieUg</code> class reuses the <code>Backbone.Pennie</code> class' properties <code>defaults</code> and <code>animations</code> by first creating copies.
@@ -618,7 +642,7 @@ Backbone.MySprite = Backbone.Sprite.extend({
   Backbone.PennieUg.prototype.animations.idle.sequences = [168, 168, 169, 170, 169, 168];
 </pre>
           <div class="alert alert-info">
-            Helper function <code>deepClone</code> was created a mixin of <code>underscore</code>. When it make sense, make general functions available that way. Look at the end of <code>src/core.js</code> for all mixins.
+            Helper function <code>deepClone</code> was created as a mixin of <code>underscore</code>. When it makes sense, make general functions available that way. Look at the end of <code>src/core.js</code> for all mixins.
           </div>
           <h4>Animations</h4>
           <p>
@@ -689,7 +713,7 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
             <code>Backbone.Input</code> class is a model which captures user input events and stores them as model attributes. For example pressing the left arrow, sets the <code>left</code> attribute to <code>true</code>. Depressing sets it to <code>false</code>. Bind to on the attribute change event to be notified.
           </p>
           <p>
-            <code>Backbone.Input</code> supports keyboard, mouse and touch events. It can draw a touchpad on screen with left and right arrow keys, an A button and a B button. Optionally, a pause button can be drawn in the middle, or the area can be used to place a banner ad.
+            <code>Backbone.Input</code> supports keyboard, mouse and touch events. It can draw a touchpad on screen with left and right arrow keys, an A (red) button and a B (blue) button.
           </p>
           <p>
             <img src="docs/input.png" class="img-responsive" alt="Backbone.Input" />
@@ -698,10 +722,9 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
             Note: The Backbone.Input model only captures input when attached to a Backbone.Engine.
           </div>
           <h4>Attributes</h4>
-          <p>These attributes can be passed when creating the model, to configure the input.</p>
+          <p>This attribute can be passed when creating the model, to configure the input.</p>
           <ul>
             <li><code>drawTouchpad</code>: Optional. Boolean or string "auto" to indicate whether to draw the touchpad. When "auto", the touchpad will be drawn only on touch devies. Defaults to "auto".</li>
-            <li><code>drawPause</code>: Optional. Boolean to indicate whether to draw the pause button on the touchpad. Defaults to false.</li>
           </ul>
           <p>The following model attributes are set by the model. They should not be set externally.</p>
           <ul>
@@ -710,10 +733,6 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
             <li><code>right</code>: Boolean set to true when the right touchpad arrow or right keyboard arrow key is pressed.</li>
             <li><code>buttonA</code>: Boolean set to true when the A touchpad button is pressed, or when the z keyboard key is pressed.</li>
             <li><code>buttonB</code>: Boolean set to true when the B touchpad button is pressed, or when the x keyboard key is pressed.</li>
-            <li><code>pause</code>: Boolean set to true when the pause touchpad button is pressed, or when the p keyboard key is pressed.</li>
-            <li><code>pressed</code>: Array of keys pressed on the keyboard.</li>
-            <li><code>touched</code>: Array of buttons touched on touch screen.</li>
-            <li><code>clicked</code>: Boolean set to true when a mouse button is pressed.</li>
           </ul>
           <h4>Methods</h4>
           <ul>
@@ -722,12 +741,11 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
             <li><code>rightPressed()</code>: Returns true if the right button is pressed.</li>
             <li><code>buttonAPressed()</code>: Returns true if button A is pressed.</li>
             <li><code>buttonBPressed()</code>: Returns true if button B is pressed.</li>
-            <li><code>pausePressed()</code>: Returns true if the pause button is pressed. </li>
           </ul>
           <h4>Events</h4>
           <ul>
-            <li><code>attach</code>: Triggered when the sprite is attached to the engine. Will start listening to user input.</li>
-            <li><code>detach</code>: Triggered when the sprite is detached to the engine. Will stop listening to user input.</li>
+            <li><code>attach</code>: Triggered when the input is attached to the engine. Will start listening to user input.</li>
+            <li><code>detach</code>: Triggered when the input is detached to the engine. Will stop listening to user input.</li>
           </ul>
           <p>
             You can add or remove a <code>Backbone.Input</code> model from the engine on the fly. In the Super Mario Bros example, the <code>Backbone.Input</code> and the <code>Backbone.WorldEditor</code> are swapped when moving from play to edit modes.
@@ -735,7 +753,8 @@ Backbone.FlyingPennie = Backbone.Sprite.extend({
           <h4>Usage</h4>
           <pre>
 var input = new Backbone.Input();
-var engine = new Backbone.Engine([input]);
+var engine = new Backbone.Engine();
+engine.add(input);
 input.bind("change:left", function(input) {
   if (input.leftPressed())
     console.log("left pressed:)");
@@ -764,6 +783,9 @@ input.bind("change:left", function(input) {
             <li><code>backgroundImage</code>: Id attribute of an image element in the DOM to show as background.</li>
             <li><code>state</code>: Persisted state either play or pause.</li>
           </ul>
+          <div class="alert alert-info">
+            Note: Setting a viewport different than the canvas size uses canvas clipping. Avoid using if you can as clipping the is expensive and can introduce performance issues.
+          </div>
           <h4>Options</h4>
           <ul>
             <li><code>backgroundImage</code>: Optional. Pass to use a background image instead of a background color. Anchored to the origin.</li>
@@ -780,7 +802,7 @@ input.bind("change:left", function(input) {
             <li><code>remove(models, [options])</code>: Removes one or many models. Delegates to the <code>sprites</code> collection's <code>remove</code> method. Deletes the <code>world</code> back-reference and returns the model(s).</li>
           </ul>
           <p>
-            In addition to <code>Backbone.Model</code> methods, it also exposes these:
+            In addition to standard <code>Backbone.Model</code> methods, it also exposes these:
           </p>
           <ul>
             <li><code>spawnSprites()</code>: Resets the sprites collection by retrieving the <code>sprites</code> attribute from the model. This is called after the world is loaded.</li>
@@ -790,16 +812,19 @@ input.bind("change:left", function(input) {
             <li><code>width(), height()</code>: Return the size of the world in pixels.</li>
             <li><code>getWorldIndex(object)</code>: Calculates the index position of a tile based on coordinates. Argument <code>object</code> must contain <code>x</code> and <code>y</code>, or be a model with those attributes. The index is calculated with formula <code>height * x/tileWidth + y/tileHeight</code>. This method is used to set the <code>id</code> of tile sprites.</li>
             <li><code>getWorldCol(x), getWorldRow(y)</code>: Returns the tile position in columns or rows of a coordinate.</li>
-            <li><code>findAt(x, y, [type], [exclude], [collision])</code>: Finds the first sprite at the specified coordinate. Use for collision detection.. Optional arguments allow you to filter what to look for. Set <code>type</code> to <code>character</code> to find moving sprites, or <code>tile</code> to find tiles. Set <code>exclude</code> to the id of the sprite you want to exclude from the search. In a collision detection scheme, this is usually the id of the sprite you are checking against. Set <code>collision</code> to true to find only tiles that have their <code>collision</code> flag set.</li>
+            <li><code>findAt(x, y, [type], [exclude], [collision])</code>: Finds the first sprite at the specified coordinate. Use for collision detection. Optional arguments allow you to filter what to look for. Set <code>type</code> to <code>character</code> to find moving sprites, or <code>tile</code> to find tiles. Set <code>exclude</code> to the id of the sprite you want to exclude from the search. In a collision detection scheme, this is usually the id of the sprite you are checking against. Set <code>collision</code> to true to find only tiles that have their <code>collision</code> flag set.</li>
             <li><code>filterAt(x, y, [type], [exclude], [collision])</code>: Same as <code>findAt</code> but returns the list of all matching sprites instead of the first.</li>
             <li><code>findCollidingAt(x, y)</code>: Finds a colliding tile. Just like calling <code>findAt(x, y, "tile", null, true)</code>.</li>
+            <li><code>findCollisions()</code>: Finds collisions for a given set of collision map.</li>
           </ul>
           <h4>Events</h4>
           <ul>
             <li><code>attach</code>: Triggered when the sprite is attached to the engine. Will trigger the <code>attach</code> method of all sprites in the world.</li>
             <li><code>detach</code>: Triggered when the sprite is detached to the engine. Will trigger the <code>detach</code> event of all sprites in the world.</li>
-            <li><code>tap</code>: If the <code>Hammertime</code> library is included, the <code>tap</code> event will get triggered when the user taps (or clicks) on the screen. The event callback will be passed the hammer event containing <code>{x, y}</code> the current world position of the tap.</li>
-            <li><code>key</code>: Triggered on a keyup event. The event callback will be passed the event as argument.</li>
+            <li><code>tap</code>:
+              Trigerred when the user taps or clicks on the canvas. The callback will be passed the DOM event extended with these properties: <code>canvas</code>, <code>canvasX</code>, <code>canvasY</code>, <code>world</code>, <code>worldX</code> and <code>worldY</code>.
+            </li>
+            <li><code>key</code>: Trigerred on a keyup event. The event callback will be passed the DOM event as argument.</li>
           </ul>
           <h4>How it works</h4>
           <p>
@@ -809,14 +834,14 @@ input.bind("change:left", function(input) {
             Internally, the world keeps sprites into a collection stored in property <code>sprites</code>. It further splits sprites into 2 collections for faster lookup:
           </p>
           <ul>
-            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to <code>true</code> will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a pair of x/y coordinates. In addition, these sprites are only drawn when required (i.e. world is panned).</li>
+            <li><code>staticSprites</code>: Background sprites that have no animation. These are usually same-sized tiles. Sprites that have their <code>static</code> attribute set to <code>true</code> will be put in this collection. Sprites are given an <code>id</code> determined by their position (column and row). The collection is ordered and indexed on <code>id</code> allowing for fast lookup on a pair of x/y coordinates. In addition, these sprites are drawn on a background canvas only drawn when required (i.e. world is panned).</li>
             <li><code>dynamicSprites</code>: Animated tiles and characters. Their <code>static</code> attribute must be set to <code>false</code> to fall in this collection. These sprites are given unique <code>id</code> attributes based on their name (i.e. <code>mario.1</code>). They are not indexed therefore lookup has an order of N. Keep the number of sprites here to a minimum.</li>
           </ul>
           <p>
             A world is measured in tiles via attributes <code>width</code>, <code>height</code>, <code>tileWidth</code> and <code>tileHeight</code>. Call methods <code>width</code> and <code>height</code> to get the size in pixels. Attributes <code>x</code> and <code>y</code> determine the origin in pixels (top-left corner) and allow the world to be panned consequently changing the viewport.
           </p>
           <div class="alert alert-info">
-            Note: If you define a non-animated tile, make sure its <code>static</code> attribute is set to true. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>. Lookup methods perform calculations assuming these things hold true.
+            Note: If you define an animated tile, make sure its <code>static</code> attribute is set to false to prevent redraws every animation frame. Also ensure the width of tile sprites match that of world attributes <code>tileWidth</code> and <code>tileHeight</code>.
           </div>
           <h4>Sprites</h4>
           <p>
@@ -836,22 +861,39 @@ input.bind("change:left", function(input) {
           </p>
           <h4>Background and Tiles</h4>
           <p>
-            The background of a world is composed of same-size tiles defined by attributes <code>tileWidth</code> and <code>tileHeight</code>. A tile is a sprite with <code>static</code> attribute set to true. The model <code>id</code> is the position of the sprite on screen (column and row). As such, there can only be one tile per location.
-          </p>
-          <p>
-            You can find if a tile is at a specific coordinate with method <code>findCollidingAt(x, y)</code>. This method is fast because lookup is based on id; an index of the position. It should be used to detect sprite collisions with tiles.
+            The background of a world is composed of same-size tiles defined by attributes <code>tileWidth</code> and <code>tileHeight</code>. A tile is usually a non-animated sprite with its <code>static</code> attribute set to true. The model <code>id</code> is the position of the sprite on screen (column and row). As such, there can only be one tile per location.
           </p>
           <h4>Character Sprites</h4>
           <p>
-            Characters are sprites that interact with their environment. <a href="#documentation-Character">Backbone.Character</a> and <a href="#documentation-Hero">Backbone.Hero</a> are character sprites. Character sprite models must have a <code>type</code> attribute set to <code>character</code>. Method <code>findAt(x, y, [type], [exclude], [collision])</code> will return the top-most sprite at a specific coordinate. Method <code>filterAt(x, y, [type], [exclude], [collision])</code> will return all sprites at a specific coordinate. Optional arguments allow filtering:
+            Characters are sprites that interact with their environment. <a href="#documentation-Character">Backbone.Character</a> and <a href="#documentation-Hero">Backbone.Hero</a> are character sprites. Character sprite models usually have teir <code>type</code> attribute set to <code>character</code>. You are free to use attribute <code>type</code> to classify your sprites.
           </p>
+          <h4>Collision detection</h4>
+          <p>Internally sprite positions are stored in a <a href="https://github.com/asaarinen/qtree" target="_blank">QuadTree</a>. As a sprite moves, its position in the QuadTree is updated.
+          </p>
+          <p>Three methods exist to detect collisions.</p>
           <ul>
-            <li><code>type</code>: Optional. If set, will only lookup sprites matching that type. Typical values are <code>character</code> or <code>tile</code>.</li>
-            <li><code>exlcude</code>: Optional. The sprite model's <code>id</code> to exclude in lookup.</li>
-            <li><code>collision</code>: Optional. Boolean indicating whether to only include sprites that have the <code>collision</code> attribute explicitly set to <code>true</code>.
+            <li><code>findAt(x, y, [type], [exclude], [collision])</code>:
+              Find the first sprite touching the given point or <code>null</code> if none are found. Optional arguments can be passed for limiting the lookup:
+              <ul>
+                <li><code>type</code>: Optional. If set, will only lookup sprites matching that type. Typical values are <code>character</code> or <code>tile</code>.</li>
+                <li><code>exlcude</code>: Optional. The sprite model's <code>id</code> to exclude in lookup.</li>
+                <li><code>collision</code>: Optional. Boolean indicating whether to only include sprites that have the <code>collision</code> attribute explicitly set to <code>true</code>.
+              </ul>
+            </li>
+            <li><code>filterAt(x, y, [type], [exclude], [collision])</code>: Same as a above but finds all sprites touching the given point. Returns an array of sprites.</li>
+            <li><code>findCollisions(map, [type], [exclude], [collision])</code>:
+              Detects collisions on sprites for a set of named coordinates.
+              Optional arguments are the same as above. Argument <code>map</code> is an array of objects that is passed in, and passed out. A map object must contain:
+              <ul>
+                <li><code>x</code> and <code>y</code>: Coordinates to detect the collision.</li>
+                <li><code>dir</code>: The lookout direction: <code>top</code>, <code>right</code>, <code>bottom</code> or <code>left</code>.</li>
+                <li><code>sprites</code>: Array of detected colliding sprites. Reset/initialized to [] every call.</li>
+                <li><code>sprite</code>: The closest sprite based on the lookout direction.</li>
+              </ul>
+            </li>
           </ul>
           <p>
-            Those methods can be used to detect collisions between characters.
+            Look at the code in <code>Backbone.Character</code> and <code>Backbone.Hero</code> classes for examples on how to perform collision detection.
           </p>
           <h4>Persistence</h4>
           <p>
@@ -874,9 +916,8 @@ input.bind("change:left", function(input) {
   });
   world.add(mario);
 
-  var engine = new Backbone.Engine([
-    world
-  ]);
+  var engine = new Backbone.Engine();
+  engine.add(world);
 </pre>
         <p>
           A sprite (mario) is first created and added it the world. The world is then added to the engine. This is taken from file <code>mario/main.js</code> for the Mario example.
@@ -889,16 +930,16 @@ input.bind("change:left", function(input) {
           <h3>Backbone.WorldEditor</h3>
           <pre>new Backbone.WorldEditor([attributes], [options])</pre>
           <p>
-            <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. An editor is usually drawn at the bottom of the world replacing the <a href="#documentation-Input">Backbone.Input</a>. It must be attached to a <code>Backbone.Engine</code> model. The palette will page automatically if there are too many sprites.
+            <code>Backbone.WorldEditor</code> is a model which displays a palette of sprites and allows the user to edit a <code>Backbone.World</code> instance by placing and removing sprites. Also allows the user to pan the world. In the Super Mario Bros demo, an editor is drawn at the bottom of the world replacing the <a href="#documentation-Input">Backbone.Input</a>. Like sprites and world, it must be added to the <code>Backbone.Engine</code> to render. The palette will page automatically if there are too many sprites.
           </p>
           <p>
             <img src="docs/world-editor.png" class="img-responsive" alt="Backbone.Input" />
           </p>
           <h4>Attributes</h4>
           <ul>
-            <li><code>x, y</code>: Placement position in pixels of the editor on the canvas.</li>
+            <li><code>x, y</code>: Top-left placement position in pixels of the editor on the canvas.</li>
             <li><code>width, height</code>: Size of editor in pixels.</li>
-            <li><code>tileWidth, tileHeight</code>: Size of sprites in the palette.</li>
+            <li><code>tileWidth, tileHeight</code>: Size of sprites drawn in the palette.</li>
             <li><code>padding</code>: Padding in pixels around sprites.</li>
             <li><code>backgroundColor</code>: Background color of the editor.</li>
             <li><code>selectColor</code>: Background and outline color of a selected sprite.</li>
@@ -908,6 +949,7 @@ input.bind("change:left", function(input) {
           <h4>Options</h4>
           <ul>
             <li><code>world</code>: The Backbone.World to edit.</li>
+            <li><code>debugPanel</code>: Optional. If passed will output mouse coordinates.</li>
           </ul>
           <h4>Events</h4>
           <ul>
@@ -916,11 +958,8 @@ input.bind("change:left", function(input) {
           </ul>
           <h4>How it works</h4>
           <p>
-            The palette is drawn as a series of tiles left to right, top to bottom. Each tile is a sprite. The sprite may be bigger than the specified tile size, in which case it will overlap over tiles to the right or to the bottom. Therefore keep offsize sprites last, and keep an empty row below.
+            The palette is drawn as a series of tiles left to right, top to bottom. Each tile is a sprite. The sprite may be bigger than the specified tile size, in which case it will be resized to fit the <code>tileWidth</code> and <code>tileHeight</code> attributes.
           </p>
-          <div class="alert alert-info">
-            Note: Backbone.WorldEditor depends on <a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a> for touch events (and mouse events). It allows panning of the world, and selection of sprites.
-          </div>
         </div>
       </div>
 
@@ -929,7 +968,7 @@ input.bind("change:left", function(input) {
           <h3>Backbone.Character</h3>
           <pre>new Backbone.Character([attributes], [options])</pre>
           <p>
-            The <code>Backbone.Character</code> is a sub-classed <code>Backbone.Sprite</code> which implements an animated character with elementary AI (artificial intelligence) and physics. AI is limited to moving left, right and jumping. Direction changes occur with collisions against an obstacle; either a tile or another character.
+            The <code>Backbone.Character</code> is a sub-classed <code>Backbone.Sprite</code> which implements an animated character with elementary AI (artificial intelligence) and physics. AI is limited to moving left, right, jumping/gravity and dying. Direction changes occur with collisions against an obstacle; either a tile or another character. You are free to extend the AI by subclassing it.
           </p>
           <div class="alert alert-info">
             A <code>Backbone.Character</code> must live inside a <code>Backbone.World</code>.
@@ -937,43 +976,50 @@ input.bind("change:left", function(input) {
           <h4>Attributes</h4>
           <ul>
             <li><code>x, y</code>: Position of the sprite.</li>
-            <li><code>floor</code>: Set this value to prevent the character to fall outisde of the world due to gravity. By default it is null meaning the character will be removed from the world if it falls below the bottom of the world.
+            <li><code>floor</code>: Set this value to prevent the character to fall outisde of the world due to gravity. By default it is null meaning the character will be removed from the world if it falls below the bottom of the world.</li>
+            <li><code>ceiling</code>: Analogous to <ocde>floor</ocde> but for exiting the world from above.</li>
             <li><code>width, height</code>: Size of the sprite in pixels. Defaults to  32 x 32.</li>
             <li><code>name</code>: Name of the sprite.</li>
             <li><code>type</code>: Type of sprite. Defaults to character.</li>
             <li><code>spriteSheet</code>: Id of sprite sheet.</li>
-            <li><code>state</code>: Current animation. Starts with idle-right.</li>
+            <li><code>state</code>: Current animation. Starts with <code>idle-right</code>.</li>
             <li><code>collision</code>: Boolean indicating whether it can be detected by other sprites. Defaults to true.</li>
             <li><code>velocity, acceleration</code>: Current horizontal movement. Controlled by the AI in <code>update</code>.</li>
             <li><code>yVelocity, yAcceleration</code>: Current vertical movement. Controlled by the AI in <cpde>update</cpde>.</li>
+            <li><code>health</code>: Amount of health the character has. When <code>health</code> is 0, the is "knocked-out" and  dies.</li>
+            <li><code>attackDamage</code>: This is the amount of health taken away when the character is attacked.</li>
+            <li><code>aiDelay</code>: Time in ms between AI calls.</li>
           </ul>
           <h4>Methods</h4>
           <p>
             <code>Backbone.Character</code> inherits all methods from <code>Backbone.Sprite</code>. In addition, it provides these public methods.
           </p>
           <ul>
-            <li><code>getStateInfo([state])</code>: Decomposes <code>state</code> into move and direction. For example <code>walk-left</code> would be decomposed into <code>{mov:"walk", dir:"left", opo:"right"}</code>. If argument <code>state</code> is omitted, the attribute is used instead. See <a href="#documentation-Hero">Backbone.Hero</a> for a more detailed description.</li>
-            <li><code>update(dt)</code>: Handles the character movements and AI.</li>
+            <li><code>getStateInfo([state])</code>: Decomposes <code>state</code> into move and direction components. For example <code>walk-left</code> would be decomposed into <code>{mov:"walk", mov2: null, dir:"left", opo:"right"}</code>. If argument <code>state</code> is omitted, the <code>state</code> attribute is used instead. See <a href="#documentation-Hero">Backbone.Hero</a> for a more detailed description.</li>
+            <li><code>update(dt)</code>: Handles the character movements and collision detection. Also calls the <code>ai</code> function.</li>
+            <li><code>ai(dt)</code>: Implements the AI. Is called at an interval defined by attribute <code>aiDelay</code>.</li>
             <li><code>updateSequenceIndex(dt)</code>: Returns the new <code>sequenceIndex</code> (animation frame). Called by <code>update</code>.</li>
             <li><code>toggleDirection(dirIntent)</code>: Invokes a <code>left</code> or <code>right</code> direction change.</li>
-            <li><code>isBlocking()</code>: Returns a Boolean indicating whether a collision is blocking, or passthrough.</li>
-            <li><code>hit(sprite, [dir], [dir2])</code>: Function invoked usually by a <code>hit</code> event. Implement this to determine what happens when another <code>sprite</code> hits the character. Argument <code>dir</code> is the primary direction of the hit (<code>left</code>, <code>right</code>, <code>top</code> or <code>bottom</code>). Argument <code>dir2</code> is the secondary direction. In top-left for example, it would be left.</li>
-            <li>
-              <code>getHitReaction(sprite)</code>: Function invoked by update when the character detects a collision with another character. Returns how to handle the collision. Possible return values are:
-              <ul>
-                <li><code>null</code>: Ignore the collision.</li>
-                <li><code>reverse</code>: Change direction.</li>
-                <li><code>ko</code>: Knock out from the world.</li>
-              </ul>
-            </li>
-            <li><code>knockout(sprite, dir)</code>: Function invoked when the sprite gets knocked out of the world. The sprite is litterally knocked out updside down.</li>
+            <li><code>startNewAnimation(state, attrs, done)</code>: Changes the state of the character starting a new animation. Pass hash <code>attrs</code> to set attributes at the same time. Callback <code>done</code> is called once the animation is complete. Useful for performing only one animation sequence.</li>
+            <li><code>hit(sprite, [dir], [dir2])</code>: Function invoked usually by a <code>hit</code> event. Implement this to determine what happens when another <code>sprite</code> hits the character. Argument <code>dir</code> is the primary direction of the hit (<code>left</code>, <code>right</code>, <code>top</code> or <code>bottom</code>). Argument <code>dir2</code> is the secondary direction. In top-left for example, it would be left. <code>dir2</code> can also be <code>attack</code> in which case <code>health</code> is reduced by <code>attackDamage</code> amount.</li>
+            <li><code>hurt(sprite, dir)</code>: Function invoked when the character gets attacked and has remaining health. The character bounces back.</li>
+            <li><code>knockout(sprite, dir)</code>: Function invoked when the sprite gets knocked out of the world. The sprite is litterally knocked out updside down. This function is called when <code>health</code> is 0.</li>
           </ul>
           <h4>Events</h4>
           <ul>
             <li><code>attach</code>: Triggered when the sprite is attached to the world. Turns on the AI.</li>
             <li><code>detach</code>: Triggered when the sprite is detached to the world. Turns off the AI meaning the character will not move.</li>
             <li><code>hit</code>: Trigger this event on the <code>Backbone.Character</code> to indicate a hit with another character. Delegates to the <code>hit</code> method above. For example, <code>Backbone.Hero</code> executes this when he lands on a character: <code>sprite.trigger("hit", this, "top", "left");</code>.</li>
+            <li><code>change:health</code>: Whenever the character health decreases method <code>hurt</code> gets called. If <code>health</code> reaches 0, method <code>knockout</code> gets called instead.</li>
           </ul>
+          <h4>How it works</h4>
+          <p>
+            During an animation frame, it is important to understand the method and event sequence. First, the <code>update</code> method is called. It may then call the <code>ai</code> method if the <code>aiDelay</code> internal is reached. Afterwhich collision detection is performed. At that point, the character may trigger <code>hit</code> events on other characters. Those may in turn trigger a <code>hit</code> event on the character. The character position and velocities are updated, and finally, the character model is set. The <code>update</code> method then returns <code>true</code> to tell the engine to draw the sprite, or <code>false</code> to prevent a redraw.
+          </p>
+          <div class="alert alert-info">
+            These events are synchroneous, and will occur before the <code>update</code> method is completely executed.
+            Therefore methods <code>ai</code>, <code>hit</code>, <code>hurt</code> and <code>knockout</code> may set the character model and abort the update. To abort the update, those methods set property <code>cancelUpdate</code> to <code>true</code>.
+          </div>
           <h4>Example</h4>
           <p>
             In the Super Mario Bros example, look at file <code>enemies.js</code>. There are implementations for basic characters in that game. The <code>hit</code> method implements the action when Mario lands on a character. In the case of a Mushroom, it gets <em>squished</em>. Collision detection gets turned off and the sprite is eventually removed.
@@ -1158,13 +1204,14 @@ if (heroLeftX + heroWidth >= rightX) {
   });
   world.add(mario);
 
-  var engine = new Backbone.Engine([
-    world,
-    input
-  ], {
+  var engine = new Backbone.Engine({}, {
     canvas: canvas,
     input: input
   });
+  engine.add([
+    world,
+    input
+  ]);
 </pre>
         </div>
       </div>
@@ -1213,7 +1260,8 @@ var camera = new Backbone.Camera(
   {subject: mario, world: world}
 );
 world.add(mario);
-var engine = new Backbone.Engine([world, camera]);
+var engine = new Backbone.Engine();
+engine.add([world, camera]);
 </pre>
         </div>
       </div>
@@ -1285,33 +1333,90 @@ Backbone.AnimatedTile = Backbone.Tile.extend({
         </div>
       </div>
 
-      <div id="documentation-Button" class="row">
+      <div id="documentation-Element" class="row">
         <div class="col-md-12">
-          <h3>Backbone.Button</h3>
+          <h3>Backbone.Element</h3>
           <p>
-            <code>Backbone.Button</code> is a model that draws a button with an image. It uses <a href="http://eightmedia.github.io/hammer.js/" target="_blank">hammer.js</a> to detect touch or mouse click events, and triggers a <code>tap</code> event when pressed.
+            <code>Backbone.Element</code> is a model that mimics a rudimentary DOM element.
+            Currently, it supports these features:
           </p>
+          <ul>
+            <li>Fixed position specified by top-left <code>x</code> and <code>y</code>.</li>
+            <li>Optional background color and rounded corners.</li>
+            <li>Optional image.</li>
+            <li>Optional text.</li>
+            <li>Can be animated with easing functions. Supported animations are: translation, fade in and fade out.</li>
+          </ul>
           <h4>Attributes</h4>
           <ul>
             <li><code>x, y</code>: Top left corner of button.</li>
             <li><code>width, height</code>: Size of button.</li>
+            <li><code>backgroundColor</code>: Fill style of the button. Set to <code>transparent</code> to see thru.</li>
             <li><code>borderRadius</code>: Border radius in pixels for rounded corners.</li>
             <li><code>img</code>: Id selector of DOM element containing the source image (i.e. #buttons). When the button is initialized, will be used to find the Image object, and set property img to point to it.</li>
             <li><code>imgX, imgY, imgWidth, imgHeight</code>: Bounding box of image location in source image.</li>
             <li><code>imgMargin</code>: Offset in pixels to apply when drawing the image inside the button.</li>
-            <li><code>backgroundColor</code>: Fill style of the button.</li>
+            <li><code>text</code>: Text to draw. If empty, not text is drawn.</li>
+            <li><code>textPadding, textLineHeight</code>: Padding around the text and line height in pixels.</li>
+            <li><code>textContextAttributes</code>: Canvas text styling properties. Will be set on the canvas context before calling <code>fillText</code>. Consult <a href="http://www.html5canvastutorials.com/tutorials/html5-canvas-text-font-size/" target="_blank">HTML5 fillText documentation</a> for details.</li>
+            <li><code>easing</code>: Easing function to use as defined in <code>Backbone.EasingFunctions</code> (see below).</li>
+            <li><code>easingTime</code>: Duration of the animation in ms. Defaults to 1000ms.</li>
+            <li><code>opacity</code>: Opacity of the element. 1 for fully visible, 0 for invisible and in-between for translucent. This value is changed by <code>fadeIn</code> and <code>fadeOut</code> animations.</li>
+            <li><code>scale</code>: Zoom-in, zoom-out scale to apply to the element. Default is 1. Can be used to defined your own animation (see Backbone.Button's <code>pressed</code> animation below).</li>
           </ul>
           <h4>Methods</h4>
           <ul>
-            <li><code>update(dt)</code>: No-op. Simply returns true.</li>
-            <li><code>draw(context)</code>: Draws the button.</li>
+            <li><code>update(dt)</code>: Draws the element and handles animations.</li>
+            <li><code>onUpdate(dt)</code>: Not defined by default. If deinfed, called at the end of <code>update</code>. It must return <code>true</code> or <code>false</code> to determine whether to draw the element or not.</li>
+            <li><code>draw(context, options)</code>: Draws the element.</li>
+            <li><code>onDraw(context, options)</code>: Not defined by default. If deinfed, called at the end of <code>draw</code>.</li>
+            <li><code>drawText(b, context, options)</code>: Called by <code>draw</code> to draw text. Argument <code>b</code> is the JSONized model (<code>this.toJSON()</code>) defining the context. You can call this to draw extra text if you implemented method <code>onDraw</code>.</li>
             <li><code>overlaps(x, y):</code>: Checks to see if the sprite overlaps with the passed coordinates. Returns a Boolean.</li>
+            <li><code>moveTo(x, y, callback)</code>: Translation animation. Will move the element from the current position to the specified <code>x</code> and <code>y</code> position using the <code>easing</code> function and <code>easingTime</code> duration.</li>
+            <li><code>fadeIn(callback)</code>: Animates a fade in. Starts with an opacity of 0 going up to 1.</li>
+            <li><code>fadeOut(callback)</code>: Animates a fade out. Starts with an opacity of 1 going down to 0.</li>
           </ul>
           <h4>Events</h4>
           <ul>
             <li><code>attach</code>: Triggered when the sprite is attached to the engine. Starts listening to user input.</li>
             <li><code>detach</code>: Triggered when the sprite is detached to the engine. Stops listening to user input.</li>
           </ul>
+          <h4>Animations</h4>
+          <p>
+            Animations are driven by attributes <code>easing</code> and <code>easingTime</code>. The first defines the easing function to use and the second the duration in ms. These functions are found in <code>Backbone.EasingFunctions</code> and are:
+            <ul>
+              <li><code>linear</code></li>
+              <li><code>easeInQuad</code></li>
+              <li><code>easeOutQuad</code></li>
+              <li><code>easeInOutQuad</code></li>
+              <li><code>easeInCubic</code></li>
+              <li><code>easeOutCubic</code></li>
+              <li><code>easeInOutCubic</code></li>
+              <li><code>easeInQuart</code></li>
+              <li><code>easeOutQuart</code></li>
+              <li><code>easeInOutQuart</code></li>
+              <li><code>easeInQuint</code></li>
+              <li><code>easeOutQuint</code></li>
+              <li><code>easeInOutQuint</code></li>
+            </ul>
+            Easing functions return a value between 0 and 1.
+          </p>
+          <p>
+            You can create your own animations pretty easily. Look at the code for examples.
+          </p>
+          <h4>Usage</h4>
+          <pre>
+TO DO...
+</pre>
+        </div>
+      </div>
+
+      <div id="documentation-Button" class="row">
+        <div class="col-md-12">
+          <h3>Backbone.Button</h3>
+          <p>
+            <code>Backbone.Button</code> is a <code>Backbone.Element</code> which listens to tap/click events and triggers a <code>tap</code> event when pressed. When pressed there is a grow-shrink animation to give the user feedback.
+          </p>
           <h4>Usage</h4>
           <pre>
 var button = new Backbone.Button({
@@ -1341,11 +1446,10 @@ button.on("tap", function() {
           <h4>Usage</h4>
           <pre>
 var debugPanel = new Backbone.DebugPanel();
-var engine = new Backbone.Engine([
-  debugPanel: debugPanel
-], {
+var engine = new Backbone.Engine({}, {
   debugPanel: debugPanel
 });
+engine.add(debugPanel);
 
 debugPanel.set({hello: "Word"});
 // Draws this on screen
@@ -1404,7 +1508,7 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
           </p>
           <h3>Touch Events</h3>
           <p>
-            <a href="#documentation-Input">Backbone.Input</a>, <a href="#documentation-Button">Backbone.Button</a> and <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> support touch events. Either using third-party library <a href="http://hammerjs.github.io/" target="_blank">hammer.js</a> or through direct use of <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Touch_events" target="_blank">touch events</a>.
+            <a href="#documentation-Input">Backbone.Input</a>, <a href="#documentation-Button">Backbone.Button</a> and <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> support touch and mouse events transparently. Works on Android, iOS and Windows.
           </p>
           <h3>Viewport resizing and canvas centering</h3>
           <p>
@@ -1467,7 +1571,7 @@ function adjustViewport(canvas, width, height) {
 Creating Application Cache with manifest http://martindrapeau.github.io/backbone-game-engine/super-mario-bros/offline.appcache
 Application Cache Checking event martindrapeau.github.io/:1
 Application Cache Downloading event martindrapeau.github.io/:1
-Application Cache Progress event (0 of 23) http://martindrapeau.github.io/backbone-game-engine/3rd/hammer.js
+Application Cache Progress event (0 of 23) http://martindrapeau.github.io/backbone-game-engine/3rd/qtree.js
 Application Cache Progress event (1 of 23) http://martindrapeau.github.io/backbone-game-engine/src/input.js
 ...
 Application Cache Progress event (22 of 23) http://martindrapeau.github.io/backbone-game-engine/super-mario-bros/super-mario-enemies-2x.png
@@ -1497,7 +1601,7 @@ Application Cache NoUpdate event
 CACHE MANIFEST
 # Version 0.11 (c) 2014 Martin Drapeau
 
-../3rd/hammer.js
+../3rd/qtree.js
 ../3rd/underscore.js
 ../3rd/backbone.native.js
 ../3rd/backbone.js
@@ -1627,6 +1731,16 @@ icons.png
             <li>Editor: paging, shrink large sprites, highlight tiles</li>
             <li>World: z-index, tap event,key event, fixed background image, improved sprite lookup, bug fixes</li>
           </ul>
+          <h4>0.30 - 2015-03-??</h4>
+          <ul>
+            <li>Backbone.Element - a rudimentary DOM element with image, text and animations.</li>
+            <li>Backbone.World now uses a QuadTree for collision detection.</li>
+            <li>Removed dependence on hammer.js. Backbone.Engine now triggers tap and key events.</li>
+            <li>Complete rewrite of Backbone.Input. Removed its pause button.</li>
+            <li>Complete rewrite of Backbone.Character.</li>
+            <li>Complete rewrite of Backbone.Hero.</li>
+            <li>Backbone.Editor now resizes sprites to fit in the specified tileWidth and tileHeight.</li>
+          </ul>
         </div>
       </div>
 
@@ -1649,6 +1763,7 @@ icons.png
           <li><a href="#documentation-Hero">&nbsp;&nbsp;Backbone.Hero</a></li>
           <li><a href="#documentation-Camera">&nbsp;&nbsp;Backbone.Camera</a></li>
           <li><a href="#documentation-Clock">&nbsp;&nbsp;Backbone.Clock</a></li>
+          <li><a href="#documentation-Element">&nbsp;&nbsp;Backbone.Element</a></li>
           <li><a href="#documentation-Button">&nbsp;&nbsp;Backbone.Button</a></li>
           <li><a href="#documentation-DebugPanel">&nbsp;&nbsp;Backbone.DebugPanel</a></li>
           <li><a href="#documentation-Shapes">&nbsp;&nbsp;Shape functions</a></li>

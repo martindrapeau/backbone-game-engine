@@ -9,7 +9,6 @@
    *
    */
 
-
   var drawSpriteFn = function(context, options) {
     options || (options = {});
     var animation = this.getAnimation(),
@@ -35,6 +34,7 @@
       this.get("x"), this.get("y"), width, height
     );
 
+    if (typeof this.onDraw == "function") this.onDraw(context, options);
     return this;
   };
 
@@ -81,7 +81,7 @@
       if (!this.world && !_.isFunction(this.world.add))
         throw "Missing or invalid world option.";
 
-      this.changePageButton = new Backbone.Button({
+      this.changePageButton = new Backbone.Element({
         x: 68, y: 646, width: 32, height: 50, borderRadius: 2,
         img: "#icons", imgX: 394, imgY: 0, imgWidth: 22, imgHeight: 32, imgMargin: 10
       });
@@ -208,14 +208,15 @@
 
       // Draw sprites
       this.sprites.each(function(sprite) {
-        if (sprite.attributes.page == sp.page && (sprite.attributes.type == "tile" || sprite.attributes.type == "character"))
-          sprite.draw(context, sp);
+        if (sprite.attributes.page == sp.page) sprite.draw(context, sp);
       });
 
       // Highlight tile position (on desktop)
       if (this.mx != undefined && this.my != undefined) {
-        var x = this.mx - this.mx % sp.tileWidth + this.world.get("x"),
-            y = this.my - this.my % sp.tileHeight + this.world.get("y");
+        var tileWidth = this.world.get("tileWidth"),
+            tileHeight = this.world.get("tileHeight"),
+            x = this.mx - this.mx % tileWidth + this.world.get("x"),
+            y = this.my - this.my % tileHeight + this.world.get("y");
 
         context.save();
         context.rect(
@@ -229,7 +230,7 @@
         context.beginPath();
         context.strokeStyle = "#FF0000";
         context.setLineDash([5,2]);
-        context.rect(x, y, sp.tileWidth, sp.tileHeight);
+        context.rect(x, y, tileWidth, tileHeight);
         context.stroke();
 
         context.restore();

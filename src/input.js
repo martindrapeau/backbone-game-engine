@@ -352,7 +352,6 @@
       return this;
     },
     onTouchStart: function(e) {
-      e.preventDefault();
       var touches = e.changedTouches || [{
           identifier: e.pointerId,
           pageX: e.pageX,
@@ -364,7 +363,6 @@
       this.detectTouched();
     },
     onTouchMove: function(e) {
-      e.preventDefault();
       var touches = e.changedTouches || [{
           identifier: e.pointerId,
           pageX: e.pageX,
@@ -379,7 +377,6 @@
       this.detectTouched();
     },
     onTouchEnd: function(e) {
-      e.preventDefault();
       var touches = e.changedTouches || [{
           identifier: e.pointerId,
           pageX: e.pageX,

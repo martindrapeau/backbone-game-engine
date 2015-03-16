@@ -96,16 +96,17 @@ $(window).on("load", function() {
       this.downloadButton.on("tap", this.downloadNewVersion, this);
 
       // The game engine
-      this.engine = new Backbone.Engine(_.compact([
+      this.engine = new Backbone.Engine({}, {
+        canvas: canvas,
+        debugPanel: this.debugPanel
+      });
+      engine.add(_.compact([
         this.world,
         this.camera,
         this.toggleButton,
         this.message,
         this.debugPanel
-      ]), {
-        canvas: canvas,
-        debugPanel: this.debugPanel
-      });
+      ]));
 
       // The sprite picker and editor
       this.editor = new Backbone.WorldEditor({
