@@ -371,7 +371,8 @@ $(window).on("load", function() {
           <h4>Attributes</h4>
           <ul>
             <li><code>clearOnDraw</code>: Optional. Boolean to ask for a clear of the canvas before redraw. Defaults to false. Note that this is an expensive call. Better to only clear the area that changed.</li>
-            <li><code>tapDetectionDelay</code>: Optional. The delay in ms before a tap is detected. Defaults to 100ms</li>
+            <li><code>tapDetectionDelay</code>: Optional. The delay in ms before a tap gestured is detected. Defaults to 50ms</li>
+            <li><code>tapMoveTolerance</code>: Optional. The amount of pixel move tolerated to detect a tap gesture. Defaults to +/-5 pixels. Beyond that, a drag gesture will be trigerred.</li>
           </ul>
           <h4>Options</h4>
           <p>

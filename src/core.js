@@ -255,7 +255,8 @@
     defaults: {
       version: 0.2,
       clearOnDraw: false,
-      tapDetectionDelay: 50 // in ms
+      tapDetectionDelay: 50, // in ms
+      tapMoveTolerance: 5 // Move tolerance for a tap detection in pixels
     },
     initialize: function(attributes, options) {
       options || (options = {});
@@ -431,11 +432,10 @@
       if (!this._touchStartTime) return;
       e.preventDefault();
 
-      var now = _.now(),
-          pointer = this.getPointerEvent(e);
+      var now = _.now();
       e.canvas = this.canvas;
-      e.canvasX = pointer.pageX - this.canvas.offsetLeft + this.canvas.scrollLeft;
-      e.canvasY = pointer.pageY - this.canvas.offsetTop + this.canvas.scrollTop;
+      e.canvasX = this._currX - this.canvas.offsetLeft + this.canvas.scrollLeft;
+      e.canvasY = this._currY - this.canvas.offsetTop + this.canvas.scrollTop;
 
       if (this._gesture == "tap" && now - this._touchStartTime > this.get("tapDetectionDelay")) {
         this.trigger("tap", e);
@@ -449,19 +449,20 @@
       if (!this._touchStartTime) return;
       e.preventDefault();
 
-      var pointer = this.getPointerEvent(e);
+      var pointer = this.getPointerEvent(e),
+          tolerance = this.get("tapMoveTolerance");
       this._currX = pointer.pageX;
       this._currY = pointer.pageY;
 
       e.canvas = this.canvas;
-      e.canvasX = pointer.pageX - this.canvas.offsetLeft + this.canvas.scrollLeft;
-      e.canvasY = pointer.pageY - this.canvas.offsetTop + this.canvas.scrollTop;
+      e.canvasX = this._currX - this.canvas.offsetLeft + this.canvas.scrollLeft;
+      e.canvasY = this._currY - this.canvas.offsetTop + this.canvas.scrollTop;
       e.canvasDeltaX = this._currX - this._startX;
       e.canvasDeltaY = this._currY - this._startY;
 
       if (this._gesture == "drag") {
         this.trigger("dragmove", e);
-      } else if (e.canvasDeltaX != 0 || e.canvasDeltaY != 0) {
+      } else if (Math.abs(e.canvasDeltaX) > tolerance || Math.abs(e.canvasDeltaY) > tolerance) {
         this._gesture = "drag";
         this.trigger("dragstart", e);
       }
