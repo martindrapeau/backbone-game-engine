@@ -1,0 +1,61 @@
+<!doctype html>
+<html style="touch-action: none;">
+    <head>
+        <title>GUI - Backbone Game Engine</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <link href="../apple_touch_icon.png" rel="apple-touch-icon" />
+
+        <meta name="viewport" content="width=960, user-scalable=no"/>
+        <meta name="mobileoptimized" content="0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+        <script src="../3rd/underscore.js" type="text/javascript"></script>
+        <script src="../3rd/backbone.native.js" type="text/javascript"></script>
+        <script src="../3rd/backbone.js" type="text/javascript"></script>
+        <script src="../3rd/qtree.js" type="text/javascript"></script>
+
+        <script src="../src/adjust-viewport.js" type="text/javascript"></script>
+        <script src="../src/shapes.js" type="text/javascript"></script>
+        <script src="../src/core.js" type="text/javascript"></script>
+
+        <script src="elements.js" type="text/javascript"></script>
+        <script src="title-screen.js" type="text/javascript"></script>
+        <script src="main.js" type="text/javascript"></script>
+
+        <style>
+            @-ms-viewport {
+                width: 960px;
+            }
+            @font-face {
+                font-family: 'arcade';
+                src: url('arcade.ttf'), url('arcade.woff');
+            }
+            body {
+                margin: 0;
+                background-color: #000;
+                font-family: "arcade";
+                line-height: 1.2em;
+            }
+            canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+            }
+        </style>
+
+    </head>
+
+    <body>
+        <img id="title-screen" src="title-screen.jpg" style="display:none;" />
+        <img id="gui" src="gui.png" style="display:none;" />
+
+        <canvas id="foreground" width="960" height="720" screencanvas="true">
+            Your browser does not support canvas element.
+        </canvas>
+    </body>
+
+</html>
