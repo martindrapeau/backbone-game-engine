@@ -9,7 +9,7 @@
       img: "#gui", imgX: 0, imgY: 0, imgWidth: 372, imgHeight: 80, imgMargin: 0,
       textPadding: 12,
       textContextAttributes: {
-        fillStyle: "#F67D00",
+        fillStyle: "#FFC221",
         font: "34px arcade",
         textBaseline: "middle",
         fontWeight: "normal",
@@ -31,7 +31,7 @@
       text: "High Score",
       textPadding: 24,
       textContextAttributes: {
-        fillStyle: "#F67D00",
+        fillStyle: "#FFC221",
         font: "34px arcade",
         textBaseline: "middle",
         fontWeight: "normal",
@@ -67,7 +67,7 @@
     defaults: _.extend({}, Backbone.Panel.prototype.defaults, {
       text: "",
       textContextAttributes: {
-        fillStyle: "#F67D00",
+        fillStyle: "#FFC221",
         font: "40px arcade",
         textBaseline: "middle",
         fontWeight: "normal",
@@ -96,7 +96,7 @@
 
       // Content
       b.textContextAttributes.font = "24px arcade";
-      b.textContextAttributes.fillStyle = "#F67D00";
+      b.textContextAttributes.fillStyle = "#FFF";
 
       b.text = "???";
       b.y = y + 40;
