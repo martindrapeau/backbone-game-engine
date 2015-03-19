@@ -43,23 +43,34 @@
         scaleY: 1
       }
     }),
+    isAttacking: function() {
+      var cur = this.getStateInfo();
+      return (cur.mov == "walk" || cur.mov == "idle");
+    },
     squish: function(sprite) {
       var self = this,
           cur = this.getStateInfo();
       this.set({state: "squished-" + cur.dir, collision: false});
       this.world.setTimeout(function() {
-        self.world.remove(self);
+        if (self && self.world) self.world.remove(self);
       }, 2000);
       return this;
     },
     hit: function(sprite, dir, dir2) {
-      var cur = sprite.getStateInfo ? sprite.getStateInfo() : null;
+      var cur = this.getStateInfo();
+      if (cur.mov != "walk" && cur.mov != "idle") return;
 
       if (sprite.get("hero")) {
-        if (dir == "top") return this.squish(sprite);
+        if (dir == "top") {
+          this.squish(sprite);
+          sprite.trigger("hit", this, "bottom");
+        } else {
+          sprite.trigger("hit", this, dir == "left" ? "right" : "left");
+        }
+        return this;
       }
 
-      if (cur && cur.mov == "slide") {
+      if (dir2 == "slide") {
         if (dir == "left") return this.knockout(sprite, "right");
         if (dir == "right") return this.knockout(sprite, "left");
       }
@@ -77,6 +88,10 @@
       name: "turtle"
     }),
     animations: _.deepClone(Backbone.Mushroom.prototype.animations),
+    isAttacking: function() {
+      var cur = this.getStateInfo();
+      return (cur.mov == "walk" || cur.mov == "idle" || cur.mov == "slide");
+    },
     squish: function(sprite, dir) {
       var cur = this.getStateInfo();
 

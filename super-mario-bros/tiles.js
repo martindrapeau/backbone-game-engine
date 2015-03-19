@@ -263,8 +263,8 @@
       Backbone.AnimatedTile.prototype.initialize.apply(this, arguments);
       this.on("hit", this.hit, this);
     },
-    hit: function(sprite) {
-      if (!sprite || !sprite.get("hero")) return;
+    hit: function(sprite, dir, dir2) {
+      if (!sprite || !sprite.get("hero") || dir != "bottom") return;
       if (this.get("state") != "idle") return;
 
       var tile = this;
@@ -320,8 +320,8 @@
       Backbone.AnimatedTile.prototype.initialize.apply(this, arguments);
       this.on("hit", this.hit, this);
     },
-    hit: function(sprite) {
-      if (!sprite || !sprite.get("hero")) return;
+    hit: function(sprite, dir, dir2) {
+      if (!sprite || !sprite.get("hero") || dir != "bottom") return;
       if (this.get("state") != "idle") return;
 
       var tile = this;

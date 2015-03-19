@@ -14,26 +14,30 @@
       name: "mario",
       spriteSheet: "mario"
     }),
+    bounce: function() {
+      var cur = this.getStateInfo(),
+          state = this.buildState("jump", cur.dir);
+      this.set({
+        state: state,
+        velocity: 0,
+        yVelocity: this.animations[state].yStartVelocity*0.5,
+        nextState: this.buildState("idle", cur.dir)
+      });
+      this.cancelUpdate = true;
+      return this;
+    },
     hit: function(sprite, dir, dir2) {
       if (sprite.get("type") == "character") {
         var name = sprite.get("name"),
-            cur = sprite.getStateInfo ? sprite.getStateInfo() : null;
+            cur = this.getStateInfo();
 
-        if (cur == null) return this;
-        if (cur.mov == "squished" || cur.mov == "wake") return this;
-        if (dir == "top" && name != "spike") return this;
+        if (dir == "bottom" && name != "spike") return this.bounce();
+
+        if (!sprite.isAttacking()) return this;
 
         return this.knockout(sprite, "left");
       }
       return this;
-    },
-    getHitReaction: function(character, dir, dir2) {
-      if (!character.isBlocking(this)) return null;
-      var name = character.get("name");
-      if ((dir == "left" || dir == "right") && character.get("state").indexOf("squished") == -1) return "ko";
-      if (dir == "bottom" && name == "spike") return "ko";
-      if (dir == "bottom") return "bounce";
-      return "block";
     }
   });
   
