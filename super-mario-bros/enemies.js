@@ -100,46 +100,49 @@
         this.wakeTimerId = null;
       }
 
-      if (cur.mov != "squished") {
-        this.set("state", "squished-" + cur.dir);
-        this.wakeTimerId = this.world.setTimeout(this.wake.bind(this), 5000);
-      } else {
-        this.hit.apply(this, arguments);
-      }
-      sprite.trigger("bounce", this);
+      this.set("state", this.buildState("squished", cur.dir));
+      this.wakeTimerId = this.world.setTimeout(this.wake.bind(this), 5000);
+      this.cancelUpdate = true;
+      return this;
     },
     hit: function(sprite, dir, dir2) {
-      if (sprite.get("hero") && dir != "bottom") {
-        if (dir == "top") return this.squish(sprite, dir2);
+      if (!sprite.get("hero"))
+        return Backbone.Mushroom.prototype.hit.apply(this, arguments);
 
-        // Hit left or right
-        var cur = this.getStateInfo();
-        if (cur.mov == "squished" || cur.mov == "wake") {
+      var cur = this.getStateInfo();
 
-          if (this.wakeTimerId) {
-            clearTimeout(this.wakeTimerId);
-            this.wakeTimerId = null;
-          }
+      console.log("turtle hit", dir, dir2, cur.mov);
 
-          if (dir == "left")
-            this.set("state", "slide-right");
-          else
-            this.set("state","slide-left");
-          return this;
-        }
+      if (dir == "top" && (cur.mov =="idle" || cur.mov == "walk")) {
+        this.squish(sprite, dir2);
+        sprite.trigger("hit", this, "bottom");
+        return this;
       }
-      return Backbone.Mushroom.prototype.hit.apply(this, arguments);
+
+      // Hit left or right
+      if (cur.mov == "squished" || cur.mov == "wake") {
+
+        if (this.wakeTimerId) {
+          clearTimeout(this.wakeTimerId);
+          this.wakeTimerId = null;
+        }
+
+        this.set("state", this.buildState("slide", cur.opo));
+        this.cancelUpdate = true;
+      }
+      return this;
     },
     wake: function() {
       var cur = this.getStateInfo();
       this.wakeTimerId = null;
 
       if (cur.mov == "squished") {
-        this.set("state", "wake-" + cur.dir);
+        this.set("state", this.buildState("wake", cur.dir));
         this.wakeTimerId = setTimeout(this.wake.bind(this), 5000);
       } else if (cur.mov == "wake") {
-        this.set("state", "walk-" + cur.dir);
+        this.set("state", this.buildState("walk", cur.dir));
       }
+      return this;
     },
     getHitReaction: function(sprite, dir, dir2) {
       var state = this.get("state");

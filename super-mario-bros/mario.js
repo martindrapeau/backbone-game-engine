@@ -30,6 +30,7 @@
       if (sprite.get("type") == "character") {
         var name = sprite.get("name"),
             cur = this.getStateInfo();
+        console.log("hero hit", dir, dir2);
 
         if (dir == "bottom" && name != "spike") return this.bounce();
 
