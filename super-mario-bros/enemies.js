@@ -10,9 +10,6 @@
    */
    
   var sequenceDelay = 300,
-      walkVelocity = 50,
-      fallAcceleration = 1200,
-      fallVelocity = 600,
       animations;
 
   // Mushroom is the base enemie class.
@@ -27,7 +24,8 @@
       state: "idle-left",
       velocity: 0,
       yVelocity: 0,
-      collision: true
+      collision: true,
+      aiDelay: 0
     }),
     animations: _.extend(_.deepClone(Backbone.Character.prototype.animations), {
       "squished-left": {
@@ -43,37 +41,47 @@
         scaleY: 1
       }
     }),
-    isAttacking: function() {
+    ai: function(dt) {
+      var cur = this.getStateInfo();
+      if (cur.mov == "squished" && !this.get("collision")) this.cancelUpdate = true;
+      return this;
+    },
+    isAttacking: function(sprite, dir, dir2) {
+      if (this.cancelUpdate) return false;
       var cur = this.getStateInfo();
       return (cur.mov == "walk" || cur.mov == "idle");
     },
     squish: function(sprite) {
       var self = this,
           cur = this.getStateInfo();
-      this.set({state: "squished-" + cur.dir, collision: false});
+      console.log("squish")
+      this.set({
+        state: this.buildState("squished", cur.dir),
+        collision: false
+      });
       this.world.setTimeout(function() {
         if (self && self.world) self.world.remove(self);
       }, 2000);
+      this.cancelUpdate = true;
       return this;
     },
     hit: function(sprite, dir, dir2) {
       var cur = this.getStateInfo();
-      if (cur.mov != "walk" && cur.mov != "idle") return;
+      if (cur.mov != "walk" && cur.mov != "idle") return this;
+
+      console.log("hit mushroom", dir, dir2);
 
       if (sprite.get("hero")) {
         if (dir == "top") {
-          this.squish(sprite);
+          this.squish.apply(this, arguments);
           sprite.trigger("hit", this, "bottom");
         } else {
           sprite.trigger("hit", this, dir == "left" ? "right" : "left");
         }
-        return this;
+      } else if (sprite.get("state").indexOf("slide") == 0) {
+        this.knockout(sprite, dir);
       }
-
-      if (dir2 == "slide") {
-        if (dir == "left") return this.knockout(sprite, "right");
-        if (dir == "right") return this.knockout(sprite, "left");
-      }
+      return this;
     },
     getHitReaction: function(sprite, dir, dir2) {
       var type = sprite.get("type"),
@@ -92,7 +100,7 @@
       var cur = this.getStateInfo();
       return (cur.mov == "walk" || cur.mov == "idle" || cur.mov == "slide");
     },
-    squish: function(sprite, dir) {
+    squish: function(sprite, dir, dir2) {
       var cur = this.getStateInfo();
 
       if (this.wakeTimerId) {
@@ -100,8 +108,14 @@
         this.wakeTimerId = null;
       }
 
-      this.set("state", this.buildState("squished", cur.dir));
-      this.wakeTimerId = this.world.setTimeout(this.wake.bind(this), 5000);
+      if (cur.mov == "squished" || cur.mov == "wake") {
+        var opo = sprite.getCenterX(true) > this.getCenterX(true) ? "left" : "right";
+        this.set("state", this.buildState("slide", opo));
+      } else {
+        this.set("state", this.buildState("squished", cur.dir));
+        this.wakeTimerId = this.world.setTimeout(this.wake.bind(this), 5000);
+      }
+
       this.cancelUpdate = true;
       return this;
     },
@@ -109,13 +123,12 @@
       if (!sprite.get("hero"))
         return Backbone.Mushroom.prototype.hit.apply(this, arguments);
 
-      var cur = this.getStateInfo();
+      var cur = this.getStateInfo(),
+          opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
 
-      console.log("turtle hit", dir, dir2, cur.mov);
-
-      if (dir == "top" && (cur.mov =="idle" || cur.mov == "walk")) {
-        this.squish(sprite, dir2);
-        sprite.trigger("hit", this, "bottom");
+      if (this.isAttacking()) {
+        if (dir == "top") this.squish.apply(this, arguments);
+        sprite.trigger("hit", this, opo);
         return this;
       }
 
@@ -128,6 +141,7 @@
         }
 
         this.set("state", this.buildState("slide", cur.opo));
+        sprite.trigger("hit", this, "bottom");
         this.cancelUpdate = true;
       }
       return this;
@@ -190,13 +204,12 @@
     }),
     animations: _.deepClone(Backbone.Turtle.prototype.animations),
     fallbackSprite: Backbone.Turtle,
-    update: function(dt) {
-      Backbone.Turtle.prototype.update.apply(this, arguments);
+    onUpdate: function(dt) {
       var cur = this.getStateInfo(),
           animation = this.getAnimation(),
           attrs = {};
       if (cur.mov == "walk" && this.world.get("state") == "play") {
-          attrs.state = "fall-" + cur.dir;
+          attrs.state = this.buildState("fall", cur.dir);
           attrs.yVelocity = -this.animations["fall-right"].yVelocity;
       }
       if (!_.isEmpty(attrs)) this.set(attrs);

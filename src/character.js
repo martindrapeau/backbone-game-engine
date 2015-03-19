@@ -9,10 +9,10 @@
    *
    */
 
-  var sequenceDelay = 100,
-      walkVelocity = 40,
+  var sequenceDelay = 300,
+      walkVelocity = 50,
       fallAcceleration = 1200,
-      fallVelocity = 400;
+      fallVelocity = 600;
 
   var animations = {
     "idle-left": {
@@ -62,19 +62,19 @@
       scaleY: 1
     },
     "ko-left": {
-      sequences: [2, 3],
+      sequences: [0],
       delay: sequenceDelay,
-      velocity: -walkVelocity/2,
-      yVelocity: fallVelocity/2,
+      velocity: -walkVelocity,
+      yVelocity: fallVelocity,
       yAcceleration: fallAcceleration,
       scaleX: 1,
       scaleY: -1
     },
     "ko-right": {
-      sequences: [2, 3],
+      sequences: [0],
       delay: sequenceDelay,
-      velocity: walkVelocity/2,
-      yVelocity: fallVelocity/2,
+      velocity: walkVelocity,
+      yVelocity: fallVelocity,
       yAcceleration: fallAcceleration,
       scaleX: -1,
       scaleY: -1
@@ -151,12 +151,13 @@
       return this;
     },
     knockout: function(sprite, dir) {
-      var opo = dir == "left" ? "right" : "left";
+      var opo = dir == "left" ? "right" : "left",
+          state = this.buildState("ko", opo);
       this.whenAnimationEnds = null;
       this.set({
-        state: this.buildState("ko", opo),
-        velocity: this.animations["ko-"+opo].velocity,
-        yVelocity: -this.animations["ko-"+opo].yVelocity,
+        state: state,
+        velocity: this.animations[state].velocity,
+        yVelocity: -this.animations[state].yVelocity,
         sequenceIndex: 0,
         collision: false
       });
@@ -307,7 +308,8 @@
           ]);
 
       this.buildCollisionMap(charTopY, charRightX, charBottomY, charLeftX);
-      this.world.findCollisions(this.collisionMap, null, this, true);
+      if (collision)
+        this.world.findCollisions(this.collisionMap, null, this, true);
 
       var bottomPlatform, sprite, i, type;
       for (i = 0; i < this.collisionMap.bottom.sprites.length; i++) {
@@ -479,6 +481,7 @@
       return stateInfo;
     },
     isAttacking: function() {
+      if (this.cancelUpdate) return false;
       var cur = this.getStateInfo();
       return cur.mov2 == "attack";
     },
@@ -506,6 +509,12 @@
       this.collisionMap.left.y = top;
       this.collisionMap.right.x = right;
       this.collisionMap.right.y = top;
+      
+      for (var m in this.collisionMap)
+        if (this.collisionMap.hasOwnProperty(m)) {
+          this.collisionMap[m].sprites.length = 0;
+          this.collisionMap[m].sprite = null;
+        }
     }
   });
 

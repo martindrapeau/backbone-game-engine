@@ -79,6 +79,16 @@
       this.bbox.y2 = this.getBottom(withPadding);
       return this.bbox;
     },
+    getCenterX: function(withPadding) {
+      var x = this.getLeft(withPadding),
+          width = this.getRight(withPadding) - x;
+      return x + width/2;
+    },
+    getCenterY: function(withPadding) {
+      var y = this.getTop(withPadding),
+          height = this.getBottom(withPadding) - y;
+      return x + height/2;
+    },
     update: function(dt) {
       // Fetch animation and change sequence if need be
       var animation = this.getAnimation(),

@@ -633,15 +633,12 @@
         var bottomWorld = this.world.height() + tileHeight,
             floor = this.get("floor") || bottomWorld,
             bottomY = Math.min(floor, bottomWorld);
-        function adjustBottomY(sprite) {
-          //if (sprite.get("type") != "character" && !dead && heroBottomY > 0 )
+
+        for (i = 0; i < this.collisionMap.bottom.sprites.length; i++) {
+          sprite = this.collisionMap.bottom.sprites[i];
           bottomY = Math.min(bottomY, sprite.getTop(true));
           if (sprite.get("type") == "platform") bottomPlatform = sprite;
         }
-        for (i = 0; i < this.collisionMap.bottomLeft.sprites.length; i++)
-          adjustBottomY(this.collisionMap.bottomLeft.sprites[i]);
-        for (i = 0; i < this.collisionMap.bottomRight.sprites.length; i++)
-          adjustBottomY(this.collisionMap.bottomRight.sprites[i]);
 
         if (cur.mov == "jump" && cur.mov2 == null) attrs.sequenceIndex = 1;
 
@@ -672,10 +669,8 @@
         if (yVelocity > 0 && heroBottomY >= bottomY) {
           // Stop falling
           land(bottomY);
-          for (i = 0; i < this.collisionMap.bottomLeft.sprites.length; i++)
-            this.collisionMap.bottomLeft.sprites[i].trigger("hit", this, "top", cur.dir);
-          for (i = 0; i < this.collisionMap.bottomRight.sprites.length; i++)
-            this.collisionMap.bottomRight.sprites[i].trigger("hit", this, "top", cur.dir);
+          for (i = 0; i < this.collisionMap.bottom.sprites.length; i++)
+            this.collisionMap.bottom.sprites[i].trigger("hit", this, "top", cur.dir);
           if (this.cancelUpdate) return true;
         } else if (cur.mov != "jump" && yVelocity == 0 && heroBottomY < bottomY) {
           // Start falling if no obstacle below
@@ -689,12 +684,9 @@
       } else {
         // Velocity is negative (going up). Stop if obstacle above.
         var topY = Math.max(-400, this.get("ceiling") || -400);
-        for (i = 0; i < this.collisionMap.topLeft.sprites.length; i++)
+        for (i = 0; i < this.collisionMap.top.sprites.length; i++)
           if (!dead && heroTopY > 0 )
-            topY = Math.max(topY, this.collisionMap.topLeft.sprites[i].getBottom(true));
-        for (i = 0; i < this.collisionMap.topRight.sprites.length; i++)
-          if (!dead && heroTopY > 0 )
-            topY = Math.max(topY, this.collisionMap.topRight.sprites[i].getBottom(true));
+            topY = Math.max(topY, this.collisionMap.top.sprites[i].getBottom(true));
 
         if (cur.mov == "jump" && cur.mov2 == null) attrs.sequenceIndex = 0;
 
@@ -702,10 +694,8 @@
           attrs.yVelocity = yVelocity = 0;
           attrs.y = y = topY - paddingTop;
           updateHeroTopBottom();
-          for (i = 0; i < this.collisionMap.topLeft.sprites.length; i++)
-            this.collisionMap.topLeft.sprites[i].trigger("hit", this, "bottom", cur.dir);
-          for (i = 0; i < this.collisionMap.topRight.sprites.length; i++)
-            this.collisionMap.topRight.sprites[i].trigger("hit", this, "bottom", cur.dir);
+          for (i = 0; i < this.collisionMap.top.sprites.length; i++)
+            this.collisionMap.top.sprites[i].trigger("hit", this, "bottom", cur.dir);
           if (this.cancelUpdate) return true;
         }
       }
@@ -713,20 +703,15 @@
       if (velocity <= 0) {
         // Stop if obstacle left
         var leftX = 0;
-        for (i = 0; i < this.collisionMap.leftTop.sprites.length; i++)
+        for (i = 0; i < this.collisionMap.left.sprites.length; i++)
           if (heroTopY > 0 )
-            leftX = Math.max(leftX, this.collisionMap.leftTop.sprites[i].getRight(true));
-        for (i = 0; i < this.collisionMap.leftBottom.sprites.length; i++)
-          if (heroTopY > 0 )
-            leftX = Math.max(leftX, this.collisionMap.leftBottom.sprites[i].getRight(true));
+            leftX = Math.max(leftX, this.collisionMap.left.sprites[i].getRight(true));
 
         if (heroLeftX <= leftX) {
           attrs.velocity = velocity = 0;
           attrs.x = x = leftX - paddingLeft;
-          for (i = 0; i < this.collisionMap.leftTop.sprites.length; i++)
-            this.collisionMap.leftTop.sprites[i].trigger("hit", this, "right", cur.mov2);
-          for (i = 0; i < this.collisionMap.leftBottom.sprites.length; i++)
-            this.collisionMap.leftBottom.sprites[i].trigger("hit", this, "right", cur.mov2);
+          for (i = 0; i < this.collisionMap.left.sprites.length; i++)
+            this.collisionMap.left.sprites[i].trigger("hit", this, "right", cur.mov2);
           if (this.cancelUpdate) return true;
         }
       }
@@ -734,20 +719,15 @@
       if (velocity >= 0) {
         // Stop if obstacle to the right
         var rightX = this.world.width();
-        for (i = 0; i < this.collisionMap.rightTop.sprites.length; i++)
+        for (i = 0; i < this.collisionMap.right.sprites.length; i++)
           if (heroTopY > 0 )
-            rightX = Math.min(rightX, this.collisionMap.rightTop.sprites[i].getLeft(true));
-        for (i = 0; i < this.collisionMap.rightBottom.sprites.length; i++)
-          if (heroTopY > 0 )
-            rightX = Math.min(rightX, this.collisionMap.rightBottom.sprites[i].getLeft(true));
+            rightX = Math.min(rightX, this.collisionMap.right.sprites[i].getLeft(true));
 
         if (heroRightX >= rightX) {
           attrs.velocity = velocity = 0;
           attrs.x = x = rightX - heroWidth - paddingLeft;
-          for (i = 0; i < this.collisionMap.rightTop.sprites.length; i++)
-            this.collisionMap.rightTop.sprites[i].trigger("hit", this, "left", cur.mov2);
-          for (i = 0; i < this.collisionMap.rightBottom.sprites.length; i++)
-            this.collisionMap.rightBottom.sprites[i].trigger("hit", this, "left", cur.mov2);
+          for (i = 0; i < this.collisionMap.right.sprites.length; i++)
+            this.collisionMap.right.sprites[i].trigger("hit", this, "left", cur.mov2);
           if (this.cancelUpdate) return true;
         }
       }
@@ -765,27 +745,25 @@
     },
     buildCollisionMap: function(top, right, bottom, left) {
       this.collisionMap || (this.collisionMap = {
-        rightTop: {x: 0, y: 0, dir: "right", sprites: [], sprite: null},
-        rightBottom: {x: 0, y: 0, dir: "right", sprites: [], sprite: null},
-        leftTop: {x: 0, y: 0, dir: "left", sprites: [], sprite: null},
-        leftBottom: {x: 0, y: 0, dir: "left", sprites: [], sprite: null},
-        bottomLeft: {x: 0, y: 0, dir: "bottom", sprites: [], sprite: null},
-        bottomRight: {x: 0, y: 0, dir: "bottom", sprites: [], sprite: null},
-        topLeft: {x: 0, y: 0, dir: "top", sprites: [], sprite: null},
-        topRight: {x: 0, y: 0, dir: "top", sprites: [], sprite: null}
+        right: {x: 0, y: 0, dir: "right", sprites: [], sprite: null},
+        left: {x: 0, y: 0, dir: "left", sprites: [], sprite: null},
+        bottom: {x: 0, y: 0, dir: "bottom", sprites: [], sprite: null},
+        top: {x: 0, y: 0, dir: "top", sprites: [], sprite: null}
       });
 
       var width = right - left,
           height = bottom - top;
-      this.collisionMap.leftTop.x = this.collisionMap.leftBottom.x = left;
-      this.collisionMap.rightTop.x = this.collisionMap.rightBottom.x = right;
-      this.collisionMap.leftTop.y = this.collisionMap.rightTop.y = top + height*0.20;
-      this.collisionMap.leftBottom.y = this.collisionMap.rightBottom.y = bottom - height*0.20;
+      this.collisionMap.left.x = left;
+      this.collisionMap.right.x = right;
+      this.collisionMap.left.y = this.collisionMap.right.y = top + height*0.20;
+      this.collisionMap.top.x = this.collisionMap.bottom.x = left + width*0.20;
+      this.collisionMap.top.y = top;
+      this.collisionMap.bottom.y = bottom;
+      this.collisionMap.left.height = this.collisionMap.right.height = height*0.60;
+      this.collisionMap.left.width = this.collisionMap.right.width = 0;
+      this.collisionMap.top.width = this.collisionMap.bottom.width = width*0.60;
+      this.collisionMap.top.height = this.collisionMap.bottom.height = 0;
 
-      this.collisionMap.bottomLeft.x = this.collisionMap.topLeft.x = left + width*0.40;
-      this.collisionMap.bottomRight.x = this.collisionMap.topRight.x = right - width*0.40;
-      this.collisionMap.bottomLeft.y = this.collisionMap.bottomRight.y = bottom;
-      this.collisionMap.topLeft.y = this.collisionMap.topRight.y = top;
       for (var m in this.collisionMap)
         if (this.collisionMap.hasOwnProperty(m)) {
           this.collisionMap[m].sprites.length = 0;

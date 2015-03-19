@@ -14,7 +14,7 @@
       name: "mario",
       spriteSheet: "mario"
     }),
-    bounce: function() {
+    bounce: function(sprite, dir, dir2) {
       var cur = this.getStateInfo(),
           state = this.buildState("jump", cur.dir);
       this.set({
@@ -30,9 +30,8 @@
       if (sprite.get("type") == "character") {
         var name = sprite.get("name"),
             cur = this.getStateInfo();
-        console.log("hero hit", dir, dir2);
 
-        if (dir == "bottom" && name != "spike") return this.bounce();
+        if (dir == "bottom" && name != "spike") return this.bounce.apply(this, arguments);
 
         if (!sprite.isAttacking()) return this;
 
