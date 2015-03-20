@@ -26,7 +26,7 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
-      if (!this.get("collision")) return this;
+      if (this.cancelUpdate) return this;
 
       if (sprite.get("type") == "artifact") {
         this.cancelUpdate = true;
@@ -35,19 +35,16 @@
 
       if (sprite.get("type") == "character") {
         var name = sprite.get("name"),
-            cur = this.getStateInfo();
+            cur = this.getStateInfo(),
+            opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
 
-        if (dir == "bottom" && name != "spike") return this.bounce.apply(this, arguments);
+        if (dir == "bottom" && name != "spike")
+          return this.bounce.apply(this, arguments);
 
-        if (!sprite.isAttacking()) return this;
-
-        var spriteCur = sprite.getStateInfo();
-        if (spriteCur.mov == "slide") {
-          //sprite.trigger("hit", this, dir);
-          if (spriteCur.dir == dir) return this;
+        if (sprite.isAttacking()) {
+          this.knockout(sprite, "left");
+          sprite.trigger("hit", this, opo);
         }
-
-        return this.knockout(sprite, "left");
       }
       return this;
     }

@@ -51,9 +51,7 @@
       name: "lever"
     }),
     animations: _.deepClone(Backbone.Pennie.prototype.animations),
-    hit: function(sprite, position) {
-      
-    }
+    hit: function(sprite, dir, dir2) {}
   });
   Backbone.Lever.prototype.animations.idle.sequences = [55, 55, 56, 57, 56, 55];
 

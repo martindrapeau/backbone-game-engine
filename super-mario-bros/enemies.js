@@ -54,7 +54,6 @@
     squish: function(sprite) {
       var self = this,
           cur = this.getStateInfo();
-      console.log("squish")
       this.set({
         state: this.buildState("squished", cur.dir),
         collision: false
@@ -66,20 +65,19 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
-      var cur = this.getStateInfo();
-      if (cur.mov != "walk" && cur.mov != "idle") return this;
+      if (this.cancelUpdate) return this;
+
+      var cur = this.getStateInfo(),
+          opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
+      if (cur.mov != "walk" && cur.mov != "idle" && cur.mov != "fall") return this;
 
       if (sprite.get("hero")) {
-        if (dir == "top") {
+        if (dir == "top")
           this.squish.apply(this, arguments);
-          sprite.trigger("hit", this, "bottom");
-        } else {
-          sprite.trigger("hit", this, dir == "left" ? "right" : "left");
-        }
       } else if (sprite.get("state").indexOf("slide") == 0) {
-        this.knockout(sprite, dir);
-        sprite.trigger("hit", this, dir == "left" ? "right" : "left");
+        this.knockout.apply(this, arguments);
       }
+      sprite.trigger("hit", this, opo);
       return this;
     },
     getHitReaction: function(sprite, dir, dir2) {
@@ -99,26 +97,37 @@
       var cur = this.getStateInfo();
       return (cur.mov == "walk" || cur.mov == "idle" || cur.mov == "slide");
     },
-    squish: function(sprite, dir, dir2) {
-      var cur = this.getStateInfo();
-
+    slide: function(sprite, dir, dir2) {
       if (this.wakeTimerId) {
-        clearTimeout(this.wakeTimerId);
+        this.world.clearTimeout(this.wakeTimerId);
         this.wakeTimerId = null;
       }
 
-      if (cur.mov == "squished" || cur.mov == "wake") {
-        var opo = sprite.getCenterX(true) > this.getCenterX(true) ? "left" : "right";
-        this.set("state", this.buildState("slide", opo));
-      } else {
-        this.set("state", this.buildState("squished", cur.dir));
-        this.wakeTimerId = this.world.setTimeout(this.wake.bind(this), 5000);
+      var dir = sprite.getCenterX(true) > this.getCenterX(true) ? "left" : "right";
+      this.set("state", this.buildState("slide", dir));
+      this.cancelUpdate = true;
+      return this;
+    },
+    squish: function(sprite, dir, dir2) {
+      var cur = this.getStateInfo();
+
+      if (cur.mov == "squished" || cur.mov == "wake")
+        return this.slide.apply(this, arguments);
+
+      if (this.wakeTimerId) {
+        this.world.clearTimeout(this.wakeTimerId);
+        this.wakeTimerId = null;
       }
+
+      this.set("state", this.buildState("squished", cur.dir));
+      this.wakeTimerId = this.world.setTimeout(this.wake.bind(this), 5000);
 
       this.cancelUpdate = true;
       return this;
     },
     hit: function(sprite, dir, dir2) {
+      if (this.cancelUpdate) return this;
+
       var cur = this.getStateInfo(),
           opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
       if (cur.mov == "slide") this.cancelUpdate = true;
@@ -126,48 +135,31 @@
       if (!sprite.get("hero"))
         return Backbone.Mushroom.prototype.hit.apply(this, arguments);
 
-      if (cur.mov == "slide") console.log("turtle hit slide", sprite.get("name"), dir, dir2);
-      
       if (dir == "top") {
         this.squish.apply(this, arguments);
-        sprite.trigger("hit", this, "bottom");
-        return this;
+      } else if (cur.mov == "squished" || cur.mov == "wake") {
+        this.slide.apply(this, arguments);
+        opo = "bottom";
       }
 
-      if (this.isAttacking()) {
-        sprite.trigger("hit", this, opo);
-        return this;
-      }
+      sprite.trigger("hit", this, opo);
 
-      // Hit left or right
-      if (cur.mov == "squished" || cur.mov == "wake") {
-
-        if (this.wakeTimerId) {
-          clearTimeout(this.wakeTimerId);
-          this.wakeTimerId = null;
-        }
-
-        this.set("state", this.buildState("slide", dir == "left" ? "right" : "left"));
-        sprite.trigger("hit", this, "bottom");
-        this.cancelUpdate = true;
-      }
       return this;
     },
     wake: function() {
       var cur = this.getStateInfo();
-      this.wakeTimerId = null;
+      if (this.wakeTimerId) {
+        this.world.clearTimeout(this.wakeTimerId);
+        this.wakeTimerId = null;
+      }
 
       if (cur.mov == "squished") {
         this.set("state", this.buildState("wake", cur.dir));
-        this.wakeTimerId = setTimeout(this.wake.bind(this), 5000);
+        this.wakeTimerId = this.world.setTimeout(this.wake.bind(this), 5000);
       } else if (cur.mov == "wake") {
         this.set("state", this.buildState("walk", cur.dir));
       }
       return this;
-    },
-    getHitReaction: function(sprite, dir, dir2) {
-      var state = this.get("state");
-      return ((dir == "left" || dir == "right") && (state == "slide-left" || state == "slide-right")) ? null : Backbone.Mushroom.prototype.getHitReaction.apply(this, arguments);
     }
   });
   animations = Backbone.Turtle.prototype.animations;
@@ -232,6 +224,7 @@
       newSprite.set("id", this.world.buildIdFromName(newSprite.get("name")));
       this.world.add(newSprite);
       this.world.remove(this);
+      this.cancelUpdate = true;
     }
   });
   animations = Backbone.FlyingTurtle.prototype.animations;

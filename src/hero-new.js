@@ -368,6 +368,7 @@
         dead: true,
         collision: false
       });
+      this.cancelUpdate = true;
       return this;
     },
     hurt: function(sprite, dir) {
@@ -384,50 +385,16 @@
       return this.attributes.state.indexOf("-attack") > 0;
     },
     hit: function(sprite, dir, dir2) {
+      if (this.cancelUpdate) return this;
+
       var cur = this.getStateInfo(),
           type = sprite.get("type");
-
-      if (type == "barrier" || type == "breakable-tile") return this;
 
       if (type == "artifact") {
         switch (sprite.get("name")) {
           case "a-coin":
             this.cancelUpdate = true;
             this.set("coins", this.get("coins") + 1);
-            break;
-          case "a-coin-bag":
-            this.cancelUpdate = true;
-            this.set("coins", this.get("coins") + 5);
-            break;
-          case "a-health":
-            if (cur.mov2 != "hurt") {
-              this.cancelUpdate = true;
-              this.set({health: Math.min(this.get("health") + 2, this.get("healthMax"))}, {sprite: sprite, dir: dir, dir2: dir2});
-            }
-            break;
-          case "a-death":
-            if (cur.mov2 != "hurt" && cur.mov2 != "attack") {
-              this.cancelUpdate = true;
-              this.set({health: Math.max(this.get("health") - 4, 0)}, {sprite: sprite, dir: dir, dir2: dir2});
-            }
-            break;
-          case "a-key":
-            this.cancelUpdate = true;
-            this.set("key", true);
-            break;
-          case "a-red-potion":
-            if (cur.mov2 != "hurt") {
-              this.cancelUpdate = true;
-              this.set({health: Math.min(this.get("health") + 8, this.get("healthMax"))}, {sprite: sprite, dir: dir, dir2: dir2});
-            }
-            break;
-          case "a-blue-potion":
-            this.cancelUpdate = true;
-            this.set("potion", "blue");
-            break;
-          case "a-green-potion":
-            this.cancelUpdate = true;
-            this.set("potion", "green");
             break;
         }
         return this;
@@ -439,11 +406,9 @@
         } else {
           if (sprite.isAttacking()) {
             this.cancelUpdate = true;
-            var attackDamage = sprite.get("attackDamage") || 10;
+            var attackDamage = sprite.get("attackDamage") || 1;
             this.set({health: Math.max(this.get("health") - attackDamage, 0)}, {sprite: sprite, dir: dir, dir2: dir2});
           }
-          if (sprite.get("collision") == false)
-            sprite.trigger("hit", this, cur.opo, "collision");
         }
       }
       return this;

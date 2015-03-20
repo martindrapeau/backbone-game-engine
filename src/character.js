@@ -160,6 +160,7 @@
         sequenceIndex: 0,
         collision: false
       });
+      this.cancelUpdate = true;
       return this;
     },
     hurt: function(sprite, dir) {
@@ -173,6 +174,7 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
+      if (this.cancelUpdate) return this;
       var cur = this.getStateInfo();
       
       if (cur.mov2 == "hurt") return this;
