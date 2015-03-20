@@ -19,7 +19,6 @@
           state = this.buildState("jump", cur.dir);
       this.set({
         state: state,
-        velocity: 0,
         yVelocity: this.animations[state].yStartVelocity*0.5,
         nextState: this.buildState("idle", cur.dir)
       });
@@ -27,6 +26,11 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
+      if (sprite.get("type") == "artifact") {
+        this.cancelUpdate = true;
+        return this;
+      }
+      
       if (sprite.get("type") == "character") {
         var name = sprite.get("name"),
             cur = this.getStateInfo();
@@ -34,6 +38,9 @@
         if (dir == "bottom" && name != "spike") return this.bounce.apply(this, arguments);
 
         if (!sprite.isAttacking()) return this;
+
+        var spriteCur = sprite.getStateInfo();
+        if (spriteCur.mov == "slide" && spriteCur.dir == dir) return this;
 
         return this.knockout(sprite, "left");
       }

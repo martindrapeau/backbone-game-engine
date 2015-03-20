@@ -117,7 +117,6 @@
     initialize: function(attributes, options) {
       Backbone.Sprite.prototype.initialize.apply(this, arguments);
       options || (options = {});
-      this.turnArounds = 0;
 
       this.on("attach", this.onAttach, this);
       this.on("detach", this.onDetach, this);
@@ -226,18 +225,6 @@
       return sequenceIndex;
     },
     ai: function(dt) {
-      var cur = this.getStateInfo();
-
-      if (cur.mov == "walk" && this.turnArounds > 10) {
-        this.set({
-          state: this.buildState("idle", cur.dir),
-          velocity: 0
-        });
-        this.cancelUpdate = true;
-      }
-
-      this.turnArounds = 0;
-
       return this;
     },
     update: function(dt) {
@@ -406,12 +393,6 @@
             attrs.velocity = velocity = velocity * -1;
             attrs.state = this.buildState(cur.mov, cur.opo);
             attrs.x = x = leftX - paddingLeft;
-            if (this.collisionMap.right.sprite) {
-              attrs.state = this.buildState("idle", cur.dir);
-              attrs.velocity = velocity = 0;
-            } else {
-              this.turnArounds++;
-            }
           }
         }
 
@@ -441,12 +422,6 @@
             attrs.velocity = velocity = velocity * -1;
             attrs.state = this.buildState(cur.mov, cur.opo);
             attrs.x = x = rightX - charWidth - paddingLeft;
-            if (this.collisionMap.left.sprite) {
-              attrs.state = this.buildState("idle", cur.dir);
-              attrs.velocity = velocity = 0;
-            } else {
-              this.turnArounds++;
-            }
           }
         }
       }
@@ -494,22 +469,25 @@
     },
     buildCollisionMap: function(top, right, bottom, left) {
       this.collisionMap || (this.collisionMap = {
-        bottom: {x: 0, y: 0, dir: "bottom", sprites: [], sprite: null},
-        top: {x: 0, y: 0, dir: "top", sprites: [], sprite: null},
+        right: {x: 0, y: 0, dir: "right", sprites: [], sprite: null},
         left: {x: 0, y: 0, dir: "left", sprites: [], sprite: null},
-        right: {x: 0, y: 0, dir: "right", sprites: [], sprite: null}
+        bottom: {x: 0, y: 0, dir: "bottom", sprites: [], sprite: null},
+        top: {x: 0, y: 0, dir: "top", sprites: [], sprite: null}
       });
 
-      var width = right - left;
-      this.collisionMap.bottom.x = left + width/2;
-      this.collisionMap.bottom.y = bottom;
-      this.collisionMap.top.x = left + width/2;
-      this.collisionMap.top.y = top;
+      var width = right - left,
+          height = bottom - top;
       this.collisionMap.left.x = left;
-      this.collisionMap.left.y = top;
       this.collisionMap.right.x = right;
-      this.collisionMap.right.y = top;
-      
+      this.collisionMap.left.y = this.collisionMap.right.y = top + height*0.20;
+      this.collisionMap.top.x = this.collisionMap.bottom.x = left + width*0.20;
+      this.collisionMap.top.y = top;
+      this.collisionMap.bottom.y = bottom;
+      this.collisionMap.left.height = this.collisionMap.right.height = height*0.60;
+      this.collisionMap.left.width = this.collisionMap.right.width = 0;
+      this.collisionMap.top.width = this.collisionMap.bottom.width = width*0.60;
+      this.collisionMap.top.height = this.collisionMap.bottom.height = 0;
+
       for (var m in this.collisionMap)
         if (this.collisionMap.hasOwnProperty(m)) {
           this.collisionMap[m].sprites.length = 0;

@@ -69,8 +69,6 @@
       var cur = this.getStateInfo();
       if (cur.mov != "walk" && cur.mov != "idle") return this;
 
-      console.log("hit mushroom", dir, dir2);
-
       if (sprite.get("hero")) {
         if (dir == "top") {
           this.squish.apply(this, arguments);
@@ -80,6 +78,7 @@
         }
       } else if (sprite.get("state").indexOf("slide") == 0) {
         this.knockout(sprite, dir);
+        sprite.cancelUpdate = true;
       }
       return this;
     },
@@ -120,14 +119,20 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
+      var cur = this.getStateInfo(),
+          opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
+      if (cur.mov == "slide") this.cancelUpdate = true;
+
       if (!sprite.get("hero"))
         return Backbone.Mushroom.prototype.hit.apply(this, arguments);
 
-      var cur = this.getStateInfo(),
-          opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
+      if (dir == "top") {
+        this.squish.apply(this, arguments);
+        sprite.trigger("hit", this, "bottom");
+        return this;
+      }
 
       if (this.isAttacking()) {
-        if (dir == "top") this.squish.apply(this, arguments);
         sprite.trigger("hit", this, opo);
         return this;
       }
@@ -140,7 +145,7 @@
           this.wakeTimerId = null;
         }
 
-        this.set("state", this.buildState("slide", cur.opo));
+        this.set("state", this.buildState("slide", dir == "left" ? "right" : "left"));
         sprite.trigger("hit", this, "bottom");
         this.cancelUpdate = true;
       }

@@ -559,7 +559,9 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <li><code>getAnimation([state])</code>: Returns the current animation based on argument <code>state</code>. If argument <code>state</code> is omitted, the attribute is used instead.</li>
             <li><code>overlaps(x, y):</code>: Checks to see if the sprite overlaps with the passed coordinates. Returns a Boolean.</li>
             <li><code>getLeft(withPadding), getRight(withPadding), getTop(withPadding), getBotttom(withPadding)</code>: Returns the left, right, top or bottom-most position of a sprite. Argument withPadding is a boolean specifying whether to include the padding or not. Defaults to false.</li>
-            <li><code>bbox(withPadding)</code>: Returns the bounding box of the sprite as an object <code>{x1, y1, x2, y2}</code>. Argument withPadding is a boolean specifying whether to include the padding or not. Defaults to false.</li>
+            <li><code>bbox(withPadding)</code>: Returns the bounding box of the sprite as an object <code>{x1, y1, x2, y2}</code>. Argument <code>withPadding</code> is a boolean specifying whether to include the padding or not. Defaults to false.</li>
+            <li><code>getCenterX(withPadding)</code>: Returns the center <code>x</code> of the sprite. Argument <code>withPadding</code> is a boolean specifying whether to include the padding or not. Defaults to false.</li>
+            <li><code>getCenterX(withPadding)</code>: Returns the center <code>y</code> of the sprite. Argument <code>withPadding</code> is a boolean specifying whether to include the padding or not. Defaults to false.</li>
           </ul>
           <h4>Events</h4>
           <ul>
