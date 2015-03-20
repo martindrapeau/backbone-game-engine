@@ -26,11 +26,13 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
+      if (!this.get("collision")) return this;
+
       if (sprite.get("type") == "artifact") {
         this.cancelUpdate = true;
         return this;
       }
-      
+
       if (sprite.get("type") == "character") {
         var name = sprite.get("name"),
             cur = this.getStateInfo();
@@ -40,7 +42,10 @@
         if (!sprite.isAttacking()) return this;
 
         var spriteCur = sprite.getStateInfo();
-        if (spriteCur.mov == "slide" && spriteCur.dir == dir) return this;
+        if (spriteCur.mov == "slide") {
+          //sprite.trigger("hit", this, dir);
+          if (spriteCur.dir == dir) return this;
+        }
 
         return this.knockout(sprite, "left");
       }

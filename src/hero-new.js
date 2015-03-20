@@ -619,14 +619,14 @@
 
       var heroBottomY, heroTopY,
           bottomPlatform, sprite, i;
-      function updateHeroTopBottom() {
+      function updateTopBottom() {
         heroBottomY = Math.round(y + yVelocity * (dt/1000)) + tileHeight - paddingBottom;
         heroTopY = heroBottomY - heroHeight;
         hero.buildCollisionMap(heroTopY, heroRightX, heroBottomY, heroLeftX);
         if (collision)
           hero.world.findCollisions(hero.collisionMap, null, hero, true);
       }
-      updateHeroTopBottom();
+      updateTopBottom();
 
       if (yVelocity >= 0) {
         // Standing or falling, implement gravity
@@ -653,7 +653,7 @@
         function land(bottomY) {
           attrs.yVelocity = yVelocity = 0;
           attrs.y = y = bottomY - tileHeight + paddingBottom;
-          updateHeroTopBottom();
+          updateTopBottom();
           attrs.state = nextState;
           if (nex.move == "walk" || nex.move == "run")
             attrs.nextState = hero.buildState(input && input.buttonBPressed() ? "run" : "walk", cur.mov2, nex.dir);
@@ -693,7 +693,7 @@
         if (heroTopY < topY) {
           attrs.yVelocity = yVelocity = 0;
           attrs.y = y = topY - paddingTop;
-          updateHeroTopBottom();
+          updateTopBottom();
           for (i = 0; i < this.collisionMap.top.sprites.length; i++)
             this.collisionMap.top.sprites[i].trigger("hit", this, "bottom", cur.dir);
           if (this.cancelUpdate) return true;

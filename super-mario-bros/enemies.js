@@ -78,7 +78,7 @@
         }
       } else if (sprite.get("state").indexOf("slide") == 0) {
         this.knockout(sprite, dir);
-        sprite.cancelUpdate = true;
+        sprite.trigger("hit", this, dir == "left" ? "right" : "left");
       }
       return this;
     },
@@ -126,6 +126,8 @@
       if (!sprite.get("hero"))
         return Backbone.Mushroom.prototype.hit.apply(this, arguments);
 
+      if (cur.mov == "slide") console.log("turtle hit slide", sprite.get("name"), dir, dir2);
+      
       if (dir == "top") {
         this.squish.apply(this, arguments);
         sprite.trigger("hit", this, "bottom");

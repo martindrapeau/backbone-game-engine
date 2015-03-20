@@ -283,8 +283,6 @@
           paddingTop = this.get("paddingTop"),
           charWidth = tileWidth - paddingLeft - paddingRight,
           charHeight = tileHeight - paddingTop - paddingBottom,
-          charBottomY = Math.round(y + yVelocity * (dt/1000)) + tileHeight - paddingBottom,
-          charTopY = charBottomY - charHeight,
           charLeftX = Math.round(x + velocity * (dt/1000)) + paddingLeft,
           charRightX = charLeftX + charWidth,
           bottomWorld = this.world.height() + tileHeight,
@@ -294,11 +292,17 @@
             bottomWorld
           ]);
 
-      this.buildCollisionMap(charTopY, charRightX, charBottomY, charLeftX);
-      if (collision)
-        this.world.findCollisions(this.collisionMap, null, this, true);
+      var charBottomY, charTopY,
+          bottomPlatform, sprite, i, type;
+      function updateTopBottom() {
+        charBottomY = Math.round(y + yVelocity * (dt/1000)) + tileHeight - paddingBottom,
+        charTopY = charBottomY - charHeight,
+        self.buildCollisionMap(charTopY, charRightX, charBottomY, charLeftX);
+        if (collision)
+          self.world.findCollisions(self.collisionMap, null, self, true);
+      }
+      updateTopBottom();
 
-      var bottomPlatform, sprite, i, type;
       for (i = 0; i < this.collisionMap.bottom.sprites.length; i++) {
         sprite = this.collisionMap.bottom.sprites[i];
         type = sprite.get("type")
@@ -328,6 +332,7 @@
           else if (cur.mov == "ko") {
             attrs.velocity = velocity = 0;
           }
+          updateTopBottom();
 
           if (charBottomY == bottomY && bottomPlatform)
             relativeVelocity = bottomPlatform.get("velocity");
@@ -355,6 +360,7 @@
           charTopY = topY;
           charBottomY = topY + charHeight;
           attrs.y = y = charBottomY - tileHeight;
+          updateTopBottom();
         }
 
       }
