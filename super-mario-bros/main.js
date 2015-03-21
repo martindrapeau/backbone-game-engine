@@ -12,6 +12,7 @@ $(window).on("load", function() {
   
   var canvas = document.getElementById("foreground"),
       context = canvas.getContext("2d");
+  adjustViewport(canvas);
 
   var spriteNames = [
     "ground", "brick-top", "brick", "ground2", "block", "block2", "question-block", "pennie",
@@ -249,8 +250,5 @@ $(window).on("load", function() {
     context: context,
     controller: controller,
   });
-
-  // Ensure the canvas is always visible and centered
-  adjustViewport(canvas, canvas.width, canvas.height);
 
 });

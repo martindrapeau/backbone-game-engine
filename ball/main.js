@@ -102,7 +102,6 @@ $(window).on("load", function() {
     engine: engine
   });
 
-  // Ensure the canvas is always visible and centered
-  adjustViewport(canvas, 960, 700);
+  adjustViewport(canvas);
 
 });

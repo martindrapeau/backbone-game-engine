@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <title>Backbone Game Engine</title>
-    <meta name="description" content="Elementary HTML5 Canvas Game Engine based on Backbone.">
+    <meta name="description" content="Elementary HTML5 Canvas Game Engine based on Backbone. Specialized for 2D platformers, and optimized for mobile.">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
@@ -50,7 +50,7 @@
       <div class="row">
         <div class="col-md-6 col-xs-6">
           <p>
-            An elementary HTML5 Canvas game engine built on Backbone. Examples:
+            An elementary HTML5 Canvas game engine built on Backbone. Specialized for 2D platformers, and optimized for mobile. Examples:
           </p>
           <ul>
             <li>Elementary: <a href="ball/index.html" target="_blank">Bouncing ball</a></li>
@@ -84,6 +84,8 @@
           <ul>
             <li><strong>Built on Backbone</strong>. Events, models, collections, inheritance and RESTful persistence. Why reinvent the wheel?</li>
             <li><strong>HTML5 canvas only</strong>. No jQuery, as little DOM manipulations as possible.</li>
+            <li><strong>Mobile optimized</strong>. Built to run in the browser or in CocoonJS/Phone Gap. Optimized for maxium FPS.</li>
+            <li><strong>2D platformer</strong>. Built with side-scrollers in mind. Built-in classes for sprites, sprite sheets, characters, hero, quad-tree collision detection, world and editor.</li>
             <li><strong>No compilation</strong>. You don't need to install node, grunt or whatever else. Just code and press F5 to run.</li>
             <li><strong>No server required</strong>. Fork this repo and your Github site is up and going. Create your own game and point your friends to it. Rebase to pull in latest engine updates.</li>
             <li><strong>Built for mobile</strong>. Conceived to run on tablets. Share your URL with Mom so she can add it to the home screen of her iPad.</li>
@@ -91,7 +93,6 @@
             <li><strong>Save state</strong>. With HTML5 Local Storage, save where you are.</li>
             <li><strong>World editor</strong>. Conceived for tile-based games, comes with a world editor. Place your tiles and characters, then hit play to try it out. Hit save to save your world.</li>
           </ul>
-
         </div>
       </div>
 
@@ -1545,50 +1546,52 @@ drawRoundRect(ctx, x, y, width, height, radius, fill, stroke)
           </p>
           <h3>Touch Events</h3>
           <p>
-            <a href="#documentation-Input">Backbone.Input</a>, <a href="#documentation-Button">Backbone.Button</a> and <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> support touch and mouse events transparently. Works on Android, iOS and Windows.
+            <a href="#documentation-Engine">Backbone.Engine</a>, <a href="#documentation-Input">Backbone.Input</a>, <a href="#documentation-Button">Backbone.Button</a> and <a href="#documentation-WorldEditor">Backbone.WorldEditor</a> support touch and mouse events transparently. Works on Android, iOS and Windows.
           </p>
           <h3>Viewport resizing and canvas centering</h3>
           <p>
-            In addition, we provide global function <code>adjustViewport(canvas, width, height)</code> to dynamically adjust the viewport size and center the canvas when an orientation change occurs. This function can be found in <a href="https://github.com/martindrapeau/backbone-game-engine/blob/gh-pages/src/adjust-viewport.js" target="_blank">adjust-viewport.js</a> located in the <coce>src</coce> folder.
+            On mobile devices, the <code>meta</code> tag <code>viewport</code> is set to 960 pixels wide.
+            On iOS, Android and Windows mobile devices, this will ensure the canvas is full width.
+            The HTML file contains the necessary header tags to ensure everything works.
+            You can change the viewport width value to whatever you want.
           </p>
-          <p>
-            On mobile devices the orientation of the web page can change between protrait and landscape. Since we <a href="http://stackoverflow.com/questions/5298467/prevent-orientation-change-in-ios-safari" target="_blank">cannot lock the orientation</a>, we must find a way to adjust the viewport width to ensure the canvas is always visible. We use the meta tag <a href="https://developer.apple.com/library/IOs/documentation/AppleApplications/Reference/SafariWebContent/UsingtheViewport/UsingtheViewport.html" target="_blank">viewport</a> for that purpose.
-          </p>
-          <p>
-            As an example, let's assume our canvas is 960x700 pixels; therefore in landscape. In order for it to be visible and maximized on any portrait screen, we must control the width of the viewport. In <code>index.html</code> we declare the viewport meta tag to be the width of the canvas:
-          </p>
-          <pre>&lt;meta name="viewport" content="width=960, user-scalable=no"/&gt;</pre>
-          <p>
-            When the device is rotated to landscape, we need to adjust so that the height of the canvas is used instead.
-            The natural solution would be to set <code>content="height=700, user-scalable=no"</code>.
-            However this is not supported (<a href="http://www.quirksmode.org/blog/archives/2013/10/viewport_resear.html#link2" target="_blank">as reported by Quirksmode</a>).
-            Instead, we must derive the width based on the viewport ratio using this formula:
-          </p>
-          <pre>700 * window.innerWidth / window.innerHeight</pre>
-          <p>
-            Since the mobile device orientation changes when we rotate it, we must recalculate and reset the viewport width dynamically. We can do so using the <code>resize</code> event. Finally, we are also able to center the canvas by adjusting its <code>left</code> position. Here is the final code:
-          </p>
-          <pre>
-function adjustViewport(canvas, width, height) {
-
-  var viewport = document.querySelector("meta[name=viewport]");
-
-  function onResize() {
-    if (window.innerWidth > window.innerHeight) {
-      // Landscape
-      canvas.style.left = _.max([0, (window.innerWidth - width) / 2]) + "px";
-      viewport.setAttribute("content", "width=" + Math.ceil(height * window.innerWidth / window.innerHeight) + ",user-scalable=no");
-    } else {
-      // Portrait
-      canvas.style.left = "0px";
-      viewport.setAttribute("content", "width=" + width + ",user-scalable=no");
-    }
-  }
-
-  window.addEventListener("resize", _.debounce(onResize, 300));
-  onResize();
-}
+<pre>
+&lt;meta name="viewport" content="width=960, user-scalable=no"/&gt;
+&lt;meta name="mobileoptimized" content="0" /&gt;
 </pre>
+          <p>
+            Not all screens have the same aspec ratio.
+            To take care of the height, you can change the height of the canvas upon start by calling the global function <code>adjustViewport()</code> (see file <code>adjust-viewport.js</code> for details).
+          </p>
+<pre>
+var canvas = document.getElementById("foreground");
+adjustViewport(canvas);
+</pre>
+          <p>
+            If you want to maintain the aspect ratio, pass true. The canvas will be centered on screen.
+          </p>
+<pre>
+var canvas = document.getElementById("foreground");
+adjustViewport(canvas, true);
+</pre>
+        <p>
+          On desktop the <code>viewport</code> meta tag is ignored.
+          <code>adjustViewport</code> will center the canvas, even handling resizes.
+          It will try to reduce the height of the canvas if too tall unless you omit the <code>keepRatio</code> argument.
+        </p>
+        <h3>Web App</h3>
+        <p>
+          These meta tags are set to enable Web App support:
+        </p>
+<pre>
+&lt;meta name="apple-mobile-web-app-capable" content="yes" /&gt;
+&lt;meta name="mobile-web-app-capable" content="yes" /&gt;
+&lt;meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/&gt;
+</pre>
+        <p>
+          To suggest users to put add the home page to the home screen, checkout this great plugin:
+          <a href="https://github.com/cubiq/add-to-homescreen" target="_blank">Cubiq's Add To Homescreen</a>.
+        </p>
         </div>
       </div>
 
