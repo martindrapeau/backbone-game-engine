@@ -37,9 +37,7 @@ $(window).on("load", function() {
   });
 
   var mario = new Backbone.Mario({
-  	x: 400, y: 400, floor: 500
-  }, {
-  	input: input
+  	x: 400, y: 200, floor: 500
   });
 
   var world = new Backbone.World({
@@ -47,6 +45,8 @@ $(window).on("load", function() {
   	tileWidth: 32, tileHeight: 32,
     viewportBottom: 156,
     backgroundColor: "rgba(66, 66, 255, 1)"
+  }, {
+    input: input
   });
   world.add(mario);
 
@@ -64,7 +64,9 @@ $(window).on("load", function() {
   // Expose things as globals - easier to debug
   _.extend(window, {
     canvas: canvas,
-    engine: engine
+    engine: engine,
+    world: world,
+    mario: mario
   });
 
   // Ensure the canvas is always visible and centered

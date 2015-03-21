@@ -532,8 +532,8 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
             <li><code>x, y</code>: The coordinates in pixels.</li>
             <li><code>width, height</code>: Size of the sprite in pixels.</li>
             <li><code>paddingLeft, paddingRight, paddingTop, paddingBottom</code>: Optional. Internal padding to account for empty space inside the tile of a sprite. Useful to specify empty zones for collision detection.</li>
-            <li><code>state</code>: The current animation.</li>
             <li><code>sequenceIndex</code>: The current animation sequence frame. Automatically set.</li>
+            <li><code>state</code>: The current animation.</li>
             <li><code>spriteSheet</code>: Sprite sheet id. </li>
             <li><code>collision</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
             <li><code>static</code>: Optional. For use with <a href="#documentation-World">Backbone.World</a>.</li>
@@ -553,7 +553,7 @@ this.spriteSheets = new Backbone.SpriteSheetCollection([{
           <ul>
             <li><code>toSave()</code>: Serializes attributes for persistence. Attributes to be serialized are specified in the <code>saveAttributes</code> property.</li>
             <li><code>update(dt)</code>: Called by then engine 60 times a second. Updates sprite attribues and implements behavior. Returns true to ask for a redraw, or false for none.</li>
-            <li><code>onUpdate(dt)</code>: Not defined by default. If you define it, it is called at the end of <code>update</code>. Useful for extending the behavior of a sprite without having to overload metod <code>update</code>. Note that <code>draw</code> will delegate to this method to decide whether to draw or not. It must therefore return <code>true</code> to perform a draw, or <code>false</code> not to.</li>
+            <li><code>onUpdate(dt)</code>: Not defined by default. If you define it, it is called at the end of <code>update</code>. Useful for extending the behavior of a sprite without having to overload metod <code>update</code>. Note that <code>draw</code> is called based on the Boolean return value of this method to decide whether to draw or not. It must therefore return <code>true</code> to perform a draw, or <code>false</code> not to.</li>
             <li><code>draw(context, options)</code>: Called by the engine after <code>update</code>, if a redraw was asked. Takes care of rendering the sprite, and its proper animation at the correct position. Argument <code>options</code> can be used by a model serving as proxy. For example it is passed when drawn by a <code>Backbone.World</code>instance. It will contain <code>offsetX</code> and <code>offsetY</code> to transform <code>x</code> and <code>y</code> from world coordinates to canvas coordinates.</li>
             <li><code>onDraw(context, options)</code>: Not defined by default. If defined, it is called at the end of <code>draw</code>. Useful for extending the rendering of a sprite without having to overload metod <code>draw</code>.</li>
             <li><code>getAnimation([state])</code>: Returns the current animation based on argument <code>state</code>. If argument <code>state</code> is omitted, the attribute is used instead.</li>
@@ -984,31 +984,37 @@ input.bind("change:left", function(input) {
             <li><code>floor</code>: Set this value to prevent the character to fall outisde of the world due to gravity. By default it is null meaning the character will be removed from the world if it falls below the bottom of the world.</li>
             <li><code>ceiling</code>: Analogous to <ocde>floor</ocde> but for exiting the world from above.</li>
             <li><code>width, height</code>: Size of the sprite in pixels. Defaults to  32 x 32.</li>
+            <li><code>paddingLeft, paddingRight, paddingTop, paddingBottom</code>: Optional. Internal padding to account for empty space inside the tile of a sprite. Useful to specify empty zones for collision detection.</li>
+            <li><code>sequenceIndex</code>: The current animation sequence frame. Automatically set.</li>
             <li><code>name</code>: Name of the sprite.</li>
             <li><code>type</code>: Type of sprite. Defaults to character.</li>
             <li><code>spriteSheet</code>: Id of sprite sheet.</li>
             <li><code>state</code>: Current animation. Starts with <code>idle-right</code>.</li>
             <li><code>collision</code>: Boolean indicating whether it can be detected by other sprites. Defaults to true.</li>
+            <li><code>static</code>: Set to false for the World to draw every animation frame.</li>
+            <li><code>visible</code>: Set to true for the sprite to be drawn.</li>
+            <li><code>zIndex</code>: Optional. Specifies the drawing order. Higher value is drawn above sprites with lower values. Default is 0.</li>
             <li><code>velocity, acceleration</code>: Current horizontal movement. Controlled by the AI in <code>update</code>.</li>
             <li><code>yVelocity, yAcceleration</code>: Current vertical movement. Controlled by the AI in <cpde>update</cpde>.</li>
-            <li><code>health</code>: Amount of health the character has. When <code>health</code> is 0, the is "knocked-out" and  dies.</li>
-            <li><code>attackDamage</code>: This is the amount of health taken away when the character is attacked.</li>
+            <li><code>health</code>: Amount of health the character has. When <code>health</code> is 0, the is "knocked-out" and dies. Defaults to 1.</li>
+            <li><code>attackDamage</code>: This is the amount of damage the character does to an opponent. Will reduce their health by this value. Defaults to 1.</li>
             <li><code>aiDelay</code>: Time in ms between AI calls.</li>
           </ul>
           <h4>Methods</h4>
           <p>
-            <code>Backbone.Character</code> inherits all methods from <code>Backbone.Sprite</code>. In addition, it provides these public methods.
+            <code>Backbone.Character</code> inherits all methods from <code>Backbone.Sprite</code>. Here are additional methods, and ones with a different signature.
           </p>
           <ul>
             <li><code>getStateInfo([state])</code>: Decomposes <code>state</code> into move and direction components. For example <code>walk-left</code> would be decomposed into <code>{mov:"walk", mov2: null, dir:"left", opo:"right"}</code>. If argument <code>state</code> is omitted, the <code>state</code> attribute is used instead. See <a href="#documentation-Hero">Backbone.Hero</a> for a more detailed description.</li>
+            <li><code>buildState(mov, [mov2], [dir])</code>: Helper to construct and return a dash-separated state string. Ignores falsy values. For instance <code>buildState("walk", "left")</code> and <code>buildState("walk", null, "left")</code> both return <code>walk-left</code>.</li>
             <li><code>update(dt)</code>: Handles the character movements and collision detection. Also calls the <code>ai</code> function.</li>
             <li><code>ai(dt)</code>: Implements the AI. Is called at an interval defined by attribute <code>aiDelay</code>.</li>
             <li><code>updateSequenceIndex(dt)</code>: Returns the new <code>sequenceIndex</code> (animation frame). Called by <code>update</code>.</li>
             <li><code>toggleDirection(dirIntent)</code>: Invokes a <code>left</code> or <code>right</code> direction change.</li>
             <li><code>startNewAnimation(state, attrs, done)</code>: Changes the state of the character starting a new animation. Pass hash <code>attrs</code> to set attributes at the same time. Callback <code>done</code> is called once the animation is complete. Useful for performing only one animation sequence.</li>
             <li><code>hit(sprite, [dir], [dir2])</code>: Function invoked usually by a <code>hit</code> event. Implement this to determine what happens when another <code>sprite</code> hits the character. Argument <code>dir</code> is the primary direction of the hit (<code>left</code>, <code>right</code>, <code>top</code> or <code>bottom</code>). Argument <code>dir2</code> is the secondary direction. In top-left for example, it would be left. <code>dir2</code> can also be <code>attack</code> in which case <code>health</code> is reduced by <code>attackDamage</code> amount.</li>
-            <li><code>hurt(sprite, dir)</code>: Function invoked when the character gets attacked and has remaining health. The character bounces back.</li>
-            <li><code>knockout(sprite, dir)</code>: Function invoked when the sprite gets knocked out of the world. The sprite is litterally knocked out updside down. This function is called when <code>health</code> is 0.</li>
+            <li><code>hurt(sprite, [dir], [dir2])</code>: Function invoked when the character gets attacked and has remaining health. The character bounces back.</li>
+            <li><code>knockout(sprite, [dir], [dir2])</code>: Function invoked when the sprite gets knocked out of the world. The sprite is litterally knocked out updside down. This function is called when <code>health</code> is 0.</li>
           </ul>
           <h4>Events</h4>
           <ul>
@@ -1027,23 +1033,35 @@ input.bind("change:left", function(input) {
           </div>
           <h4>Example</h4>
           <p>
-            In the Super Mario Bros example, look at file <code>enemies.js</code>. There are implementations for basic characters in that game. The <code>hit</code> method implements the action when Mario lands on a character. In the case of a Mushroom, it gets <em>squished</em>. Collision detection gets turned off and the sprite is eventually removed.
+            In the Super Mario Bros example, look at file <code>enemies.js</code>. There are implementations for basic characters in that game. The <code>hit</code> method implements collision detection outcome, notably when Mario lands on a character. In the case of a Mushroom, it gets <em>squished</em>. When a turtle shell is sliding, it would cause a knockout.
           </p>
           <pre>
 ...
-squish: function(sprite) {
-  var cur = this.getStateInfo();
-  this.set({state: "squished-" + cur.dir, collision: false});
-},
 hit: function(sprite, dir, dir2) {
-  if (sprite.get("name") != this.world.get("hero")) return;
-  if (dir == "top") return this.squish(sprite);
-  this.world.setTimeout(function() {
-    self.world.remove(self);
-  }, 2000);
-},
+  if (this._handlingSpriteHit) return this;
+  this._handlingSpriteHit = sprite;
+
+  var cur = this.getStateInfo(),
+      opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
+
+  if (sprite.get("hero")) {
+    if (dir == "top")
+      this.squish.apply(this, arguments);
+  } else if (sprite.get("state").indexOf("slide") != -1 ||
+            sprite.get("type") == "tile" && dir == "bottom" && sprite.get("state") == "bounce") {
+    this.knockout.apply(this, arguments);
+  }
+  sprite.trigger("hit", this, opo);
+
+  this._handlingSpriteHit = undefined;
+  return this;
+}
 ...
 </pre>
+        <p>
+          The <code>hit</code> method will in turn trigger a hit event on the sprite which caused the collision.
+          That sprite may in turn trigger a hit event. To avoid the possibility of inifite callback loops, private property <code>_handleSpriteHit</code> is used.
+        </p>
         </div>
       </div>
 
@@ -1052,7 +1070,7 @@ hit: function(sprite, dir, dir2) {
           <h3>Backbone.Hero</h3>
           <pre>new Backbone.Hero([attributes], [options])</pre>
           <p>
-            The <code>Backbone.Hero</code> is a sub-classed <code>Backbone.Character</code> which implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros.
+            The <code>Backbone.Hero</code> is a sub-classed <code>Backbone.Character</code> which implements a controlable character with input and physics. Its playability is based on that of Mario in the Nintendo classic Super Mario Bros. Currently, only the small Mario is implemented.
           </p>
           <div class="alert alert-info">
             A <code>Backbone.Hero</code> must live inside a <code>Backbone.World</code>.
@@ -1060,15 +1078,29 @@ hit: function(sprite, dir, dir2) {
           <h4>Attributes</h4>
           <ul>
             <li><code>x, y</code>: Position of the sprite.</li>
+            <li><code>floor</code>: Set this value to prevent the character to fall outisde of the world due to gravity. By default it is null meaning the character will be removed from the world if it falls below the bottom of the world.</li>
+            <li><code>ceiling</code>: Analogous to <ocde>floor</ocde> but for exiting the world from above.</li>
             <li><code>width, height</code>: Size of the sprite in pixels. Defaults to  32 x 64.</li>
-            <li><code>name</code>: Name of the sprite. Defaults to mario.</li>
+            <li><code>paddingLeft, paddingRight, paddingTop, paddingBottom</code>: Optional. Internal padding to account for empty space inside the tile of a sprite. Useful to specify empty zones for collision detection. <ocde>paddingTop</ocde> is set to 32 to start as Mario is small.</li>
+            <li><code>sequenceIndex</code>: The current animation sequence frame. Automatically set.</li>
+            <li><code>name</code>: Name of the sprite. Defaults to hero.</li>
+            <li><code>hero</code>: Boolean set to true indicating this character sprite is the hero. Backbone.World will detect this and pass the Backbone.Input instance for taking user input.</li>
             <li><code>type</code>: Type of sprite. Defaults to character.</li>
             <li><code>spriteSheet</code>: Id of sprite sheet.</li>
             <li><code>state</code>: Current animation. Starts with idle-right.</li>
             <li><code>collision</code>: Boolean indicating whether it can be detected by other sprites. Defaults to true.</li>
-            <li><code>powerUp</code>: Whether Mario is small or big. Defaults to small.</li>
+            <li><code>static</code>: Set to false for the World to draw every animation frame.</li>
+            <li><code>visible</code>: Set to true for the sprite to be drawn.</li>
+            <li><code>zIndex</code>: Optional. Specifies the drawing order. Higher value is drawn above sprites with lower values. Default is 0.</li>
             <li><code>velocity, acceleration</code>: Current horizontal movement. Do not set.</li>
             <li><code>yVelocity, yAcceleration</code>: Current vertical movement. Do not set.</li>
+            <li><code>health</code>: Amount of health as an integer. When set to 0, the character is knocked out and dies. Defaults to 1.</li>
+            <li><code>healthMax</code>: The maximum allowed health. Defaults to 2.</li>
+            <li><code>dead</code>: Boolean flag indicating if the sprite is dead.</li>
+            <li><code>attackDamage</code>: This is the amount of damage the hero does to an opponent. Will reduce their health by this value. Defaults to 1.</li>
+            <li><code>ignoreInput</code>: Flag to prevent the hero from accepting user input. Defaults to false.</li>
+            <li><code>canAttack</code>: Flag indicating whether the B button will result in an attack. Defaults to false.</li>
+            <li><code>canTurnInJump</code>: By default the hero cannot turn in air (jumping or falling). Set this to tru to enable it.</li>
           </ul>
           <h4>Options</h4>
           <ul>
@@ -1076,38 +1108,17 @@ hit: function(sprite, dir, dir2) {
           </ul>
           <h4>Methods</h4>
           <p>
-            <code>Backbone.Hero</code> inherits all methods from <code>Backbone.Sprite</code> and <code>Backbone.Character</code>. In addition, it overrides this public method:
+            <code>Backbone.Hero</code> inherits all methods from <code>Backbone.Sprite</code> and <code>Backbone.Character</code>. In addition, it provides these methods you can override:
           </p>
           <ul>
-            <li><code>update(dt)</code>: Handles the character movements.</li>
-            <li><code>getHitReaction(character, dir, [dir2])</code>: When the hero hits another character, this method is called to get the reaction. Argument <code>dir</code> is the hit direction (can be <code>left</code>, <code>right</code>, <code>top</code> or <code>bottom</code>). For example, direction for landing on another character is <code>bottom</code>. Must return the reaction. Possible return values are:
-              <ul>
-                <li><code>null</code>: No reaction. Hero passes through the character.</li>
-                <li><code>block</code>: Character is blocking. Hero stops moving in the direction <code>dir</code>.</li>
-                <li><code>bounce</code>: Character is blocking but pushes back. Hero bounces back in the opposite direction <code>dir</code>. For example when Mario lands on top of a turtle, he bounces back.</li>
-                <li><code>ko</code>: Knock out from the world. When the character dies.</li>
-              </ul>
-              Argument <code>dir2</code> is optional. If specified it is the secondary direction. For example if hit from the top-left, <code>dir</code> would be <code>top</code> and <code>dir2</code> would be <code>left</code>.
-            </li>
+            <li><code>dirToggled(dirIntent)</code>: Called when the user presses the left or right buttons. Argument <code>dirIntent</code> maye be left or right. The default implementation handles left/right movements.</li>
+            <li><code>buttonAToggled</code>: Called when the user presses the A button (rigt-most blue on pad, or x on keyboard). The default implementation handles jumping.</li>
+            <li><code>buttonBToggled</code>: Called when the user presses the B button (left-most red on pad, or z on keyboard). The default implementation handles running and attacking (if <code>canAttack</code> is set to true).</li>
           </ul>
-          <p>
-            The default implementation of <code>getHitReaction</code> is as follows. Override it to change its behavior:
-          </p>
-          <pre>
-getHitReaction: function(character, dir, dir2) {
-  if (!character.isBlocking(this)) return null;
-  if (dir == "bottom") return "bounce";
-  return "block";
-}
-</pre>
           <h4>Events</h4>
-          <ul>
-            <li><code>attach</code>: Triggered when the sprite is attached to the world. Starts capturing events from the attached <code>Backbone.Input</code> instance.</li>
-            <li><code>detach</code>: Triggered when the sprite is detached to the world. Stops capturing events from the <code>Backbone.Input</code> instance.</li>
-          </ul>
-          <div class="alert alert-info">
-            <code>Backbone.Hero</code> does not implement the <code>hit</code> event. It does however trigger that event on other characters upon collisions. This logic is implemented in the <code>update</code> method.
-          </div>
+          <p>
+            <code>Backbone.Hero</code> has the same events as <code>Backbone.Character</code>.
+          </p>
           <h4>How it works</h4>
           <p>
             Attribute <code>state</code> determines the current animation. A state is a pair of move and direction. For example <code>idle-right</code>, <code>walk-left</code> and <code>jump-right</code>. Method <code>getStateInfo</code> will decompose the state for you into those components.
@@ -1129,44 +1140,65 @@ getHitReaction: function(character, dir, dir2) {
           </p>
           <h4>Collisions</h4>
           <p>
-            Our character detects collisions either from tiles or other characters to constrain its movements. It does so using collision detection methods from <code>Backbone.World</code>: <code>findCollidingAt</code> for tiles, and <code>findAt</code> for other characters. Every <code>update</code>, a check for collisions is made at 8 possible locations on the outline of the sprite:
+            Our character detects collisions either from tiles or other characters to constrain its movements. It does so using collision detection method <code>findCollidings</code> from <code>Backbone.World</code>. Every <code>update</code>, collisions with other sprites are detected on the outline of the sprite:
           </p>
           <p>
             <img class="img-responsive" src="docs/hero-collisions.png" alt="Hero Collisions" />
           </p>
           <p>
-            Collisions are only detected when necessary. For instance, when jumping collisions are detected top and right only. The decision is based on looking at <code>velocity</code> and <code>yVelocity</code>.
+            Collisions are only handled when necessary. For instance, when jumping collisions are handled top and right only. The decision is based on looking at <code>velocity</code> and <code>yVelocity</code>. For gravity, a check is performed every time at the bottom of the sprite to land or to fall.
           </p>
           <pre>
-if (velocity &gt;= 0) {
-  // Stop if obstacle to the right
-  var rightTopTile = obstacleCheckTopY > 0 ? this.world.findCollidingAt(heroLeftX + heroWidth, obstacleCheckTopY) : null,
-      rightBottomTile = obstacleCheckBottomY > 0 ? this.world.findCollidingAt(heroLeftX + heroWidth, obstacleCheckBottomY) : null,
-      rightBottomEnemie = this.world.findAt(heroLeftX + heroWidth, obstacleCheckBottomY, "character", this, true),
-      rightX = _.minNotNull([
-        this.world.width(),
-        rightTopTile ? rightTopTile.get("x") : null,
-        rightBottomTile ? rightBottomTile.get("x") : null,
-        rightBottomEnemie ? rightBottomEnemie.get("x") : null
-      ]);
+var bottomWorld = this.world.height() + tileHeight,
+    floor = this.get("floor") || bottomWorld,
+    bottomY = Math.min(floor, bottomWorld);
+
+for (i = 0; i < this.collisionMap.bottom.sprites.length; i++) {
+  sprite = this.collisionMap.bottom.sprites[i];
+  bottomY = Math.min(bottomY, sprite.getTop(true));
+  if (sprite.get("type") == "platform") bottomPlatform = sprite;
+}
+
+...
+
+if (yVelocity > 0 && heroBottomY >= bottomY) {
+  // Stop falling
+  land(bottomY);
+  for (i = 0; i < this.collisionMap.bottom.sprites.length; i++)
+    this.collisionMap.bottom.sprites[i].trigger("hit", this, "top", cur.dir);
+  if (this.cancelUpdate) return true;
+} else if (cur.mov != "jump" && yVelocity == 0 && heroBottomY < bottomY) {
+  // Start falling if no obstacle below
+  attrs.nextState = state;
+  attrs.state = this.buildState("jump", cur.mov2, cur.dir);
+} else if (yVelocity == 0 && heroBottomY == bottomY) {
+  // On a floating platform - same vertical velocity
+  if (bottomPlatform)
+    relativeVelocity = bottomPlatform.get("velocity");
+}
 </pre>
           <p>
             When an obstacle is hit, the character stops moving. Its <code>x</code> is anchored, and <code>velocity</code> set to 0.
           </p>
           <pre>
-if (heroLeftX + heroWidth >= rightX) {
-  if (!rightTopTile &amp;&amp; !rightBottomTile &amp;&amp; !rightBottomEnemie ||
-      rightTopTile ||
-      rightBottomTile ||
-      rightBottomEnemie &amp;&amp; rightBottomEnemie.isBlocking(this, "left")) {
+if (velocity >= 0) {
+  // Stop if obstacle to the right
+  var rightX = this.world.width();
+  for (i = 0; i < this.collisionMap.right.sprites.length; i++)
+    if (heroTopY > 0 )
+      rightX = Math.min(rightX, this.collisionMap.right.sprites[i].getLeft(true));
+
+  if (heroRightX >= rightX) {
     attrs.velocity = velocity = 0;
-    attrs.x = x = rightX - heroWidth;
+    attrs.x = x = rightX - heroWidth - paddingLeft;
+    for (i = 0; i < this.collisionMap.right.sprites.length; i++)
+      this.collisionMap.right.sprites[i].trigger("hit", this, "left", cur.mov2);
+    if (this.cancelUpdate) return true;
   }
-  if (rightBottomEnemie) rightBottomEnemie.trigger("hit", this, "left");
 }
 </pre>
           <p>
-            A collision with another character triggers an <code>hit</code> event on that sprite. The event hanlder will receive the colliding sprite (hero), and its relative position where the hit occured (left of the enemie sprite in this case).
+            A collision with other sprites triggers an <code>hit</code> event on that sprite. The event hanlder will receive the colliding sprite (hero), and its relative position where the hit occured (left of the enemie sprite in this case).
           </p>
           <h4>Usage</h4>
           <p>
