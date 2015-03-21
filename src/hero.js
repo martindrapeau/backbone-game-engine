@@ -249,10 +249,16 @@
     toggleDirection: function(dirIntent) {
       return this.dirToggled(dirIntent);
     },
+    ignoreInput: function() {
+      if (this.get("ignoreInput") || this.get("dead")) return true;
+      var cur = this.getStateInfo();
+      if (cur.mov == "ko" || cur.mov == "dead" || cur.mov2 == "hurt") return true;
+      return false;
+    },
     // User input toggled in right or left direction.
     // Can be pressed or depressed
     dirToggled: function(dirIntent) {
-      if (this.get("ignoreInput")) return this;
+      if (this.ignoreInput()) return this;
 
       if (dirIntent != "left" && dirIntent != "right")
         throw "Invalid or missing dirIntent. Must be left or right."
@@ -265,8 +271,6 @@
           run = this.input ? this.input.buttonBPressed() : false,
           velocity = this.get("velocity"),
           attrs = {};
-
-      if (cur.mov == "ko" || cur.mov == "dead" || cur.mov2 == "hurt") return this;
 
       if (dirPressed) {
         // Pressed. Intent to move in that direction
@@ -311,12 +315,10 @@
     },
     // Attack and run
     buttonBToggled: function() {
-      if (this.get("ignoreInput")) return this;
+      if (this.ignoreInput()) return this;
 
       var cur = this.getStateInfo(),
           pressed = this.input ? this.input.buttonBPressed() : false;
-      
-      if (cur.mov == "ko" || cur.mov == "dead" || cur.mov2 == "hurt") return this;
 
       if (pressed && cur.mov == "walk") {
         cur.mov = "run";
@@ -415,13 +417,11 @@
     },
     // Jump
     buttonAToggled: function() {
-      if (this.get("ignoreInput")) return this;
+      if (this.ignoreInput()) return this;
 
       var state = this.get("state"),
           cur = this.getStateInfo(),
           attrs = {};
-
-      if (this.get("dead")) return this;
 
       if (this.input && this.input.buttonAPressed() && cur.mov != "jump") {
         // Set new state (keep old as next)

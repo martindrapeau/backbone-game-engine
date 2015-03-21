@@ -31,6 +31,7 @@
         this.listenTo(this.subject, "change:x change:y", this.maybePan);
     },
     maybePan: function() {
+      if (!this.world) return this;
       var w = this.world.toShallowJSON(),
           worldX = w.x,
           worldY = w.y,

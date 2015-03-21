@@ -117,10 +117,10 @@ $(window).on("load", function() {
 
       // Controls
       $(document).on("keypress.Controller", function(e) {
-        if (e.keyCode == 80 || e.keyCode == 112)
-          controller.engine.toggle();
-        else if (e.keyCode == 69 || e.keyCode == 101)
-          controller.toggleState();
+        if (e.keyCode == 66 || e.keyCode == 98)
+          controller.engine.toggle(); // b to break the animation
+        else if (e.keyCode == 80 || e.keyCode == 112)
+          controller.toggleState(); // p to pause and pause
       });
 
       this.listenTo(this.world, "change:state", this.onChangeState);
