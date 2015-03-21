@@ -84,7 +84,8 @@
           <ul>
             <li><strong>Built on Backbone</strong>. Events, models, collections, inheritance and RESTful persistence. Why reinvent the wheel?</li>
             <li><strong>HTML5 canvas only</strong>. No jQuery, as little DOM manipulations as possible.</li>
-            <li><strong>Mobile optimized</strong>. Built to run in the browser or in CocoonJS/Phone Gap. Optimized for maxium FPS.</li>
+            <li><strong>Mobile optimized</strong>. Build to run on mobile devices with transparent touch and viewport support. Everything is optimized for maxium frames per seconds (FPS).</li>
+            <li><strong>Go Native with CocoonJS.</strong>. Built to run in Ludei's <a href="http://support.ludei.com/hc/en-us/articles/200767118-Canvas-development-Guide" target="_blank">CocoonJS canvas+</a>. Deploy native on iOS and Android.</li>
             <li><strong>2D platformer</strong>. Built with side-scrollers in mind. Built-in classes for sprites, sprite sheets, characters, hero, quad-tree collision detection, world and editor.</li>
             <li><strong>No compilation</strong>. You don't need to install node, grunt or whatever else. Just code and press F5 to run.</li>
             <li><strong>No server required</strong>. Fork this repo and your Github site is up and going. Create your own game and point your friends to it. Rebase to pull in latest engine updates.</li>
@@ -1726,17 +1727,22 @@ icons.png
       <div id="publishing" class="row">
         <div class="col-md-12">
           <h1>Publishing your Game</h1>
+          <h2>On the Web</h2>
           <p>
             If you forked this repo, your game is already published on the web on your Github page under <code>[username].github.io/backbone-game-engine</code>.
           </p>
           <p>
             If you own an iPad or iPhone, you can add it to the home screen as a Web app. It will open in full-screen and if you've implemented an Application Cache, it will work offline too.
           </p>
+          <h2>On iOS and Android</h2>
           <p>
-            For publishing to the Apple App Store, or Google Play, you can use <a href="https://www.ludei.com/cocoonjs/" target="_blank">CocoonJS</a>. They claim to increase the canvas performance up to 10x (that's good because HTML5 canvas performance on Android is not great).
+            Backbone Game Engine was built to run in <a href="https://www.ludei.com/cocoonjs/" target="_blank">CocoonJS</a> canvas+. You can try out Super Mario Bros level 1-1 in the <a href="http://support.ludei.com/hc/en-us/articles/201048463-CocoonJS-launcher-user-guide" target="_blank">CocoonJS launcher</a> by pointing to the zip file at this URL:
+<pre>
+http://martindrapeau.github.io/backbone-game-engine/super-mario-bros.zip
+</pre>
           </p>
           <p>
-            If you use CocoonJS, ensure to follow their best practices. Notably, only use the canvas (there is only basic support for HTML). Backbone Game Engine was written canvas-first and without jQuery and DOM manipulations for this reason.
+            Phone Gap is another HTML5 native app publising tool.
           </p>
         </div>
       </div>
@@ -1780,6 +1786,8 @@ icons.png
             <li>Complete rewrite of Backbone.Character.</li>
             <li>Complete rewrite of Backbone.Hero.</li>
             <li>Backbone.Editor now resizes sprites to fit in the specified tileWidth and tileHeight.</li>
+            <li>Rewrite of adjustViewport global function to work cross-device.</li>
+            <li>Official support of CocoonJS canvas+.</li>
           </ul>
         </div>
       </div>
