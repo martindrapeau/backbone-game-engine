@@ -174,7 +174,9 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
-      if (this.cancelUpdate) return this;
+      if (this._handlingSpriteHit) return this;
+      this._handlingSpriteHit = sprite;
+
       var cur = this.getStateInfo();
       
       if (cur.mov2 == "hurt") return this;
@@ -188,6 +190,7 @@
         this.set("state", this.buildState(cur.mov, cur.opo));
       }
 
+      tis._handlingSpriteHit = undefined;
       return this;
     },
     startNewAnimation: function(state, attrs, done) {
@@ -330,7 +333,7 @@
           attrs.yVelocity = yVelocity = 0;
           attrs.y = y = bottomY - tileHeight + paddingBottom;
           if (cur.mov == "fall")
-            attrs.state = this.buildState("walk", null, cur.dir);
+            attrs.state = this.buildState("walk", cur.mov2, cur.dir);
           else if (cur.mov == "ko") {
             attrs.velocity = velocity = 0;
           }
@@ -341,7 +344,7 @@
 
         } else if (cur.mov != "fall" && cur.mov != "ko" && charBottomY < bottomY) {
           // Start falling if no obstacle below
-          attrs.state = this.buildState("fall", null, cur.dir);
+          attrs.state = this.buildState("fall", cur.mov2, cur.dir);
 
           if (cur.mov == "walk" && velocity != 0) {
             this.trigger("beforeFall");
@@ -399,7 +402,7 @@
               if (this.cancelUpdate) return true;
             }
             attrs.velocity = velocity = velocity * -1;
-            attrs.state = this.buildState(cur.mov, cur.opo);
+            attrs.state = this.buildState(cur.mov, cur.mov2, cur.opo);
             attrs.x = x = leftX - paddingLeft;
           }
         }
@@ -428,7 +431,7 @@
               if (this.cancelUpdate) return true;
             }
             attrs.velocity = velocity = velocity * -1;
-            attrs.state = this.buildState(cur.mov, cur.opo);
+            attrs.state = this.buildState(cur.mov, cur.mov2, cur.opo);
             attrs.x = x = rightX - charWidth - paddingLeft;
           }
         }
@@ -445,7 +448,7 @@
     },
     toggleDirection: function(dirIntent) {
       var cur = this.getStateInfo();
-      this.set({state: this.buildState(cur.mov, null, dirIntent)});
+      this.set({state: this.buildState(cur.mov, cur.mov2, dirIntent)});
       return this;
     },
     getStateInfo: function(state) {

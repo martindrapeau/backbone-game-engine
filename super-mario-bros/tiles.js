@@ -264,14 +264,17 @@
       this.on("hit", this.hit, this);
     },
     hit: function(sprite, dir, dir2) {
-      if (!sprite || !sprite.get("hero") || dir != "bottom") return;
-      if (this.get("state") != "idle") return;
+      if (sprite.get("hero") && dir == "bottom") {
+        var tile = this;
+        this.set({state: "bounce", sequenceIndex: 0});
+        this.world.setTimeout(function() {
+          tile.set({state: "idle"});
+        }, 200);
+      } else if (dir == "top") {
+        sprite.trigger("hit", this, "bottom");
+      }
 
-      var tile = this;
-      this.set({state: "bounce", sequenceIndex: 0});
-      setTimeout(function() {
-        tile.set({state: "idle"});
-      }, 200);
+      return this;
     }
   });
 

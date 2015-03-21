@@ -65,26 +65,23 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
-      if (this.cancelUpdate) return this;
+      if (this._handlingSpriteHit) return this;
+      this._handlingSpriteHit = sprite;
 
       var cur = this.getStateInfo(),
           opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
-      if (cur.mov != "walk" && cur.mov != "idle" && cur.mov != "fall") return this;
 
       if (sprite.get("hero")) {
         if (dir == "top")
           this.squish.apply(this, arguments);
-      } else if (sprite.get("state").indexOf("slide") == 0) {
+      } else if (sprite.get("state").indexOf("slide") != -1 ||
+                sprite.get("type") == "tile" && dir == "bottom" && sprite.get("state") == "bounce") {
         this.knockout.apply(this, arguments);
       }
       sprite.trigger("hit", this, opo);
+
+      this._handlingSpriteHit = undefined;
       return this;
-    },
-    getHitReaction: function(sprite, dir, dir2) {
-      var type = sprite.get("type"),
-          state = sprite.get("state");
-      if (dir == "bottom" && type == "tile" && state == "bounce") return "ko";
-      return ((dir == "left" || dir == "right") && (state == "slide-left" || state == "slide-right")) ? null : Backbone.Character.prototype.getHitReaction.apply(this, arguments);
     }
   });
 
@@ -95,7 +92,7 @@
     animations: _.deepClone(Backbone.Mushroom.prototype.animations),
     isAttacking: function() {
       var cur = this.getStateInfo();
-      return (cur.mov == "walk" || cur.mov == "idle" || cur.mov == "slide");
+      return (cur.mov == "walk" || cur.mov == "idle");
     },
     slide: function(sprite, dir, dir2) {
       if (this.wakeTimerId) {
@@ -104,7 +101,7 @@
       }
 
       var dir = sprite.getCenterX(true) > this.getCenterX(true) ? "left" : "right";
-      this.set("state", this.buildState("slide", dir));
+      this.set("state", this.buildState("walk", "slide", dir));
       this.cancelUpdate = true;
       return this;
     },
@@ -126,24 +123,26 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
-      if (this.cancelUpdate) return this;
+      if (this._handlingSpriteHit) return this;
+      this._handlingSpriteHit = sprite;
 
       var cur = this.getStateInfo(),
           opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
-      if (cur.mov == "slide") this.cancelUpdate = true;
-
-      if (!sprite.get("hero"))
-        return Backbone.Mushroom.prototype.hit.apply(this, arguments);
+      if (cur.mov2 == "slide") this.cancelUpdate = true;
 
       if (dir == "top") {
         this.squish.apply(this, arguments);
-      } else if (cur.mov == "squished" || cur.mov == "wake") {
+      } else if (sprite.get("hero") && (cur.mov == "squished" || cur.mov == "wake")) {
         this.slide.apply(this, arguments);
         opo = "bottom";
+      } else if (sprite.get("state").indexOf("slide") != -1 ||
+                sprite.get("type") == "tile" && dir == "bottom" && sprite.get("state") == "bounce") {
+        this.knockout.apply(this, arguments);
       }
 
       sprite.trigger("hit", this, opo);
 
+      this._handlingSpriteHit = undefined;
       return this;
     },
     wake: function() {
@@ -183,15 +182,31 @@
       scaleY: 1,
       delay: sequenceDelay
     },
-    "slide-left": {
+    "walk-slide-left": {
       sequences: [10],
       velocity: -300,
       scaleX: 1,
       scaleY: 1
     },
-    "slide-right": {
+    "walk-slide-right": {
       sequences: [10],
       velocity: 300,
+      scaleX: -1,
+      scaleY: 1
+    },
+    "fall-slide-left": {
+      sequences: [10],
+      velocity: -300,
+      yVelocity: animations["fall-left"].yVelocity,
+      yAcceleration: animations["fall-left"].yAcceleration,
+      scaleX: 1,
+      scaleY: 1
+    },
+    "fall-slide-right": {
+      sequences: [10],
+      velocity: 300,
+      yVelocity: animations["fall-right"].yVelocity,
+      yAcceleration: animations["fall-right"].yAcceleration,
       scaleX: -1,
       scaleY: 1
     }
@@ -207,7 +222,7 @@
       var cur = this.getStateInfo(),
           animation = this.getAnimation(),
           attrs = {};
-      if (cur.mov == "walk" && this.world.get("state") == "play") {
+      if (cur.mov2 == null && cur.mov == "walk" && this.world.get("state") == "play") {
           attrs.state = this.buildState("fall", cur.dir);
           attrs.yVelocity = -this.animations["fall-right"].yVelocity;
       }
@@ -245,7 +260,8 @@
     animations["ko-left"].sequences = animations["ko-right"].sequences = [108];
   animations["walk-left"].sequences = animations["walk-right"].sequences = [108, 109];
   animations["squished-left"].sequences = animations["squished-right"].sequences =
-  animations["slide-left"].sequences = animations["slide-right"].sequences = [112];
+    animations["walk-slide-left"].sequences = animations["walk-slide-right"].sequences =
+    animations["fall-slide-left"].sequences = animations["fall-slide-right"].sequences = [112];
   animations["wake-left"].sequences = animations["wake-right"].sequences = [112, 113];
 
   Backbone.RedFlyingTurtle = Backbone.FlyingTurtle.extend({
@@ -261,7 +277,8 @@
     animations["ko-left"].sequences = animations["ko-right"].sequences = [110];
   animations["walk-left"].sequences = animations["walk-right"].sequences = [110, 111];
   animations["squished-left"].sequences = animations["squished-right"].sequences =
-  animations["slide-left"].sequences = animations["slide-right"].sequences = [112];
+    animations["walk-slide-left"].sequences = animations["walk-slide-right"].sequences =
+    animations["fall-slide-left"].sequences = animations["fall-slide-right"].sequences = [112];
   animations["wake-left"].sequences = animations["wake-right"].sequences = [112, 113];
 
   Backbone.Beetle = Backbone.Turtle.extend({
@@ -276,8 +293,9 @@
     animations["ko-left"].sequences = animations["ko-right"].sequences = [33];
   animations["walk-left"].sequences = animations["walk-right"].sequences = [33, 32];
   animations["squished-left"].sequences = animations["squished-right"].sequences =
-  animations["slide-left"].sequences = animations["slide-right"].sequences = 
-  animations["wake-left"].sequences = animations["wake-right"].sequences =[34];
+    animations["walk-slide-left"].sequences = animations["walk-slide-right"].sequences = 
+    animations["fall-slide-left"].sequences = animations["fall-slide-right"].sequences = 
+    animations["wake-left"].sequences = animations["wake-right"].sequences = [34];
 
   Backbone.Spike = Backbone.Mushroom.extend({
     defaults: _.extend(_.deepClone(Backbone.Mushroom.prototype.defaults), {

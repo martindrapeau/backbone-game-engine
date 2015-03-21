@@ -55,8 +55,7 @@ $(window).on("load", function() {
       });
 
       // Camera
-      this.camera = new Backbone.Camera({
-      });
+      this.camera = new Backbone.Camera();
 
       // Our world
       this.world = new Backbone.World(
@@ -100,7 +99,7 @@ $(window).on("load", function() {
         canvas: canvas,
         debugPanel: this.debugPanel
       });
-      engine.add(_.compact([
+      this.engine.add(_.compact([
         this.world,
         this.camera,
         this.toggleButton,

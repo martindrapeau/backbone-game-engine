@@ -26,26 +26,25 @@
       return this;
     },
     hit: function(sprite, dir, dir2) {
-      if (this.cancelUpdate) return this;
+      if (this._handlingSpriteHit) return this;
+      this._handlingSpriteHit = sprite;
 
       if (sprite.get("type") == "artifact") {
         this.cancelUpdate = true;
-        return this;
-      }
-
-      if (sprite.get("type") == "character") {
+      } else if (sprite.get("type") == "character") {
         var name = sprite.get("name"),
             cur = this.getStateInfo(),
             opo = dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : "top"));
 
-        if (dir == "bottom" && name != "spike")
-          return this.bounce.apply(this, arguments);
-
-        if (sprite.isAttacking()) {
+        if (dir == "bottom" && name != "spike") {
+          this.bounce.apply(this, arguments);
+        } else if (sprite.isAttacking()) {
           this.knockout(sprite, "left");
-          sprite.trigger("hit", this, opo);
         }
+        sprite.trigger("hit", this, opo);
       }
+
+      this._handlingSpriteHit = undefined;
       return this;
     }
   });
