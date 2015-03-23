@@ -11,6 +11,7 @@ $(window).on("load", function() {
   
   var canvas = document.getElementById("foreground"),
       context = canvas.getContext("2d");
+  adjustViewport(canvas);
 
   var spriteNames = [
     "land1", "land2", "land3", "land4", "land5", "land6",
@@ -55,8 +56,7 @@ $(window).on("load", function() {
       });
 
       // Camera
-      this.camera = new Backbone.Camera({
-      });
+      this.camera = new Backbone.Camera();
 
       // Our world
       this.world = new Backbone.World(
@@ -96,16 +96,17 @@ $(window).on("load", function() {
       this.downloadButton.on("tap", this.downloadNewVersion, this);
 
       // The game engine
-      this.engine = new Backbone.Engine(_.compact([
+      this.engine = new Backbone.Engine({}, {
+        canvas: canvas,
+        debugPanel: this.debugPanel
+      });
+      this.engine.add(_.compact([
         this.world,
         this.camera,
         this.toggleButton,
         this.message,
         this.debugPanel
-      ]), {
-        canvas: canvas,
-        debugPanel: this.debugPanel
-      });
+      ]));
 
       // The sprite picker and editor
       this.editor = new Backbone.WorldEditor({
@@ -117,10 +118,10 @@ $(window).on("load", function() {
 
       // Controls
       $(document).on("keypress.Controller", function(e) {
-        if (e.keyCode == 80 || e.keyCode == 112)
-          controller.engine.toggle();
-        else if (e.keyCode == 69 || e.keyCode == 101)
-          controller.toggleState();
+        if (e.keyCode == 66 || e.keyCode == 98)
+          controller.engine.toggle(); // b to break the animation
+        else if (e.keyCode == 80 || e.keyCode == 112)
+          controller.toggleState(); // p to pause and pause
       });
 
       this.listenTo(this.world, "change:state", this.onChangeState);
@@ -232,8 +233,5 @@ $(window).on("load", function() {
     context: context,
     controller: controller
   });
-  
-  // Ensure the canvas is always visible and centered
-  adjustViewport(canvas, 960, 700);
 
 });

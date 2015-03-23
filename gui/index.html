@@ -1,7 +1,7 @@
 <!doctype html>
-<html style="touch-action: none;" manifest="offline.appcache">
+<html style="touch-action: none;">
     <head>
-        <title>Super Mario Bros Level 1-1 - Backbone Game Engine</title>
+        <title>GUI - Backbone Game Engine</title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon" />
@@ -13,34 +13,32 @@
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 
-        <script src="../3rd/qtree.js" type="text/javascript"></script>
         <script src="../3rd/underscore.js" type="text/javascript"></script>
         <script src="../3rd/backbone.native.js" type="text/javascript"></script>
         <script src="../3rd/backbone.js" type="text/javascript"></script>
+        <script src="../3rd/qtree.js" type="text/javascript"></script>
 
         <script src="../src/adjust-viewport.js" type="text/javascript"></script>
         <script src="../src/shapes.js" type="text/javascript"></script>
         <script src="../src/core.js" type="text/javascript"></script>
-        <script src="../src/character.js" type="text/javascript"></script>
-        <script src="../src/input.js" type="text/javascript"></script>
-        <script src="../src/hero.js" type="text/javascript"></script>
-        <script src="../src/world.js" type="text/javascript"></script>
-        <script src="../src/local-storage.js" type="text/javascript"></script>
-        <script src="../src/camera.js" type="text/javascript"></script>
-        <script src="../src/editor.js" type="text/javascript"></script>
 
-        <script src="mario.js" type="text/javascript"></script>
-        <script src="tiles.js" type="text/javascript"></script>
-        <script src="artifacts.js" type="text/javascript"></script>
-        <script src="enemies.js" type="text/javascript"></script>
-        <script src="display.js" type="text/javascript"></script>
-        <script src="level_1-1.js" type="text/javascript"></script>
+        <script src="elements.js" type="text/javascript"></script>
+        <script src="title-screen.js" type="text/javascript"></script>
         <script src="main.js" type="text/javascript"></script>
 
         <style>
+            @-ms-viewport {
+                width: 960px;
+            }
+            @font-face {
+                font-family: 'arcade';
+                src: url('arcade.ttf'), url('arcade.woff');
+            }
             body {
                 margin: 0;
                 background-color: #000;
+                font-family: "arcade";
+                line-height: 1.2em;
             }
             canvas {
                 position: fixed;
@@ -52,12 +50,10 @@
     </head>
 
     <body>
-        <img id="mario" src="super-mario-2x.png" style="display:none;" />
-        <img id="tiles" src="super-mario-tiles-2x.png" style="display:none;" />
-        <img id="enemies" src="super-mario-enemies-2x.png" style="display:none;" />
-        <img id="icons" src="icons.png" style="display:none;" />
+        <img id="title-screen" src="title-screen.jpg" style="display:none;" />
+        <img id="gui" src="gui.png" style="display:none;" />
 
-        <canvas id="foreground" width="960" height="700">
+        <canvas id="foreground" width="960" height="720" screencanvas="true">
             Your browser does not support canvas element.
         </canvas>
     </body>

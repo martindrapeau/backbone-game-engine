@@ -1,7 +1,7 @@
 CACHE MANIFEST
 # Version 0.40 (c) 2014 Martin Drapeau
 
-../3rd/hammer.js
+../3rd/qtree.js
 ../3rd/underscore.js
 ../3rd/backbone.native.js
 ../3rd/backbone.js

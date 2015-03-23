@@ -12,6 +12,7 @@ $(window).on("load", function() {
   
   var canvas = document.getElementById("foreground"),
       context = canvas.getContext("2d");
+  adjustViewport(canvas);
 
   var spriteNames = [
     "ground", "brick-top", "brick", "ground2", "block", "block2", "question-block", "pennie",
@@ -112,17 +113,18 @@ $(window).on("load", function() {
       this.downloadButton.on("tap", this.downloadNewVersion, this);
 
       // The game engine
-      this.engine = new Backbone.Engine(_.compact([
+      this.engine = new Backbone.Engine({}, {
+        canvas: canvas,
+        debugPanel: this.debugPanel
+      });
+      this.engine.add(_.compact([
         this.world,
         this.display,
         this.camera,
         this.toggleButton,
         this.message,
         this.debugPanel
-      ]), {
-        canvas: canvas,
-        debugPanel: this.debugPanel
-      });
+      ]));
 
       // The sprite picker and editor
       this.editor = new Backbone.WorldEditor({
@@ -248,8 +250,5 @@ $(window).on("load", function() {
     context: context,
     controller: controller,
   });
-
-  // Ensure the canvas is always visible and centered
-  adjustViewport(canvas, canvas.width, canvas.height);
 
 });

@@ -216,7 +216,7 @@
       if (!this.engine) return;
       this.onDetach();
 
-      this.clock = this.engine.findWhere({name: "animatedTileClock"});
+      this.clock = this.engine.sprites.findWhere({name: "animatedTileClock"});
 
       if (!this.clock)
         this.clock = this.engine.add(new Backbone.Clock({name: "animatedTileClock", delay: 200}));
@@ -263,15 +263,18 @@
       Backbone.AnimatedTile.prototype.initialize.apply(this, arguments);
       this.on("hit", this.hit, this);
     },
-    hit: function(sprite) {
-      if (!sprite || !sprite.get("hero")) return;
-      if (this.get("state") != "idle") return;
+    hit: function(sprite, dir, dir2) {
+      if (sprite.get("hero") && dir == "bottom") {
+        var tile = this;
+        this.set({state: "bounce", sequenceIndex: 0});
+        this.world.setTimeout(function() {
+          tile.set({state: "idle"});
+        }, 200);
+      } else if (dir == "top") {
+        sprite.trigger("hit", this, "bottom");
+      }
 
-      var tile = this;
-      this.set({state: "bounce", sequenceIndex: 0});
-      setTimeout(function() {
-        tile.set({state: "idle"});
-      }, 200);
+      return this;
     }
   });
 
@@ -320,8 +323,8 @@
       Backbone.AnimatedTile.prototype.initialize.apply(this, arguments);
       this.on("hit", this.hit, this);
     },
-    hit: function(sprite) {
-      if (!sprite || !sprite.get("hero")) return;
+    hit: function(sprite, dir, dir2) {
+      if (!sprite || !sprite.get("hero") || dir != "bottom") return;
       if (this.get("state") != "idle") return;
 
       var tile = this;

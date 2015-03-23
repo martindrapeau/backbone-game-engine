@@ -17,8 +17,8 @@
       fallVelocity = 600,
       fallAcceleration = 1200;
 
-  Backbone.Frog = Backbone.Character.extend({
-    defaults: _.extend({}, Backbone.Character.prototype.defaults, {
+  Backbone.Frog = Backbone.Hero.extend({
+    defaults: _.extend({}, Backbone.Hero.prototype.defaults, {
       name: "frog",
       type: "character",
       width: 50,
@@ -28,9 +28,7 @@
       velocity: 0,
       acceleration: 0,
       yVelocity: 0,
-      yAcceleration: 0,
-      collision: true,
-      hero: true
+      yAcceleration: 0
     }),
     animations: {
       "idle-right": {
@@ -74,49 +72,24 @@
         yDescentAcceleration: fallAcceleration,
         scaleX: -1,
         scaleY: 1
-      }
+      },
+      "dead-left": _.extend({}, Backbone.Hero.prototype.animations["dead-left"], {sequences: [0]}),
+      "dead-right": _.extend({}, Backbone.Hero.prototype.animations["dead-right"], {sequences: [0]})
     },
-    saveAttributes: Backbone.Hero.prototype.saveAttributes,
-    initialize: function(attributes, options) {
-      options || (options = {});
-      Backbone.Character.prototype.initialize.apply(this, arguments);
-
-      this.input = options.input;
-      this.world = options.world;
-
-      this.on("attach", this.onAttach, this);
-      this.on("detach", this.onDetach, this);
-    },
-    onAttach: function() {
-      if (this.input) {
-        this.stopListening(this.input);
-        this.listenTo(this.input, "change:right", _.partial(this.dirToggled, "right"));
-        this.listenTo(this.input, "change:left", _.partial(this.dirToggled, "left"));
-        this.listenTo(this.input, "change:buttonA", this.buttonAToggled);
-      }
-      this.debugPanel = this.engine && this.engine.debugPanel ? this.engine.debugPanel : undefined;
-    },
-    onDetach: function() {
-      if (this.input) this.stopListening(this.input);
-      this.debugPanel = undefined;
-    },
-    toggleDirection: function(dirIntent) {
-      return this.dirToggled(dirIntent);
-    },
-    // User input toggled in right or left direction.
-    // Can be pressed or depressed
     dirToggled: function(dirIntent) {
+      if (this.ignoreInput()) return this;
+
       if (dirIntent != "left" && dirIntent != "right")
         throw "Invalid or missing dirIntent. Must be left or right."
 
       var cur = this.getStateInfo(),
           opoIntent = dirIntent == "right" ? "left" : "right",
-          dirPressed = this.input[dirIntent+"Pressed"](),
-          opoPressed = this.input[opoIntent+"Pressed"](),
+          dirPressed = this.input ? this.input[dirIntent+"Pressed"]() : false,
+          opoPressed = this.input ? this.input[opoIntent+"Pressed"]() : false,
           attrs = {};
 
       if (dirPressed && cur.mov != "jump") {
-        attrs.state = cur.mov + "-" + dirIntent;
+        attrs.state = this.buildState(cur.mov, dirIntent);
       } else {
         if (opoPressed) this.dirToggled(opoIntent);
       }
@@ -127,25 +100,29 @@
     },
     // Jump
     buttonAToggled: function() {
+      if (this.ignoreInput()) return this;
+
       var state = this.get("state"),
           cur = this.getStateInfo(),
           attrs = {};
 
-      if (this.input.buttonAPressed() && cur.mov != "jump") {
-        attrs.state = "jump-" + cur.dir;
-        attrs.nextState = "idle-" + cur.dir;
+      if (this.input && this.input.buttonAPressed() && cur.mov != "jump") {
+        attrs.state = this.buildState("jump", cur.dir);
+        attrs.nextState = this.buildState("idle", cur.dir);
         var jumpAnimation = this.getAnimation(attrs.state);
         attrs.velocity = jumpAnimation.velocity;
         attrs.yVelocity = jumpAnimation.yStartVelocity;
         jumpAnimation.minY = this.get("y") - 200;
       }
       if (!_.isEmpty(attrs)) this.set(attrs);
-    },
-    update: function(dt) {
-      // Reuse Hero's update
-      var result = Backbone.Hero.prototype.update.apply(this, arguments);
-      if (!result) return result;
 
+      return this;
+    },
+    // No action
+    buttonBToggled: function() {
+      return this;
+    },
+    onUpdate: function(dt) {
       var cur = this.getStateInfo(),
           velocity = this.get("velocity"),
           attrs = {};
@@ -155,17 +132,13 @@
         // No momentum
         attrs.velocity = 0;
         // Turn around
-        if (cur.dir == "left" && this.input.rightPressed() ||
-            cur.dir == "right" && this.input.leftPressed())
-          attrs.state = cur.mov + "-" + cur.opo;
+        if (cur.dir == "left" && this.input && this.input.rightPressed() ||
+            cur.dir == "right" && this.input && this.input.leftPressed())
+          attrs.state = this.buildState(cur.mov, cur.opo);
       }
       if (!_.isEmpty(attrs)) this.set(attrs);
 
-      return result;
-    },
-    getHitReaction: function(character, dir, dir2) {
-      if (!character.isBlocking(this)) return null;
-      return "block";
+      return true;
     }
   });
 

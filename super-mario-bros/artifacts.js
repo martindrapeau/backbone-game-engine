@@ -12,7 +12,7 @@
   Backbone.Pennie = Backbone.AnimatedTile.extend({
     defaults: {
       name: "pennie",
-      type: "character",
+      type: "artifact",
       width: 32,
       height: 32,
       spriteSheet: "tiles",
@@ -27,16 +27,14 @@
     },
     initialize: function(attributes, options) {
       Backbone.AnimatedTile.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, "isBlocking");
       this.on("hit", this.hit, this);
       this.on("squish", this.hit, this);
     },
-    isBlocking: function(sprite) {
-      return false;
-    },
-    hit: function(sprite, position) {
-      if (sprite.get("hero"))
+    hit: function(sprite, dir, dir2) {
+      if (sprite.get("hero")) {
+        sprite.trigger("hit", this);
         _.defer(this.world.remove, this);
+      }
     }
   });
 
@@ -53,9 +51,7 @@
       name: "lever"
     }),
     animations: _.deepClone(Backbone.Pennie.prototype.animations),
-    hit: function(sprite, position) {
-      
-    }
+    hit: function(sprite, dir, dir2) {}
   });
   Backbone.Lever.prototype.animations.idle.sequences = [55, 55, 56, 57, 56, 55];
 

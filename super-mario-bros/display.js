@@ -43,7 +43,7 @@
       this.pennieSprite.engine = this.engine;
       this.pennieSprite.trigger("attach");
       this.listenTo(this.world.dynamicSprites, "remove", this.onPennieRemoved);
-      this.pennieSprite.set({x: context.canvas.width/2 - 30});
+      this.pennieSprite.set({x: this.engine.canvas.width/2 - 30});
     },
     onDetach: function() {
       this.pennieSprite.trigger("detach");

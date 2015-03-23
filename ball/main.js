@@ -85,14 +85,16 @@ $(window).on("load", function() {
     color: "blue"
   });
 
-  var engine = new Backbone.Engine([
-  	ball,
-    debugPanel
-  ], {
-    canvas: canvas,
-    debugPanel: debugPanel,
+  var engine = new Backbone.Engine({
     clearOnDraw: true
+  }, {
+    canvas: canvas,
+    debugPanel: debugPanel
   });
+  engine.add([
+    ball,
+    debugPanel
+  ]);
 
   // Expose things as globals - easier to debug
   _.extend(window, {
@@ -100,7 +102,6 @@ $(window).on("load", function() {
     engine: engine
   });
 
-  // Ensure the canvas is always visible and centered
-  adjustViewport(canvas, 960, 700);
+  adjustViewport(canvas);
 
 });
