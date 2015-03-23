@@ -263,7 +263,7 @@
   // on an HTML5 canvas.
   Backbone.Engine = Backbone.Model.extend({
     defaults: {
-      version: 0.2,
+      version: 0.3,
       clearOnDraw: false,
       tapDetectionDelay: 50, // in ms
       tapMoveTolerance: 5 // Move tolerance for a tap detection in pixels

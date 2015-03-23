@@ -50,8 +50,9 @@
       <div class="row">
         <div class="col-md-6 col-xs-6">
           <p>
-            An elementary HTML5 Canvas game engine built on Backbone. Specialized for 2D platformers, and optimized for mobile. Examples:
+            An elementary HTML5 Canvas game engine built on Backbone. Specialized for 2D platformers, and optimized for mobile.
           </p>
+          <h4>Examples</h4>
           <ul>
             <li>Elementary: <a href="ball/index.html" target="_blank">Bouncing ball</a></li>
             <li>Basic: <a href="mario/index.html" target="_blank">Mario in an empty world</a></li>
@@ -75,6 +76,18 @@
               </div>
             </div>
           </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <h4>CocoonJS Example</h4>
+          <p>
+            Backbone Game Engine was written to run inside of CocoonJS Canvas+, so you can turn your HTML5 game into a native application on iOS or Android. If you have the CocoonJS launcher loaded on your iOS or Android device, you can load Super Mario Bros level 1-1 via this URL:
+          </p>
+<pre>
+http://martindrapeau.github.io/cocoon-mario/cocoon-mario.zip
+</pre>
         </div>
       </div>
 
@@ -331,7 +344,7 @@ $(window).on("load", function() {
     debugPanel: this.debugPanel,
     input: input
   });
-  engine.add[
+  engine.add([
     world,
     input,
     debugPanel
@@ -1736,13 +1749,14 @@ icons.png
           </p>
           <h2>On iOS and Android</h2>
           <p>
-            Backbone Game Engine was built to run in <a href="https://www.ludei.com/cocoonjs/" target="_blank">CocoonJS</a> canvas+. You can try out Super Mario Bros level 1-1 in the <a href="http://support.ludei.com/hc/en-us/articles/201048463-CocoonJS-launcher-user-guide" target="_blank">CocoonJS launcher</a> by pointing to the zip file at this URL:
+            Backbone Game Engine was built to run in <a href="https://www.ludei.com/cocoonjs/" target="_blank">CocoonJS</a> canvas+. You can try out Super Mario Bros level 1-1 in the <a href="http://support.ludei.com/hc/en-us/articles/201048463-CocoonJS-launcher-user-guide" target="_blank">CocoonJS launcher</a> by pointing to the zip file at this URL: http://martindrapeau.github.io/cocoon-mario/cocoon-mario.zip.
+            </p>
 <pre>
-http://martindrapeau.github.io/backbone-game-engine/super-mario-bros.zip
+http://martindrapeau.github.io/cocoon-mario/cocoon-mario.zip
 </pre>
-          </p>
           <p>
-            Phone Gap is another HTML5 native app publising tool.
+            Checkout the Github repo <a href="" target="_blank">cocoon-mario</a>.
+            It can be used as the basis for your own native game on iOS or Android.
           </p>
         </div>
       </div>
@@ -1777,7 +1791,7 @@ http://martindrapeau.github.io/backbone-game-engine/super-mario-bros.zip
             <li>Editor: paging, shrink large sprites, highlight tiles</li>
             <li>World: z-index, tap event,key event, fixed background image, improved sprite lookup, bug fixes</li>
           </ul>
-          <h4>0.30 - 2015-03-??</h4>
+          <h4>0.30 - 2015-03-22</h4>
           <ul>
             <li>Backbone.Element - a rudimentary DOM element with image, text and animations.</li>
             <li>Backbone.World now uses a QuadTree for collision detection.</li>

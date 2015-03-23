@@ -27,7 +27,7 @@
 
   function adjustViewport(canvas, keepRatio) {
 
-    var viewport = document.querySelector("meta[name=viewport]"),
+    var viewport = typeof document.querySelector == "function" ? document.querySelector("meta[name=viewport]") : null,
         mobile = "onorientationchange" in window ||
           window.navigator.msMaxTouchPoints ||
           window.navigator.isCocoonJS;
