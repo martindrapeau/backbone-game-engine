@@ -240,7 +240,7 @@
       return this.sprites.findWhere({name: selected});
     },
     onTap: function(e) {
-      if (e.target != this.engine.canvas) return;
+      if (e.target != this.engine.canvas || e.canvasHandled) return;
 
       var editor = this,
           sp = this.toJSON(),

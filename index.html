@@ -410,12 +410,12 @@ $(window).on("load", function() {
           </ul>
           <h4>Events</h4>
           <ul>
-            <li><code>tap</code>: Trigerred when the user clicks or taps on the canvas. A tap is defined when the user presses/clicks on a position without moving for more than <code>tapDetectionDelay</code> ms. The event callback function is passed the DOM event object, with these extra properties attached: <code>canvas</code>, <code>canvasX</code> and <code>canvasY</code>.</li>
+            <li><code>tap</code>: Trigerred when the user clicks or taps on the canvas. A tap is defined when the user presses/clicks on a position without moving for more than <code>tapDetectionDelay</code> ms. The event callback function is passed the DOM event object, with these extra properties attached: <code>canvas</code>, <code>canvasX</code> and <code>canvasY</code>. In addition, property <code>canvasHandled</code> is provided as a mechanism to stop propagation (see below). </li>
             <li><code>key</code>: Trigerred when the user types in a key. The event callback function is passed the DOM event object, with additional property <code>canvas</code>.</li>
             <li><code>dragstart</code>, <code>dragmove</code> and <code>dragend</code>: Trigerred when a drag gesture occurs. This happens when the user presses/clicks and holds and moves. When these events are trigerred, the <code>tap</code> event does not get trigerred.</li>
           </ul>
           <div class="alert alert-info">
-            Note: The <code>tap</code> and <code>drag*</code> events are broadcasted to whomever is listening. There is no concept of event bubbling, and no possibility to stop propagation. It is the listener's responsibility to verify that the event is relevant. For example, a Backbone.Button verifies that the user tap/click is within the bounds of the button.
+            Note: The <code>tap</code> and <code>drag*</code> events are broadcasted to whomever is listening. Event property <code>canvasHandled</code> is used to to prevent propagation to many overlapping objects. At first it is set to <code>false</code>. The first object to intercept and handle the event should set it to <code>true</code>. Subsequent objects intercepting the event should look at this property and return without action when <code>true</code>. <code>Backbone.Button</code> and <code>Backbone.WorldEditor</code> implement this behavior.
           </div>
           <h4>How it works</h4>
           <p>During every animation frame, the engine performs these things:</p>

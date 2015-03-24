@@ -446,6 +446,7 @@
       e.canvas = this.canvas;
       e.canvasX = this._currX - this.canvas.offsetLeft + this.canvas.scrollLeft;
       e.canvasY = this._currY - this.canvas.offsetTop + this.canvas.scrollTop;
+      e.canvasHandled = false;
 
       if (this._gesture == "tap" && now - this._touchStartTime > this.get("tapDetectionDelay")) {
         this.trigger("tap", e);
@@ -758,10 +759,11 @@
       return this;
     },
     onTap: function(e) {
-      if (this.get("opacity") == 0) return;
+      if (this.get("opacity") == 0 && !e.canvasHandled) return;
       if (e.canvasX >= this.attributes.x && e.canvasX <= this.attributes.x + this.attributes.width &&
           e.canvasY >= this.attributes.y && e.canvasY <= this.attributes.y + this.attributes.height) {
         this.pressed(_.partial(this.trigger, "tap", e));
+        e.canvasHandled = true;
       }
     }
   });
