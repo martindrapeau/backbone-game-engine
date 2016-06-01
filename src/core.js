@@ -26,6 +26,9 @@
       paddingBottom: 0,
       state: "idle",
 
+      // Sound effect ids
+      soundEffects: [],
+
       // Sprite sheet id
       spriteSheet: undefined,
 
@@ -48,15 +51,22 @@
     // Sprite sheet instance. Set automatically.
     spriteSheet: undefined,
     // Attributes to persist.
-    saveAttributes: ["name", "state", "sequenceIndex", "x", "y"],
+    saveAttributes: ["name", "state", "x", "y"],
     initialize: function(attributes, options) {
       this.lastSequenceChangeTime = 0;
       this.bbox = {x1: 0, y1: 0, x2: 0, y2: 0};
       this.on("attach", this.onAttach, this);
       this.on("detach", this.onDetach, this);
+      this.on("action", this.playSoundEffect, this);
     },
-    onAttach: function() {},
-    onDetach: function() {},
+    onAttach: function() {
+    },
+    onDetach: function() {
+    },
+    playSoundEffect: function(action) {
+      if (this.soundEffects &&this.soundEffects[action])
+        this.soundEffects[action].play(0);
+    },
     toSave: function() {
       return this.get("persist") ? _.pick(this.toJSON(), this.saveAttributes) : null;
     },
@@ -79,6 +89,12 @@
       this.bbox.y2 = this.getBottom(withPadding);
       return this.bbox;
     },
+    getWidth: function(withPadding) {
+      return this.attributes.width - (withPadding ? ((this.attributes.paddingLeft || 0) + (this.attributes.paddingRight || 0)) : 0);
+    },
+    getHeight: function(withPadding) {
+      return this.attributes.height - (withPadding ? ((this.attributes.paddingTop || 0) + (this.attributes.paddingBottom || 0)) : 0);
+    },
     getCenterX: function(withPadding) {
       var x = this.getLeft(withPadding),
           width = this.getRight(withPadding) - x;
@@ -87,7 +103,7 @@
     getCenterY: function(withPadding) {
       var y = this.getTop(withPadding),
           height = this.getBottom(withPadding) - y;
-      return x + height/2;
+      return y + height/2;
     },
     update: function(dt) {
       // Fetch animation and change sequence if need be
@@ -116,33 +132,36 @@
       if (!animation || animation.sequences.length == 0) return;
       if (sequenceIndex >= animation.sequences.length) sequenceIndex = 0;
 
-      var sequence = animation.sequences[sequenceIndex]
+      var sequence = animation.sequences[sequenceIndex],
           frameIndex = _.isNumber(sequence) ? sequence : sequence.frame,
           frame = this.spriteSheet.frames[frameIndex],
           scaleX = animation.scaleX && animation.scaleX != 1 ? animation.scaleX : null,
           scaleY = animation.scaleY && animation.scaleY != 1 ? animation.scaleY : null,
           x = Math.round(this.get("x") + (options.offsetX || 0) + (sequence.x || 0)),
-          y = Math.round(this.get("y") + (options.offsetY || 0) + (sequence.y || 0));
+          y = Math.round(this.get("y") + (options.offsetY || 0) + (sequence.y || 0)),
+          opacity = this.get("opacity");
       if (sequence.scaleY && sequence.scaleX != 1) scaleX = sequence.scaleX;
       if (sequence.scaleY &&  sequence.scaleY != 1) scaleY = sequence.scaleY;
 
-      // Handle transformations (only scaling for now)
+      if (_.isNumber(scaleX) || _.isNumber(scaleY) || _.isNumber(opacity)) context.save();
+
       if (_.isNumber(scaleX) || _.isNumber(scaleY)) {
-        context.save();
         var flipX = scaleX && scaleX != 1 ? x + frame.width / 2 : 0;
         var flipY = scaleY && scaleY != 1 ? y + frame.height / 2 : 0;
         context.translate(flipX, flipY);
         context.scale(scaleX || 1, scaleY || 1);
         context.translate(-flipX, -flipY);
       }
+      if (_.isNumber(opacity)) context.globalAlpha = opacity;
 
-      context.drawImage(
-        this.spriteSheet.img,
-        frame.x, frame.y, frame.width, frame.height,
-        x, y, frame.width, frame.height
-      );
+      if (this.spriteSheet.img)
+        context.drawImage(
+          this.spriteSheet.img,
+          frame.x, frame.y, frame.width, frame.height,
+          x, y, frame.width, frame.height
+        );
 
-      if (_.isNumber(scaleX) || _.isNumber(scaleY)) context.restore();
+      if (_.isNumber(scaleX) || _.isNumber(scaleY) || _.isNumber(opacity)) context.restore();
 
       if (typeof this.onDraw == "function") this.onDraw(context, options);
       return this;
@@ -157,6 +176,13 @@
           sy2 = this.attributes.y + this.attributes.height - (this.attributes.paddingBottom || 0);
       if (y === undefined) {
         var o = x;
+        if (typeof o.attributes == "object")
+          return !(
+            sx1 > o.attributes.x + o.attributes.width - (o.attributes.paddingRight || 0) ||
+            sx2 < o.attributes.x + (o.attributes.paddingLeft || 0) ||
+            sy1 > o.attributes.y + o.attributes.height - (o.attributes.paddingBottom || 0) ||
+            sy2 < o.attributes.y + (o.attributes.paddingTop || 0)
+          );
         return !(
           sx1 > o.x + (o.width || 0) ||
           sx2 < o.x ||
@@ -186,8 +212,10 @@
       x: 0,
       y: 0,
       img: undefined, // Element id to find image in DOM
+      imgUrl: undefined, // Path to image to load if DOM image element does not exist
       tileWidth: undefined,
       tileHeight: undefined,
+      tilePadding: 0,
       tileColumns: undefined,
       tileRows: undefined
     },
@@ -205,8 +233,8 @@
       for (var row = 0; row < sheet.tileRows; row++) {
         for (var col = 0; col < sheet.tileColumns; col++)
           this.frames.push({
-            x: sheet.x + col * sheet.tileWidth,
-            y: sheet.y + row * sheet.tileHeight,
+            x: sheet.x + col * (sheet.tileWidth + sheet.tilePadding),
+            y: sheet.y + row * (sheet.tileHeight + sheet.tilePadding),
             width: sheet.tileWidth,
             height: sheet.tileHeight
           });
@@ -216,19 +244,38 @@
     // Sets the img property by looking at attribute img.
     // If a string, we assume it is the id of a DOM element and fetch appropriately.
     spawnImg: function() {
-      var img = this.get("img");
+      if (this.img) return this;
+
+      var self = this,
+          img = this.get("img"),
+          url = this.get("imgUrl");
 
       if (typeof img == "string") {
         var id = img.replace("#", "");
         img = document.getElementById(id);
-        if (!img)
-          throw "Invalid img #" + id + " for " + this.get("name") + ". Cannot find element by id.";
+        if (!img) {
+          if (typeof url != "string")
+            throw "Invalid img #" + id + " for " + this.get("name") + ". Cannot find element by id. No imgUrl specified.";
+          _.loadImage(url, function() {
+            self.img = this;
+            self.trigger("spawnImg", self);
+          }, id);
+          return this;
+        }
       }
 
       if (typeof img != "object" || !img.src)
         throw "Invalid img attribute for " + this.get("name") + ". Not a valid Image object.";
 
       this.img = img;
+      this.trigger("spawnImg", this);
+      return this;
+    },
+    // Frees the image from memory by deleting it
+    destroyImg: function() {
+      if (this.img) _.unloadImage(this.img);
+      this.img = undefined;
+      this.trigger("destroyImg", this);
       return this;
     }
   });
@@ -241,6 +288,17 @@
   // it yourself.
   Backbone.SpriteSheetCollection = Backbone.Collection.extend({
     model: Backbone.SpriteSheet,
+    initialize: function(models, options) {
+      this.loadedSpriteIds = [];
+      this.on("spawnImg", this.onSpawnImg, this);
+    },
+    onSpawnImg: function(spriteSheet) {
+      var id = spriteSheet.get("id");
+      if (_.indexOf(this.loadedSpriteIds, id) == -1) this.loadedSpriteIds.push(id);
+      var spriteIds = this.pluck("id");
+      if (_.isEqual(_.sortBy(this.loadedSpriteIds), _.sortBy(spriteIds)))
+        this.trigger("allSpawnImg", this);
+    },
     // Attaches sprite sheets to sprite classes. Must be called before
     // calling draw on any sprite.
     attachToSpriteClasses: function() {
@@ -266,7 +324,12 @@
       version: 0.3,
       clearOnDraw: false,
       tapDetectionDelay: 50, // in ms
-      tapMoveTolerance: 5 // Move tolerance for a tap detection in pixels
+      tapMoveTolerance: 20, // Move tolerance for a tap detection in pixels
+      music: true,
+      sfx: true,
+      gamepadSupported: false, // Boolean indicating whether the gamepad is supported or not.
+      gamepadConnected: false, // Boolean indicating whether a gamepad is connected or not.
+      gamepadThreshold: 0.1
     },
     initialize: function(attributes, options) {
       options || (options = {});
@@ -283,6 +346,7 @@
         throw new Error("Missing or invalid canvas.");
 
       // Handle the pause button - stops the engine.
+      // TODO: This should not go here. Remove from engine.
       var input = this.input,
           toggleFn = _.debounce(this.toggle, 50);
       if (input) this.listenTo(input, "change:pause", function(input) {
@@ -341,10 +405,53 @@
       // Keyboard (triggers key event)
       $(document).on("keyup.engine", this.onKey);
 
+      // Gamepad
+      var gamepadSupported = window.navigator && typeof window.navigator.getGamepads == "function";
+      this.set({gamepadSupported: gamepadSupported});
+      if (gamepadSupported) {
+        this._lastGamepad = {
+          buttons: [],
+          axes: []
+        };
+        this.set({gamepadConnected: !!window.navigator.getGamepads()[0]});
+        window.addEventListener('gamepadconnected', this.onGamepadConnect.bind(this), false);
+        window.addEventListener('gamepaddisconnected', this.onGamepadDisconnect.bind(this), false);
+      }
+
+      // Handle application suspensions
+      if (window.cordova) {
+        $(document).on("pause", this.onSuspend.bind(this));
+        $(document).on("resume", _.partial(_.defer, this.onResume.bind(this)));
+      } else if (window.Cocoon && window.Cocoon.App) {
+        window.Cocoon.App.on("suspending", this.onSuspend.bind(this));
+        window.Cocoon.App.on("activated", this.onResume.bind(this));
+      } else {
+        $(window).on("blur", this.onSuspend.bind(this));
+        $(window).on("focus", this.onResume.bind(this));
+      }
+
       // For the trigger of reset event
       setTimeout(function() {
         engine.trigger("reset");
       }, 1);
+    },
+    onSuspend: function() {
+      this._suspendedTime = _.now();
+      this._restartOnResume = this.isRunning();
+      if (this._restartOnResume) this.stop();
+
+      this.trigger("suspend");
+    },
+    onResume: function() {
+      if (this._suspendedTime) {
+        if (this._restartOnResume) this.start();
+
+        var time = _.now() - this._suspendedTime;
+        this.trigger("resume", time);
+
+        this._suspendedTime = undefined;
+        this._restartOnResume = undefined;
+      }
     },
     add: function() {
       return this.sprites.add.apply(this.sprites, arguments);
@@ -387,6 +494,8 @@
           now = _.now(),
           dt = now - this.lastTime,
           sprite;
+
+      if (this.get("gamepadSupported")) this.pollGamepad();
 
       // Update
       for (var i = 0; i < this.sprites.models.length; i++) {
@@ -431,14 +540,23 @@
       return e.targetTouches ? e.targetTouches[0] : e;
     },
     onTouchStart: function(e) {
+      if (e && e.target && e.target.tagName && e.target.tagName.toLowerCase() != "canvas") return;
       e.preventDefault();
       var pointer = this.getPointerEvent(e);
       this._startX = this._currX = pointer.pageX;
       this._startY = this._currY = pointer.pageY;
       this._gesture = "tap";
       this._touchStartTime = _.now();
+      this.triggerTouchStart.apply(this, arguments);
+    },
+    triggerTouchStart: function(e) {
+      e.canvas = this.canvas;
+      e.canvasX = this._currX - this.canvas.offsetLeft + this.canvas.scrollLeft;
+      e.canvasY = this._currY - this.canvas.offsetTop + this.canvas.scrollTop;
+      this.trigger("touchstart", e);
     },
     onTouchEnd: function(e) {
+      if (e && e.target && e.target.tagName && e.target.tagName.toLowerCase() != "canvas") return;
       if (!this._touchStartTime) return;
       e.preventDefault();
 
@@ -448,6 +566,7 @@
       e.canvasY = this._currY - this.canvas.offsetTop + this.canvas.scrollTop;
       e.canvasHandled = false;
 
+      this.trigger("touchend", e);
       if (this._gesture == "tap" && now - this._touchStartTime > this.get("tapDetectionDelay")) {
         this.trigger("tap", e);
       } else if (this._gesture == "drag") {
@@ -457,6 +576,7 @@
       this._touchStartTime = undefined;
     },
     onTouchMove: function(e) {
+      if (e && e.target && e.target.tagName && e.target.tagName.toLowerCase() != "canvas") return;
       if (!this._touchStartTime) return;
       e.preventDefault();
 
@@ -483,6 +603,62 @@
     onKey: function(e) {
       e.canvas = this.canvas;
       this.trigger("key", e);
+    },
+
+    // Gamepad events
+    onGamepadConnect: function(e) {
+      this.set({gamepadConnected: true});
+    },
+    onGamepadDisconnect: function(e) {
+      this.set({gamepadConnected: false});
+    },
+
+    /*
+      Triggers events gamepadbuttondown, gamepadbuttonup
+      Passes event object: {
+        button: 0..15,
+        gamepad: window.navigator.getGamepads()[0]
+      }
+      Also triggers event gamepadaxemove
+      Passes event object: {
+        axe: 0..15,
+        gamepad: window.navigator.getGamepads()[0]
+      }
+    */
+    pollGamepad: function() {
+      var gamepad = window.navigator.getGamepads()[0];
+      if (!gamepad) return this;
+
+      var gamepadThreshold = this.get("gamepadThreshold"),
+          i, v, o;
+
+      for (i = 0; i < gamepad.buttons.length; i++) {
+        v = typeof gamepad.buttons[i] == "number" ? (gamepad.buttons[i] > gamepadThreshold) : gamepad.buttons[i].pressed;
+        o = this._lastGamepad.buttons[i];
+        if (typeof o != "undefined") {
+          if (v && !o)
+            this.trigger("gamepadbuttondown", {button: i, gamepad: gamepad});
+          else if (!v && o)
+            this.trigger("gamepadbuttonup", {button: i, gamepad: gamepad});
+          this._lastGamepad.buttons[i] = v;
+        } else {
+          this._lastGamepad.buttons.push(v);
+        }
+      }
+
+      for (i = 0; i < gamepad.axes.length; i++) {
+        v = gamepad.axes[i];
+        o = this._lastGamepad.axes[i];
+        if (typeof o != "undefined") {
+          if (Math.abs(v - o) > gamepadThreshold)
+            this.trigger("gamepadaxemove", {axe: i, value: v, gamepad: gamepad});
+          this._lastGamepad.axes[i] = v;
+        } else {
+          this._lastGamepad.axes.push(v);
+        }
+      }
+
+      return this;
     }
   });
 
@@ -495,15 +671,28 @@
       ticks: 0,
       delay: 200
     },
+    initialize: function(attributes, options) {
+      this.on("attach", this.onAttach, this);
+      this.on("detach", this.onDetach, this);
+    },
+    onAttach: function() {
+      this.ticks = 0;
+    },
+    onDetach: function() {
+
+    },
     update: function(dt) {
       var now = _.now();
       if (!this.lastTickTime || now > this.lastTickTime + this.get("delay")) {
         this.set("ticks", this.get("ticks") + 1);
         this.lastTickTime = now;
       }
+      if (typeof this.onUpdate == "function") return this.onUpdate(dt);
       return false;
     },
-    draw: function() {}
+    draw: function() {
+      return this;
+    }
   });
 
   // Element class; mimics an elementary fixed position element on canvas.
@@ -518,6 +707,7 @@
       height: 0,
       // Image
       img: undefined,
+      imgUrl: undefined,
       imgX: 0,
       imgY: 0,
       imgWidth: 0,
@@ -535,15 +725,22 @@
       easingTime: 1000,
       easing: "linear",
       opacity: 1,
-      scale: 1
+      scale: 1,
+      // Sound effect ids
+      soundEffects: [],
     },
     initialize: function() {
       this.on("attach", this.onAttach);
       this.on("detach", this.onDetach);
       this.on("change:text change:textContextAttributes", this.clearTextMetrics);
+      this.on("action", this.playSoundEffect, this);
     },
     clearTextMetrics: function() {
       if (this.textMetrics) this.textMetrics = undefined;
+    },
+    playSoundEffect: function(action) {
+      if (this.soundEffects &&this.soundEffects[action])
+        this.soundEffects[action].play(0);
     },
     onAttach: function() {
       this.onDetach();
@@ -561,14 +758,31 @@
       this._targetY = undefined;
       this._callback = undefined;
     },
-    moveTo: function(x, y, callback) {
+    isAnimated: function() {
+      return !!this._animation;
+    },
+    wait: function(delay, callback) {
+      this._animation = "wait";
+      this._startTime = _.now();
+      this._callback = callback;
+      this._animationUpdateFn = function(dt) {
+        var now = _.now(),
+            easingTime = delay || this.get("easingTime");
+        if (now >= this._startTime + easingTime) {
+          if (typeof this._callback == "function") _.defer(this._callback.bind(this));
+          this.clearAnimation();
+        }
+      };
+      return this;
+    },
+    moveTo: function(x, y, onEnd, onAnimate) {
       this._animation = "move";
       this._startTime = _.now();
       this._startX = this.get("x");
       this._startY = this.get("y");
       this._targetX = x;
       this._targetY = y;
-      this._callback = callback;
+      this._callback = onEnd;
       this._animationUpdateFn = function(dt) {
         var now = _.now(),
             easingTime = this.get("easingTime"),
@@ -579,6 +793,7 @@
             x: this._startX + factor * (this._targetX - this._startX),
             y: this._startY + factor * (this._targetY - this._startY)
           });
+          if (typeof onAnimate == "function") _.defer(onAnimate.bind(this));
         } else {
           if (typeof this._callback == "function") _.defer(this._callback.bind(this));
           this.set({x: this._targetX, y: this._targetY}, {silent: true});
@@ -695,6 +910,7 @@
       switch (context.textBaseline) {
         case "top":
           y += padding + offsetY;
+          break;
         case "bottom":
           y += b.height - padding - (lines.length-1)*b.textLineHeight - offsetY;
           break;
@@ -724,45 +940,108 @@
       }
       return this;
     },
-    overlaps: Backbone.Sprite.prototype.overlaps,
-    spawnImg: Backbone.SpriteSheet.prototype.spawnImg
+    spawnImg: Backbone.SpriteSheet.prototype.spawnImg,
+    destroyImg: Backbone.SpriteSheet.prototype.destroyImg
   });
+
+  var spriteMethods = ["overlaps", "getLeft", "getRight", "getTop", "getBottom", "getCenterX", "getCenterY"];
+  for (var i = 0; i < spriteMethods.length; i++) {
+    var method = spriteMethods[i];
+    Backbone.Element.prototype[method] = Backbone.Sprite.prototype[method];
+  }
 
   // Button class; an element when pressed animates a slight grow/shrink
   // and triggers a tap event
   Backbone.Button = Backbone.Element.extend({
+    defaults: _.extend({}, Backbone.Element.prototype.defaults, {
+      growFactorOnTouch: 0.10
+    }),
     onAttach: function() {
       Backbone.Element.prototype.onAttach.apply(this, arguments);
+      this.listenTo(this.engine, "touchstart", this.onTouchStart);
+      this.listenTo(this.engine, "touchend", this.onTouchEnd);
       this.listenTo(this.engine, "tap", this.onTap);
     },
     onDetach: function() {
       Backbone.Element.prototype.onDetach.apply(this, arguments);
       this.stopListening(this.engine);
+      this._tappedCallback = undefined;
+      this.set({pressed: false}, {silent: true});
     },
-    pressed: function(callback) {
+    grow: function(callback) {
       this._animation = "pressed";
       this._startTime = _.now();
-      this._callback = callback
-      this.set("scale", 1);
+      this._callback = callback;
+      this.set("scale", 1.0);
       this._animationUpdateFn = function(dt) {
         var now = _.now(),
             easing = "linear",
-            easingTime = 200;
+            easingTime = 200,
+            factor = this.get("growFactorOnTouch");
         if (now < this._startTime + easingTime) {
-          this.set("scale", 1.05 - Math.abs(Backbone.EasingFunctions[easing]((now - this._startTime) / easingTime)-0.5)/10 );
+          this.set("scale", 1.0 + Backbone.EasingFunctions[easing]((now - this._startTime) / easingTime)*factor );
         } else {
           if (typeof this._callback == "function") _.defer(this._callback.bind(this));
-          this.set({scale: 1}, {silent: true});
+          this.set({scale: 1.0 + factor}, {silent: true});
           this.clearAnimation();
         }
       };
       return this;
     },
+    shrink: function(callback) {
+      this._animation = "depressed";
+      this._startTime = _.now();
+      this._callback = callback;
+      this.set("scale", 1.0 + this.get("growFactorOnTouch"));
+      this._animationUpdateFn = function(dt) {
+        var now = _.now(),
+            easing = "linear",
+            easingTime = 200,
+            factor = this.get("growFactorOnTouch");
+        if (now < this._startTime + easingTime) {
+          this.set("scale", 1.0 + factor - Backbone.EasingFunctions[easing]((now - this._startTime) / easingTime)*factor );
+        } else {
+          if (typeof this._callback == "function") _.defer(this._callback.bind(this));
+          this.set({scale: 1.0}, {silent: true});
+          this.clearAnimation();
+        }
+      };
+      return this;
+    },
+    growShrink: function(callback) {
+      this.grow(function() {
+        this.shrink(callback);
+      });
+      return this;
+    },
+    onTouchStart: function(e) {
+      if (this.get("opacity") == 0 || this.get("pressed") || this._tappedCallback) return;
+      if (e.canvasX >= this.attributes.x && e.canvasX <= this.attributes.x + this.attributes.width &&
+          e.canvasY >= this.attributes.y && e.canvasY <= this.attributes.y + this.attributes.height) {
+        this.set("pressed", true);
+        this.grow();
+      }
+    },
+    onTouchEnd: function(e) {
+      if (!this.get("pressed")) return;
+      this.set("pressed", false);
+      this.shrink(function() {
+        this.trigger("action", "tap");
+        var callback = this._tappedCallback;
+        this._tappedCallback = undefined;
+        if (typeof callback == "function") callback.apply(this);
+      });
+    },
     onTap: function(e) {
+      // Hack to reset a locked button (don't know why it happens)
+      if (this._tappedCallback) {
+        this._tappedCallback = undefined;
+        return;
+      }
       if (this.get("opacity") == 0 && !e.canvasHandled) return;
       if (e.canvasX >= this.attributes.x && e.canvasX <= this.attributes.x + this.attributes.width &&
           e.canvasY >= this.attributes.y && e.canvasY <= this.attributes.y + this.attributes.height) {
-        this.pressed(_.partial(this.trigger, "tap", e));
+        this._tappedCallback = _.partial(this.trigger, "tap", e);
         e.canvasHandled = true;
       }
     }
@@ -937,6 +1216,53 @@
         link.onload = callback;
       }
       head.appendChild(link);
+    },
+    // Loads an image in memory
+    loadImage: function(url, callback) {
+      var img = document.createElement("img");
+      //if (window.Cocoon) img.cocoonLazyLoad = true;
+      img.src = url;
+      if (callback) {
+        img.onreadystatechange = callback;
+        img.onload = callback;
+      }
+    },
+    // Loads an audio in memory
+    loadAudio: function(url, callback) {
+      var audio = document.createElement("audio");
+      //if (window.Cocoon) img.cocoonLazyLoad = true;
+      audio.src = url;
+      if (callback) {
+        audio.oncanplay = callback;
+      }
+    },
+    // Unloads an image by deleting it. Will be picked up by the garbage collector.
+    // On CocoonJS calls the dispose method to free its memory immediately.
+    unloadImage: function(img) {
+      img.dispose && img.dispose();
+      delete img;
+    },
+    unloadAudio: function(audio) {
+      audio.dispose && audio.dispose();
+      delete audio;
+    },
+    opo: function(dir) {
+      return dir == "left" ? "right" : (dir == "right" ? "left" : (dir == "top" ? "bottom" : (dir == "bottom" ? "top" : null)));
+    },
+    distance: function(x1, y1, x2, y2) {
+      if (x2 === undefined) {
+        if (typeof x1.attributes == "object")
+          return Math.sqrt((x1.attributes.x-y1.attributes.x)*(x1.attributes.x-y1.attributes.x) + (x1.attributes.y-y1.attributes.y)*(x1.attributes.y-y1.attributes.y));
+        return Math.sqrt((x1.x-y1.x)*(x1.x-y1.x) + (x1.y-y1.y)*(x1.y-y1.y));
+      }
+      return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+    },
+    // Source: http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+    generateUuid: function() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+      });
     }
   });
 

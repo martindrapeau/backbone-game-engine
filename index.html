@@ -475,6 +475,7 @@ $(window).on("load", function() {
           <h4>Attributes</h4>
           <ul>
             <li><code>img</code>: The <code>Image</code> object or element id selector of the image to find in the DOM (i.e. <code>#icons</code>). A pointer to the Image object is then stored in property <code>img</code>.</li>
+            <li><code>imgUrl</code>: Optional. The url to the image to load dynamically. If specified, and the image element does not exist, will try to load the image.</li>
             <li><code>tileWidth, tileHeight</code>: Size of tiles in pixels.</li>
             <li><code>tileColumns, tileRows</code>: Number of tiles in the image.</li>
           </ul>
@@ -482,6 +483,11 @@ $(window).on("load", function() {
           <ul>
             <li><code>frames</code>: Array of animation frames. Automatically set when model is instantiated.</li>
             <li><code>img</code>: Pointer to <code>Image</code> object. Automatically set when model is instantiated.</li>
+          </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>spawnImg</code>: Trigerred when the image is fully loaded.</li>
+            <li><code>destroyImg</code>: Trigerred when the image is unloaded.</li>
           </ul>
           <p>
             When a sprite sheet is instantiated, an array of frames is built and stored in property <code>frames</code>. A frame object contains the coordinates of the frame. It consists of <code>{x, y, width, height}</code> representing the pixel position and size of the frame. These will be passed to the <a href="https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D#drawImage()" target="_blank">HTML5 canvas drawImage</a> function as arguments <code>sx, sy, sw, sh</code> by the <code>draw</code> method.
@@ -502,6 +508,10 @@ $(window).on("load", function() {
           <h4>Methods</h4>
           <ul>
             <li><code>attachToSpriteClasses()</code>: Attaches sprite sheets to sprite class prototypes. Does so by finding all defined sprite classes (<code>Backbone.*</code>) with default attribute <code>spriteSheet</code> matching a sprite sheet id in the collection. Then sets their <code>spriteSheet</code> property to point to the correct sprite sheet in the collection.</li>
+          </ul>
+          <h4>Events</h4>
+          <ul>
+            <li><code>allSpawnImg</code>: Trigerred when all images are fully loaded.</li>
           </ul>
           <h4>Usage</h4>
           <p>
